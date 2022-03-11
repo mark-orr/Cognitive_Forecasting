@@ -50,20 +50,11 @@ def compute_p_t(t,t_total_max,dist):
 
     return catch.sum()
 
-def compute_p_t_2(t,dist):
-    '''
-    This integrates from t to t_total_max to return p(t),
-    over this range, we integrate the following sum
-    dist is the prior
-    '''
-    vect_t_total = dist.index
-    catch = np.array([])
-    for i in vect_t_total:
-        a = 1/i
-        b = prob_t_tot(i,dist)
-        catch = np.append(catch,a*b)
 
-    return catch.sum()
+
+
+
+
 '''EXAMPLE
 provide context, 'if 10 days into an epidemic wave (t=10), how many days total (t_total) will be until the peak(or end)'
 want to generate the distribution of t_total|t over range of t_total;
@@ -95,17 +86,57 @@ def compute_posterior(t,dist):
         likelihood = 1/i 
         p_t = compute_p_t(t,vect_t_total[-1],dist)
         
-        catch = np.append(catch,prior*p_t*likelihood)
+        catch = np.append(catch,prior*(1/p_t)*likelihood)
         
     return catch
 
 
-x = compute_posterior(70,dist_prior_event_probs)
+x = compute_posterior(65,dist_prior_event_probs)
 x = pd.Series(x,index=dist_prior_event_probs.index)
 x.sum()
-x_adj = x*4000
+x_adj = x*(1/x.sum())
 x_adj.sum()
 median_of_dist(dist_prior_event_probs)
 median_of_dist(x_adj)
+
+
+'''TRY WITHOUT NORMALIZING FACTOR p(t)'''
+def compute_posterior_2(t,dist):
+    '''
+    dist is the ordered probablility lookup table fro each event t_total
+    t_total is what we are computing the distribution over
+    it is a np.array, ordered
+    
+    returns np.array, ordered as the 
+    NOTE: using index of prior doesn't cover, necessarily, all
+    possible values of t_total. Will fix later.
+    '''
+    print('t is: ',t)
+    vect_t_total = dist.index
+    print('t_total_range is: ',vect_t_total)
+    
+    catch = np.array([])
+    
+    for i in vect_t_total:
+        print('t_total is: ',i)
+        #prior
+        prior = prob_t_tot(i,dist)
+        likelihood = 1/i 
+        p_t = compute_p_t(t,vect_t_total[-1],dist)
+        
+        catch = np.append(catch,prior*likelihood)
+        
+    return catch
+
+x = compute_posterior_2(70,dist_prior_event_probs)
+x = pd.Series(x,index=dist_prior_event_probs.index)
+x.sum()
+x_adj = x*60
+x_adj.sum()
+median_of_dist(dist_prior_event_probs)
+median_of_dist(x_adj)
+
+
+
 
 def compute_decision():
