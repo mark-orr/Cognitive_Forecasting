@@ -3,11 +3,23 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 '''MAKE PRIOR'''
-dist_prior = np.random.poisson(60,1000)
+#GENERATOR
+N = 1000
+dist_prior = np.random.poisson(75,N)
+print(dist_prior)
+plt.hist(dist_prior)
+
+#COMPUTE PROBS FOR EACH EVENT
 dist_prior_event_probs = pd.Series(dist_prior).value_counts()/pd.Series(dist_prior).value_counts().sum()
 dist_prior_event_probs = dist_prior_event_probs.sort_index()
-plt.hist(dist_prior)
+plt.subplot(2,3,1)
 plt.hist(dist_prior_event_probs)
+plt.subplot(2,3,2)
+plt.plot(dist_prior_event_probs)
+plt.subplot(2,3,3)
+plt.hist(dist_prior)
+#SUMS TO ONE
+dist_prior_event_probs.sum()
 
 def prob_t_tot(x,dist):
     '''
@@ -25,6 +37,22 @@ def prob_t_tot(x,dist):
 #EG
 prob_t_tot(34,dist_prior_event_probs)
 
+def n_t_tot(x,dist,n):
+    '''
+    x=t_total
+    dist same as prob_t_tot
+    n is N from generating dist.
+    returns the N of t_total from the generating distribution
+    '''
+    if x in dist.index:
+        a = dist[x]*n
+    else:
+        a = np.float64(0)
+    #NOTE, THISFU  
+    return a
+#EG
+n_t_tot(34,dist_prior_event_probs,N)
+
 def median_of_dist(dist):
     '''
     dist is a pd.Series
@@ -36,6 +64,7 @@ def median_of_dist(dist):
 median_of_dist(dist_prior_event_probs)
 
 
+'''OLD, NOT VALID'''
 def compute_p_t(t,t_total_max,dist):
     '''
     This integrates from t to t_total_max to return p(t),
@@ -49,10 +78,20 @@ def compute_p_t(t,t_total_max,dist):
         catch = np.append(catch,a*b)
 
     return catch.sum()
+'''OLD, NOT VALID'''
 
+'''NEW BETA'''
+dist_prior_event_probs.index
+one_over_ttot = pd.Series(1/dist_prior_event_probs.index,index=dist_prior_event_probs.index)
 
-
-
+def compute_p_t(t,dist):
+    '''
+    t is for current problem
+    dist is dist_prior_event_probs, will be pd series.
+    '''
+    dist
+    
+'''THIS WORKS'''
 
 
 '''EXAMPLE
