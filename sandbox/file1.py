@@ -89,7 +89,12 @@ def compute_p_t(t,dist):
     t is for current problem
     dist is dist_prior_event_probs, will be pd series.
     '''
-    dist
+    subset = dist_prior_event_probs.iloc[dist_prior_event_probs.index>=t]
+    print('subset',subset)
+    one_over_t_total = pd.Series(1/subset.index,index=subset.index) 
+    print('one over t tot',one_over_t_total)
+    
+    return None
     
 '''THIS WORKS'''
 
