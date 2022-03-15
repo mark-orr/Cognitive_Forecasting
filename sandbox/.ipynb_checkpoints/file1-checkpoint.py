@@ -199,13 +199,13 @@ plt.plot(catch,label='median')
 plt.plot(catch_2,label='high threshold')
 plt.plot(catch_3,label='low threshold')
 plt.legend()
-plt.title('Exponential_Mean_20_Days_N100')
+plt.title('Exponential_Mean_20_Days_N10000')
 plt.xlabel('Subjective Days into Epidemic')
 plt.ylabel('Decision Value from Posterior')
 plt.axvline(x=mean_of_dist, c='b',dashes=(2,2,2,2),linewidth=1)
 plt.axhline(y=catch[mean_of_dist], c='b',dashes=(2,2,2,2),linewidth=1)
 
-plt.savefig('Exponential_Mean_20D_N100.png',dpi=200)
+plt.savefig('Exponential_Mean_20D_N10000.png',dpi=200)
 '''END MAIN'''
 
 
