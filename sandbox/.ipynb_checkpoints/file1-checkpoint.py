@@ -205,6 +205,22 @@ plt.savefig('Exponential_Mean_20D_N100.png',dpi=200)
 
 
 '''HOW IT WORKS'''
+#RUN FOR ONE t
+x = compute_posterior(40,dist_prior_event_probs)
+x = pd.Series(x,index=dist_prior_event_probs.index)
+x.sum()
+#x_adj = x*(1/x.sum())
+#x_adj.sum()
+prior_med = median_of_dist(dist_prior_event_probs)
+decision_med = median_of_dist(x)
+plt.title('Decision Process with 40 Days as Input')
+plt.plot(dist_prior_event_probs,label=f'prior, median={prior_med}')
+plt.plot(x,label=f'decision, median={decision_med}')
+plt.axvline(x=prior_med, c='b',dashes=(2,2,2,2),linewidth=1)
+plt.axvline(x=decision_med, c='b',linewidth=1)
+plt.legend()
+
+plt.savefig('Example_Decision_Dist_Poisson_Mean_120_N1000_Input40.png',dpi=200)
 
 
 '''HELPER'''
