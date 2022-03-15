@@ -2,27 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
 
-'''MAKE PRIOR'''
-#GENERATOR
-N = 1000
-#dist_prior = np.random.poisson(120,N)
-dist_prior = np.random.exponential(20,N)
-dist_prior = np.round(dist_prior).copy()
-print(dist_prior)
-plt.hist(dist_prior,bins=30)
-
-#COMPUTE PROBS FOR EACH EVENT
-dist_prior_event_probs = pd.Series(dist_prior).value_counts()/pd.Series(dist_prior).value_counts().sum()
-dist_prior_event_probs = dist_prior_event_probs.sort_index()
-plt.subplot(2,3,1)
-plt.hist(dist_prior_event_probs,bins=30)
-plt.subplot(2,3,2)
-plt.plot(dist_prior_event_probs)
-plt.subplot(2,3,3)
-plt.hist(dist_prior,bins=30)
-#SUMS TO ONE
-dist_prior_event_probs.sum()
-
+'''DEF'''
 def prob_t_tot(x,dist):
     '''
     x = t_total
@@ -37,7 +17,7 @@ def prob_t_tot(x,dist):
     #NOTE, THISFU  
     return a
 #EG
-prob_t_tot(34,dist_prior_event_probs)
+#prob_t_tot(34,dist_prior_event_probs)
 
 def n_t_tot(x,dist,n):
     '''
@@ -53,7 +33,7 @@ def n_t_tot(x,dist,n):
     #NOTE, THISFU  
     return a
 #EG
-n_t_tot(70,dist_prior_event_probs,N)
+#n_t_tot(70,dist_prior_event_probs,N)
 
 def median_of_dist(dist):
     '''
@@ -63,7 +43,21 @@ def median_of_dist(dist):
     '''
     return dist.loc[dist.cumsum()>0.5].index[0]
 #EG
-median_of_dist(dist_prior_event_probs)
+#median_of_dist(dist_prior_event_probs)
+
+def median_of_dist_p(dist,p):
+    '''
+    dist is a pd.Series
+    returns the median index value which should be
+    the value of the poisson
+    p = prob value to grab above, 0.5 is median
+    '''
+    return dist.loc[dist.cumsum()>p].index[0]
+#EG
+#median_of_dist(dist_prior_event_probs)
+
+
+
 
 def compute_p_t(t,dist):
     '''
@@ -78,12 +72,11 @@ def compute_p_t(t,dist):
     
     return (subset*one_over_t_total).sum()
 #EG
-compute_p_t(5,dist_prior_event_probs)
-compute_p_t(75,dist_prior_event_probs)
+#compute_p_t(5,dist_prior_event_probs)
+#compute_p_t(75,dist_prior_event_probs)
 '''compute_p_t LOGIpC'''
-dist_prior_event_probs.index
-one_over_ttot = pd.Series(1/dist_prior_event_probs.index,index=dist_prior_event_probs.index)
-
+#dist_prior_event_probs.index
+#one_over_ttot = pd.Series(1/dist_prior_event_probs.index,index=dist_prior_event_probs.index)
 
 
 
@@ -126,6 +119,89 @@ def compute_posterior(t,dist):
         
     return catch
 
+
+
+'''METHOD TESTS'''
+'''STEPS
+1. Make Prior Distribution
+2. compute t_tot over range of t
+3. compute decision/estimate from #2 for all t
+3. plot results over t'''
+
+'''GENERATE PRIOR'''
+#GENERATOR
+N = 1000
+#dist_prior = np.random.poisson(120,N)
+dist_prior = np.random.exponential(20,N)
+dist_prior = np.round(dist_prior).copy()
+print(dist_prior)
+plt.hist(dist_prior,bins=30)
+
+#COMPUTE PROBS FOR EACH EVENT
+dist_prior_event_probs = pd.Series(dist_prior).value_counts()/pd.Series(dist_prior).value_counts().sum()
+dist_prior_event_probs = dist_prior_event_probs.sort_index()
+plt.subplot(2,3,1)
+plt.hist(dist_prior_event_probs,bins=30)
+plt.subplot(2,3,2)
+plt.plot(dist_prior_event_probs)
+plt.subplot(2,3,3)
+plt.hist(dist_prior,bins=30)
+#SUMS TO ONE
+dist_prior_event_probs.sum()
+
+
+#RUN OVER RANGE OF t
+catch = ([])
+catch_2 = ([])
+catch_3 = ([])
+for t in range(1,int(dist_prior_event_probs.index[-1])): 
+    dist_1 = compute_posterior(t, dist_prior_event_probs)
+    dist_1 = pd.Series(dist_1, index=dist_prior_event_probs.index)
+    print('dist_1 sum: ', dist_1.sum())
+    print('median_prior', median_of_dist(dist_prior_event_probs))
+    print('median_posterior', median_of_dist(dist_1))
+    print('high_posterior', median_of_dist_p(dist_1,0.9))
+    print('low_posterior', median_of_dist_p(dist_1,0.1))
+    catch = np.append(catch, median_of_dist(dist_1))
+    catch_2 = np.append(catch_2, median_of_dist_p(dist_1,0.9))
+    catch_3 = np.append(catch_3, median_of_dist_p(dist_1,0.1))
+
+
+
+    
+    
+'''PLOT POISSON AS EXAMPLE'''
+mean_of_dist = 120
+plt.plot(catch)
+plt.plot(catch_2)
+plt.plot(catch_3)
+plt.title('Poisson_Mean_120_Days')
+plt.xlabel('Subjective Days into Epidemic')
+plt.ylabel('Decision Value from Posterior')
+plt.axvline(x=mean_of_dist, c='b',dashes=(2,2,2,2),linewidth=1)
+plt.axhline(y=catch[mean_of_dist], c='b',dashes=(2,2,2,2),linewidth=1)
+
+plt.savefig('Poisson_Mean_120.png',dpi=200)
+
+    
+'''PLOT EXPONENTIAL AS EXAMPLE'''
+mean_of_dist = 20
+plt.plot(catch)
+plt.plot(catch_2)
+plt.plot(catch_3)
+plt.title('Exponential_Mean_20_Days')
+plt.xlabel('Subjective Days into Epidemic')
+plt.ylabel('Decision Value from Posterior')
+plt.axvline(x=mean_of_dist, c='b',dashes=(2,2,2,2),linewidth=1)
+plt.axhline(y=catch[mean_of_dist], c='b',dashes=(2,2,2,2),linewidth=1)
+plt.savefig('Exponential_Mean_20.png',dpi=200)
+'''END MAIN'''
+
+
+
+'''HELPER'''
+'''RUN ONE VALUE OF t'''
+
 #RUN FOR ONE t
 x = compute_posterior(14,dist_prior_event_probs)
 x = pd.Series(x,index=dist_prior_event_probs.index)
@@ -137,39 +213,8 @@ median_of_dist(x)
 plt.plot(dist_prior_event_probs)
 plt.plot(x)
 
-#RUN OVER RANGE OF t
-catch = ([])
-for t in range(1,int(dist_prior_event_probs.index[-1])): 
-    dist_1 = compute_posterior(t, dist_prior_event_probs)
-    dist_1 = pd.Series(dist_1, index=dist_prior_event_probs.index)
-    print('dist_1 sum: ', dist_1.sum())
-    print('median_prior', median_of_dist(dist_prior_event_probs))
-    print('median_posterior', median_of_dist(dist_1))
-    catch = np.append(catch, median_of_dist(dist_1))
 
 
-    
-    
-'''PLOT POISSON AS EXAMPLE'''
-mean_of_dist = 120
-plt.plot(catch)
-plt.title('Poisson_Mean_120_Days')
-plt.xlabel('Days into Epidemic')
-plt.ylabel('Expected Value of Posterior')
-plt.axvline(x=mean_of_dist, c='b',dashes=(2,2,2,2),linewidth=1)
-plt.axhline(y=catch[mean_of_dist], c='b',dashes=(2,2,2,2),linewidth=1)
-plt.savefig('Poisson_Mean_120.png',dpi=200)
-
-    
-'''PLOT EXPONENTIAL AS EXAMPLE'''
-mean_of_dist = 20
-plt.plot(catch)
-plt.title('Exponential_Mean_20_Days')
-plt.xlabel('Days into Epidemic')
-plt.ylabel('Expected Value of Posterior')
-plt.axvline(x=mean_of_dist, c='b',dashes=(2,2,2,2),linewidth=1)
-plt.axhline(y=catch[mean_of_dist], c='b',dashes=(2,2,2,2),linewidth=1)
-plt.savefig('Exponential_Mean_20.png',dpi=200)
 
 
 
