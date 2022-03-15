@@ -131,12 +131,15 @@ def compute_posterior(t,dist):
 '''GENERATE PRIOR'''
 #GENERATOR
 N = 1000
-#dist_prior = np.random.poisson(120,N)
-dist_prior = np.random.exponential(20,N)
-dist_prior = np.round(dist_prior).copy()
+dist_prior = np.random.poisson(120,N)
+#dist_prior = np.random.exponential(20,N)
+#dist_prior = np.round(dist_prior).copy()
 print(dist_prior)
 plt.hist(dist_prior,bins=30)
-
+plt.title('Prior Distribution (Poisson, M120)')
+plt.xlabel('Duration of Epidemic')
+plt.ylabel('Freq')
+plt.savefig('Prior Dist Example')
 #COMPUTE PROBS FOR EACH EVENT
 dist_prior_event_probs = pd.Series(dist_prior).value_counts()/pd.Series(dist_prior).value_counts().sum()
 dist_prior_event_probs = dist_prior_event_probs.sort_index()
@@ -172,38 +175,43 @@ for t in range(1,int(dist_prior_event_probs.index[-1])):
     
 '''PLOT POISSON AS EXAMPLE'''
 mean_of_dist = 120
-plt.plot(catch)
-plt.plot(catch_2)
-plt.plot(catch_3)
-plt.title('Poisson_Mean_120_Days')
+plt.plot(catch,label='median')
+plt.plot(catch_2,label='high threshold')
+plt.plot(catch_3,label='low threshold')
+plt.legend()
+plt.title('Poisson_Mean_120_Days_N10')
 plt.xlabel('Subjective Days into Epidemic')
 plt.ylabel('Decision Value from Posterior')
 plt.axvline(x=mean_of_dist, c='b',dashes=(2,2,2,2),linewidth=1)
 plt.axhline(y=catch[mean_of_dist], c='b',dashes=(2,2,2,2),linewidth=1)
 
-plt.savefig('Poisson_Mean_120.png',dpi=200)
+plt.savefig('Poisson_Mean_120D_N10.png',dpi=200)
 
     
 '''PLOT EXPONENTIAL AS EXAMPLE'''
 mean_of_dist = 20
-plt.plot(catch)
-plt.plot(catch_2)
-plt.plot(catch_3)
-plt.title('Exponential_Mean_20_Days')
+plt.plot(catch,label='median')
+plt.plot(catch_2,label='high threshold')
+plt.plot(catch_3,label='low threshold')
+plt.legend()
+plt.title('Exponential_Mean_20_Days_N100')
 plt.xlabel('Subjective Days into Epidemic')
 plt.ylabel('Decision Value from Posterior')
 plt.axvline(x=mean_of_dist, c='b',dashes=(2,2,2,2),linewidth=1)
 plt.axhline(y=catch[mean_of_dist], c='b',dashes=(2,2,2,2),linewidth=1)
-plt.savefig('Exponential_Mean_20.png',dpi=200)
+
+plt.savefig('Exponential_Mean_20D_N100.png',dpi=200)
 '''END MAIN'''
 
+
+'''HOW IT WORKS'''
 
 
 '''HELPER'''
 '''RUN ONE VALUE OF t'''
 
 #RUN FOR ONE t
-x = compute_posterior(14,dist_prior_event_probs)
+x = compute_posterior(130,dist_prior_event_probs)
 x = pd.Series(x,index=dist_prior_event_probs.index)
 x.sum()
 #x_adj = x*(1/x.sum())
