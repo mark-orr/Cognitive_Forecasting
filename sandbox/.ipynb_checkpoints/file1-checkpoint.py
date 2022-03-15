@@ -5,9 +5,9 @@ import pandas as pd
 '''MAKE PRIOR'''
 #GENERATOR
 N = 1000
-dist_prior = np.random.poisson(120,N)
-#dist_prior = np.random.exponential(15,N)
-#dist_prior = np.round(dist_prior).copy()
+#dist_prior = np.random.poisson(120,N)
+dist_prior = np.random.exponential(20,N)
+dist_prior = np.round(dist_prior).copy()
 print(dist_prior)
 plt.hist(dist_prior,bins=30)
 
@@ -139,7 +139,7 @@ plt.plot(x)
 
 #RUN OVER RANGE OF t
 catch = ([])
-for t in range(1,dist_prior_event_probs.index[-1]): 
+for t in range(1,int(dist_prior_event_probs.index[-1])): 
     dist_1 = compute_posterior(t, dist_prior_event_probs)
     dist_1 = pd.Series(dist_1, index=dist_prior_event_probs.index)
     print('dist_1 sum: ', dist_1.sum())
@@ -147,13 +147,29 @@ for t in range(1,dist_prior_event_probs.index[-1]):
     print('median_posterior', median_of_dist(dist_1))
     catch = np.append(catch, median_of_dist(dist_1))
 
+
+    
+    
+'''PLOT POISSON AS EXAMPLE'''
+mean_of_dist = 120
 plt.plot(catch)
 plt.title('Poisson_Mean_120_Days')
 plt.xlabel('Days into Epidemic')
 plt.ylabel('Expected Value of Posterior')
-
+plt.axvline(x=mean_of_dist, c='b',dashes=(2,2,2,2),linewidth=1)
+plt.axhline(y=catch[mean_of_dist], c='b',dashes=(2,2,2,2),linewidth=1)
 plt.savefig('Poisson_Mean_120.png',dpi=200)
 
+    
+'''PLOT EXPONENTIAL AS EXAMPLE'''
+mean_of_dist = 20
+plt.plot(catch)
+plt.title('Exponential_Mean_20_Days')
+plt.xlabel('Days into Epidemic')
+plt.ylabel('Expected Value of Posterior')
+plt.axvline(x=mean_of_dist, c='b',dashes=(2,2,2,2),linewidth=1)
+plt.axhline(y=catch[mean_of_dist], c='b',dashes=(2,2,2,2),linewidth=1)
+plt.savefig('Exponential_Mean_20.png',dpi=200)
 
 
 
