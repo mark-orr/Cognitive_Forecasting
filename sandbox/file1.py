@@ -130,16 +130,21 @@ def compute_posterior(t,dist):
 
 '''GENERATE PRIOR'''
 #GENERATOR
-N = 1000
-dist_prior = np.random.poisson(120,N)
-#dist_prior = np.random.exponential(20,N)
-#dist_prior = np.round(dist_prior).copy()
+N = 10000
+#dist_prior = np.random.poisson(120,N)
+dist_prior = np.random.exponential(20,N)
+dist_prior = np.round(dist_prior).copy()
 print(dist_prior)
 plt.hist(dist_prior,bins=30)
-plt.title('Prior Distribution (Poisson, M120)')
+#plt.title('Prior Distribution (Poisson, M120)')
+#plt.xlabel('Duration of Epidemic')
+#plt.ylabel('Freq')
+#plt.savefig('Prior_Dist_Example_Poisson_M120.png',dpi=200)
+plt.title('Prior Distribution (Exponential, M20)')
 plt.xlabel('Duration of Epidemic')
 plt.ylabel('Freq')
-plt.savefig('Prior Dist Example')
+plt.savefig('Prior_Dist_Example_Exponential_M20.png',dpi=200)
+
 #COMPUTE PROBS FOR EACH EVENT
 dist_prior_event_probs = pd.Series(dist_prior).value_counts()/pd.Series(dist_prior).value_counts().sum()
 dist_prior_event_probs = dist_prior_event_probs.sort_index()
