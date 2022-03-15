@@ -5,7 +5,7 @@ import pandas as pd
 '''MAKE PRIOR'''
 #GENERATOR
 N = 1000
-dist_prior = np.random.poisson(75,N)
+dist_prior = np.random.poisson(120,N)
 #dist_prior = np.random.exponential(15,N)
 #dist_prior = np.round(dist_prior).copy()
 print(dist_prior)
@@ -87,14 +87,12 @@ one_over_ttot = pd.Series(1/dist_prior_event_probs.index,index=dist_prior_event_
 
 
 
-
-'''EXAMPLE
+'''EXAMPLE LOGIC
 provide context, 'if 10 days into an epidemic wave (t=10), how many days total (t_total) will be until the peak(or end)'
 want to generate the distribution of t_total|t over range of t_total;
 t_total drives all the variables, so this function will take in an vector t_total and compute and collect once per
 index of t_total
 '''
-
 
 def compute_posterior(t,dist):
     '''
@@ -116,14 +114,82 @@ def compute_posterior(t,dist):
         print('t_total is: ',i)
         #prior
         prior = prob_t_tot(i,dist)
-        likelihood = (1/i)*(n_t_tot(i,dist_prior_event_probs,N)) 
+        if i < t:
+            likelihood = 0
+        else: 
+            #likelihood = (1/i)*(n_t_tot(i,dist_prior_event_probs,N))
+            likelihood = (n_t_tot(i,dist,N)) / ((n_t_tot(i,dist,N))*i)
         p_t = compute_p_t(t,dist)
-        likelihood_ratio = (1/i)/p_t
+        likelihood_ratio = likelihood/p_t
         print('likelihood, p_t, likelihood_ratio, prior, post: ',likelihood, p_t, likelihood_ratio, prior, likelihood_ratio*prior)
         catch = np.append(catch,likelihood_ratio*prior)
         
     return catch
 
+#RUN FOR ONE t
+x = compute_posterior(14,dist_prior_event_probs)
+x = pd.Series(x,index=dist_prior_event_probs.index)
+x.sum()
+#x_adj = x*(1/x.sum())
+#x_adj.sum()
+median_of_dist(dist_prior_event_probs)
+median_of_dist(x)
+plt.plot(dist_prior_event_probs)
+plt.plot(x)
+
+#RUN OVER RANGE OF t
+catch = ([])
+for t in range(1,dist_prior_event_probs.index[-1]): 
+    dist_1 = compute_posterior(t, dist_prior_event_probs)
+    dist_1 = pd.Series(dist_1, index=dist_prior_event_probs.index)
+    print('dist_1 sum: ', dist_1.sum())
+    print('median_prior', median_of_dist(dist_prior_event_probs))
+    print('median_posterior', median_of_dist(dist_1))
+    catch = np.append(catch, median_of_dist(dist_1))
+
+plt.plot(catch)
+plt.title('Poisson_Mean_120_Days')
+plt.xlabel('Days into Epidemic')
+plt.ylabel('Expected Value of Posterior')
+
+plt.savefig('Poisson_Mean_120.png',dpi=200)
+
+
+
+
+
+
+
+
+'''SCRAP AND TESTING MESS BELOW'''
+#HAND HELP
+i=60 #DECISION INPUT
+prob_t_tot(i,dist_prior_event_probs)
+1/i
+compute_p_t(i,dist_prior_event_probs) #FIXED ACROSS ALL T_tot
+
+#DO MY P(t) add to 1?
+catch = ([])
+for i in range(0,103):
+    catch = np.append(catch,compute_p_t(i,dist_prior_event_probs))
+
+catch.sum()
+plt.plot(catch)
+#YES
+
+#DOES MY p(t|t_tot) sum to 1
+catch = ([])
+for i in range(1,103):
+    catch = np.append(catch,1/i)
+    
+catch.sum()
+plt.plot(catch)
+
+
+'''NOT CURRENTLY RELVANT
+THIS JUST FORECED i = + 1 BECAUSE OF DIV BY ZERO, BUT NOT NECESSARY
+
+'''
 def compute_posterior_exp(t,dist):
     '''
     dist is the ordered probablility lookup table fro each event t_total
@@ -152,42 +218,5 @@ def compute_posterior_exp(t,dist):
         
     return catch
 
-
-#RUN ABOVE
-x = compute_posterior(60,dist_prior_event_probs)
-x = pd.Series(x,index=dist_prior_event_probs.index)
-x.sum()
-#x_adj = x*(1/x.sum())
-#x_adj.sum()
-median_of_dist(dist_prior_event_probs)
-median_of_dist(x_adj)
-plt.plot(dist_prior_event_probs)
-plt.plot(x_adj)
-
-
-
-
-#HAND HELP
-i=65 #DECISION INPUT
-prob_t_tot(i,dist_prior_event_probs)
-1/i
-compute_p_t(i,dist_prior_event_probs) #FIXED ACROSS ALL T_tot
-
-#DO MY P(t) add to 1?
-catch = ([])
-for i in range(0,103):
-    catch = np.append(catch,compute_p_t(i,dist_prior_event_probs))
-
-catch.sum()
-plt.plot(catch)
-#YES
-
-#DOES MY p(t|t_tot) sum to 1
-catch = ([])
-for i in range(1,103):
-    catch = np.append(catch,1/i)
-    
-catch.sum()
-plt.plot(catch)
 
 #EOF
