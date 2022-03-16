@@ -126,12 +126,30 @@ df_112076 = pd.read_csv('Sub_112076_BayesData.csv')
 #FOR DEMO, ASSUME 7-15-2021 is start of epidemic
 
 '''DATA FROM VIRGINIA'''
-df_va_ts = pd.read_csv('VA.timeseries.csv')
+#SRINI RECOMMEND:
+'''/project/biocomplexity/COVID-19_commons/data/VDH_public/VDH-COVID-19-PublicUseDataset-Cases.csv'''
+df_va_ts = pd.read_csv('VA_Case_timeSeries.csv')
+#MAKE DELTA FOR index > 0
+S_cases = df_va_ts.total_cases
+S_delta = np.array([])
+S_delta = np.append(S_delta,10)
+for i in range(1,len(S_cases)):
+    delta_cases = S_cases[i]-S_cases[i-1]
+    S_delta = np.append(S_delta,delta_cases)
+S_cases.iloc[-1] - S_delta.sum()#should equal 57
+S_cases.index#JUST CHECKING
+df_va_ts.index#JUST CHECKING
+df_va_ts['incident_cases'] = S_delta
+df_va_ts.report_date[485:640]#HOMING IN
+df_ts_delta = df_va_ts['incident_cases'][485:640]
 
-df_ts = df_va_ts[['date','fips','actuals.newCases']]
-df_ts_delta = df_ts['actuals.newCases'][499:670]#MAKES SERIES GIVEN DATES OF ASSUMED start of epidemic to 
+'''DATA FROM COVIDACTNOW BUT NOT PERFECT (METHOD GOOD) DATA NOT'''
+#df_va_ts = pd.read_csv('VA.timeseries.csv')
+
+#df_ts = df_va_ts[['date','fips','actuals.newCases']]
+#df_ts_delta = df_ts['actuals.newCases'][499:670]#MAKES SERIES GIVEN DATES OF ASSUMED start of epidemic to 
 #11-14-2021
-df_ts.date[670]#DATE
+#df_ts.date[499]#DATE
 S_ts = df_ts_delta.reset_index(drop=True)#ALREADY SORTED
 dist_prior_event_probs = S_ts/S_ts.sum()
 N = S_ts.sum()
