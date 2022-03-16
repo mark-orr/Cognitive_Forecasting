@@ -121,42 +121,19 @@ def compute_posterior(t,dist):
 
 
 
-'''METHOD TESTS'''
-'''STEPS
-1. Make Prior Distribution
-2. compute t_tot over range of t
-3. compute decision/estimate from #2 for all t
-3. plot results over t'''
+'''DATA FROM SUBJECT 112076'''
+df_112076 = pd.read_csv('Sub_112076_BayesData.csv')
 
-'''GENERATE PRIOR'''
-#GENERATOR
-N = 100
-dist_prior = np.random.poisson(120,N)
-#dist_prior = np.random.exponential(20,N)
-#dist_prior = np.round(dist_prior).copy()
-print(dist_prior)
-plt.hist(dist_prior,bins=30)
-#plt.title('Prior Distribution (Poisson, M120)')
-#plt.xlabel('Duration of Epidemic')
-#plt.ylabel('Freq')
-#plt.savefig('Prior_Dist_Example_Poisson_M120.png',dpi=200)
-plt.title('Prior Distribution (Exponential, M20)')
-plt.xlabel('Duration of Epidemic')
-plt.ylabel('Freq')
-plt.savefig('Prior_Dist_Example_Exponential_M20.png',dpi=200)
+'''DATA FROM VIRGINIA'''
+df_va_ts = pd.read_csv('VA.timeseries.csv')
 
-#COMPUTE PROBS FOR EACH EVENT
-dist_prior_event_probs = pd.Series(dist_prior).value_counts()/pd.Series(dist_prior).value_counts().sum()
-dist_prior_event_probs = dist_prior_event_probs.sort_index()
-plt.subplot(2,3,1)
-plt.hist(dist_prior_event_probs,bins=30)
-plt.subplot(2,3,2)
-plt.plot(dist_prior_event_probs)
-plt.subplot(2,3,3)
-plt.hist(dist_prior,bins=30)
-#SUMS TO ONE
-dist_prior_event_probs.sum()
-
+df_ts = df_va_ts[['date','fips','actuals.newCases']]
+df_ts_delta = df_ts['actuals.newCases'][469:622]#MAKES SERIES
+S_ts = df_ts_delta.reset_index(drop=True)#ALREADY SORTED
+dist_prior_event_probs = S_ts/S_ts.sum()
+N = S_ts.sum()
+#NEED TO DROP ZEROs
+dist_prior_event_probs = dist_prior_event_probs.loc[dist_prior_event_probs>0]
 
 #RUN OVER RANGE OF t
 catch = ([])
@@ -174,139 +151,24 @@ for t in range(1,int(dist_prior_event_probs.index[-1])):
     catch_2 = np.append(catch_2, median_of_dist_p(dist_1,0.9))
     catch_3 = np.append(catch_3, median_of_dist_p(dist_1,0.1))
 
-
-
-    
-    
-'''PLOT POISSON AS EXAMPLE'''
-mean_of_dist = 120
+'''PLOT OVER t'''
 plt.plot(catch,label='median')
 plt.plot(catch_2,label='high threshold')
 plt.plot(catch_3,label='low threshold')
 plt.legend()
-plt.title('Poisson_Mean_120_Days_N10')
+plt.title('DeltaWave')
 plt.xlabel('Subjective Days into Epidemic')
 plt.ylabel('Decision Value from Posterior')
-plt.axvline(x=mean_of_dist, c='b',dashes=(2,2,2,2),linewidth=1)
-plt.axhline(y=catch[mean_of_dist], c='b',dashes=(2,2,2,2),linewidth=1)
-
-plt.savefig('Poisson_Mean_120D_N10.png',dpi=200)
-
-    
-'''PLOT EXPONENTIAL AS EXAMPLE'''
-mean_of_dist = 20
-plt.plot(catch,label='median')
-plt.plot(catch_2,label='high threshold')
-plt.plot(catch_3,label='low threshold')
-plt.legend()
-plt.title('Exponential_Mean_20_Days_N10000')
-plt.xlabel('Subjective Days into Epidemic')
-plt.ylabel('Decision Value from Posterior')
-plt.axvline(x=mean_of_dist, c='b',dashes=(2,2,2,2),linewidth=1)
-plt.axhline(y=catch[mean_of_dist], c='b',dashes=(2,2,2,2),linewidth=1)
-
-plt.savefig('Exponential_Mean_20D_N10000.png',dpi=200)
-'''END MAIN'''
+plt.axvline(x=median_of_dist(dist_prior_event_probs), c='b',dashes=(2,2,2,2),linewidth=1)
+plt.axhline(y=catch[median_of_dist(dist_prior_event_probs)], c='b',dashes=(2,2,2,2),linewidth=1)
+plt.savefig('DeltaWave_Decision_Predictions.png',dpi=200)
 
 
-'''HOW IT WORKS'''
-#RUN FOR ONE t
-x = compute_posterior(40,dist_prior_event_probs)
+#FOR INDIVIDUAL USE
+x = compute_posterior(130, dist_prior_event_probs)
 x = pd.Series(x,index=dist_prior_event_probs.index)
 x.sum()
-#x_adj = x*(1/x.sum())
-#x_adj.sum()
-prior_med = median_of_dist(dist_prior_event_probs)
-decision_med = median_of_dist(x)
-plt.title('Decision Process with 40 Days as Input')
-plt.plot(dist_prior_event_probs,label=f'prior, median={prior_med}')
-plt.plot(x,label=f'decision, median={decision_med}')
-plt.axvline(x=prior_med, c='b',dashes=(2,2,2,2),linewidth=1)
-plt.axvline(x=decision_med, c='b',linewidth=1)
-plt.legend()
-
-plt.savefig('Example_Decision_Dist_Poisson_Mean_120_N1000_Input40.png',dpi=200)
-
-
-'''HELPER'''
-'''RUN ONE VALUE OF t'''
-
-#RUN FOR ONE t
-x = compute_posterior(130,dist_prior_event_probs)
-x = pd.Series(x,index=dist_prior_event_probs.index)
-x.sum()
-#x_adj = x*(1/x.sum())
-#x_adj.sum()
-median_of_dist(dist_prior_event_probs)
 median_of_dist(x)
-plt.plot(dist_prior_event_probs)
-plt.plot(x)
 
 
 
-
-
-
-
-
-
-
-'''SCRAP AND TESTING MESS BELOW'''
-#HAND HELP
-i=60 #DECISION INPUT
-prob_t_tot(i,dist_prior_event_probs)
-1/i
-compute_p_t(i,dist_prior_event_probs) #FIXED ACROSS ALL T_tot
-
-#DO MY P(t) add to 1?
-catch = ([])
-for i in range(0,103):
-    catch = np.append(catch,compute_p_t(i,dist_prior_event_probs))
-
-catch.sum()
-plt.plot(catch)
-#YES
-
-#DOES MY p(t|t_tot) sum to 1
-catch = ([])
-for i in range(1,103):
-    catch = np.append(catch,1/i)
-    
-catch.sum()
-plt.plot(catch)
-
-
-'''NOT CURRENTLY RELVANT
-THIS JUST FORECED i = + 1 BECAUSE OF DIV BY ZERO, BUT NOT NECESSARY
-
-'''
-def compute_posterior_exp(t,dist):
-    '''
-    dist is the ordered probablility lookup table fro each event t_total
-    t_total is what we are computing the distribution over
-    it is a np.array, ordered
-    
-    returns np.array, ordered as the 
-    NOTE: using index of prior doesn't cover, necessarily, all
-    possible values of t_total. Will fix later.
-    '''
-    print('t is: ',t)
-    vect_t_total = dist.index+1
-    print('t_total_range is: ',vect_t_total)
-    
-    catch = np.array([])
-    
-    for i in vect_t_total:
-        print('t_total is: ',i)
-        #prior
-        prior = prob_t_tot(i,dist)
-        likelihood = 1/i 
-        p_t = compute_p_t(t,dist)
-        likelihood_ratio = (1/i)/p_t
-        print('likelihood, p_t, likelihood_ratio, prior, post: ',likelihood, p_t, likelihood_ratio,prior,likelihood_ratio*prior)
-        catch = np.append(catch,likelihood_ratio*prior)
-        
-    return catch
-
-
-#EOF

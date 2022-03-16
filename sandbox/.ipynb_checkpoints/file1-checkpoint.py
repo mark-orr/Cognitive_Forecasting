@@ -130,10 +130,10 @@ def compute_posterior(t,dist):
 
 '''GENERATE PRIOR'''
 #GENERATOR
-N = 10000
-#dist_prior = np.random.poisson(120,N)
-dist_prior = np.random.exponential(20,N)
-dist_prior = np.round(dist_prior).copy()
+N = 100
+dist_prior = np.random.poisson(120,N)
+#dist_prior = np.random.exponential(20,N)
+#dist_prior = np.round(dist_prior).copy()
 print(dist_prior)
 plt.hist(dist_prior,bins=30)
 #plt.title('Prior Distribution (Poisson, M120)')
