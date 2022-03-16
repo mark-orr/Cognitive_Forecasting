@@ -131,7 +131,7 @@ def compute_posterior(t,dist):
 '''GENERATE PRIOR'''
 #GENERATOR
 N = 100
-dist_prior = np.random.poisson(120,N)
+dist_prior = np.random.poisson(140,N)
 #dist_prior = np.random.exponential(20,N)
 #dist_prior = np.round(dist_prior).copy()
 print(dist_prior)

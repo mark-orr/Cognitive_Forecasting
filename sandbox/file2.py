@@ -156,6 +156,40 @@ N = S_ts.sum()
 #NEED TO DROP ZEROs
 dist_prior_event_probs = dist_prior_event_probs.loc[dist_prior_event_probs>0]
 plt.plot(dist_prior_event_probs)
+
+
+'''ALTERNATIVE PRIOR THINGIT'''
+'''GENERATE PRIOR'''
+#GENERATOR
+N = 1000
+dist_prior = np.random.poisson(165,N)
+#dist_prior = np.random.exponential(20,N)
+#dist_prior = np.round(dist_prior).copy()
+print(dist_prior)
+plt.hist(dist_prior,bins=30)
+#plt.title('Prior Distribution (Poisson, M120)')
+#plt.xlabel('Duration of Epidemic')
+#plt.ylabel('Freq')
+#plt.savefig('Prior_Dist_Example_Poisson_M120.png',dpi=200)
+plt.title('Prior Distribution (Exponential, M20)')
+plt.xlabel('Duration of Epidemic')
+plt.ylabel('Freq')
+plt.savefig('Prior_Dist_Example_Exponential_M20.png',dpi=200)
+
+#COMPUTE PROBS FOR EACH EVENT
+dist_prior_event_probs = pd.Series(dist_prior).value_counts()/pd.Series(dist_prior).value_counts().sum()
+dist_prior_event_probs = dist_prior_event_probs.sort_index()
+plt.subplot(2,3,1)
+plt.hist(dist_prior_event_probs,bins=30)
+plt.subplot(2,3,2)
+plt.plot(dist_prior_event_probs)
+plt.subplot(2,3,3)
+plt.hist(dist_prior,bins=30)
+#SUMS TO ONE
+dist_prior_event_probs.sum()
+
+
+
 #RUN OVER RANGE OF t
 catch = ([])
 catch_2 = ([])
