@@ -123,12 +123,15 @@ def compute_posterior(t,dist):
 
 '''DATA FROM SUBJECT 112076'''
 df_112076 = pd.read_csv('Sub_112076_BayesData.csv')
+#FOR DEMO, ASSUME 7-15-2021 is start of epidemic
 
 '''DATA FROM VIRGINIA'''
 df_va_ts = pd.read_csv('VA.timeseries.csv')
 
 df_ts = df_va_ts[['date','fips','actuals.newCases']]
-df_ts_delta = df_ts['actuals.newCases'][469:622]#MAKES SERIES
+df_ts_delta = df_ts['actuals.newCases'][499:670]#MAKES SERIES GIVEN DATES OF ASSUMED start of epidemic to 
+#11-14-2021
+df_ts.date[670]#DATE
 S_ts = df_ts_delta.reset_index(drop=True)#ALREADY SORTED
 dist_prior_event_probs = S_ts/S_ts.sum()
 N = S_ts.sum()
@@ -151,6 +154,18 @@ for t in range(1,int(dist_prior_event_probs.index[-1])):
     catch_2 = np.append(catch_2, median_of_dist_p(dist_1,0.9))
     catch_3 = np.append(catch_3, median_of_dist_p(dist_1,0.1))
 
+'''POINTS FOR PLOT FOR SUBJECT'''
+#FOR SUBJE 112076
+catch_4 = []
+for i in df_112076.subj_input_int:
+    print(i)
+    x = compute_posterior(i, dist_prior_event_probs)
+    x = pd.Series(x,index=dist_prior_event_probs.index)
+    x.sum()
+    print(median_of_dist(x))
+    catch_4.append([i,median_of_dist(x)])
+
+
 '''PLOT OVER t'''
 plt.plot(catch,label='median')
 plt.plot(catch_2,label='high threshold')
@@ -161,14 +176,30 @@ plt.xlabel('Subjective Days into Epidemic')
 plt.ylabel('Decision Value from Posterior')
 plt.axvline(x=median_of_dist(dist_prior_event_probs), c='b',dashes=(2,2,2,2),linewidth=1)
 plt.axhline(y=catch[median_of_dist(dist_prior_event_probs)], c='b',dashes=(2,2,2,2),linewidth=1)
+for i in range(0,len(catch_4)): 
+    plt.plot(catch_4[i][0],catch_4[i][1],'ro') 
 plt.savefig('DeltaWave_Decision_Predictions.png',dpi=200)
 
 
+
+'''SCRAP AND POSSIBLE HELPERS'''
 #FOR INDIVIDUAL USE
 x = compute_posterior(130, dist_prior_event_probs)
 x = pd.Series(x,index=dist_prior_event_probs.index)
 x.sum()
 median_of_dist(x)
 
-
+'''NEED THIS TRICK'''
+tmp = dist_prior_event_probs.loc[120]
+dist_prior_event_probs.loc[120] = tmp/2
+dist_prior_event_probs = dist_prior_event_probs.append(pd.Series([tmp/2], index=[145])) 
+    
+'''NOTES
+1. Might try artificially extending the delta dist 
+to capture idea that in their minds, another wave was not 
+coming yet (just cut final prob in 1/2 and put way out)
+2. Next Step:  Will improve the data structure so has integer subj_input and decision output for direct 
+contact with code above.  Will make predictions based on that...
+Can also make 
+'''
 
