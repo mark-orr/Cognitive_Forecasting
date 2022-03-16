@@ -137,7 +137,7 @@ dist_prior_event_probs = S_ts/S_ts.sum()
 N = S_ts.sum()
 #NEED TO DROP ZEROs
 dist_prior_event_probs = dist_prior_event_probs.loc[dist_prior_event_probs>0]
-
+plt.plot(dist_prior_event_probs)
 #RUN OVER RANGE OF t
 catch = ([])
 catch_2 = ([])
@@ -176,11 +176,19 @@ plt.xlabel('Subjective Days into Epidemic')
 plt.ylabel('Decision Value from Posterior')
 plt.axvline(x=median_of_dist(dist_prior_event_probs), c='b',dashes=(2,2,2,2),linewidth=1)
 plt.axhline(y=catch[median_of_dist(dist_prior_event_probs)], c='b',dashes=(2,2,2,2),linewidth=1)
+#for i in range(0,len(catch_4)): 
+#    plt.plot(catch_4[i][0],catch_4[i][1],'ro')
 for i in range(0,len(catch_4)): 
-    plt.plot(catch_4[i][0],catch_4[i][1],'ro') 
+    plt.plot(catch_4[i][0],df_112076.decision_output_int[i],'ro')
+
 plt.savefig('DeltaWave_Decision_Predictions.png',dpi=200)
+#JUST A TEST THAT CPATURING THE HUMAN OUTPUT
+for i in range(0,len(catch_4)):
+    print(df_112076.decision_output_int[i])
 
 
+    
+    
 
 '''SCRAP AND POSSIBLE HELPERS'''
 #FOR INDIVIDUAL USE
