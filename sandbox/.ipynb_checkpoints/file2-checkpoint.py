@@ -97,14 +97,14 @@ def compute_posterior(t,dist):
     NOTE: using index of prior doesn't cover, necessarily, all
     possible values of t_total. Will fix later.
     '''
-    print('t is: ',t)
+    #print('t is: ',t)
     vect_t_total = dist.index
-    print('t_total_range is: ',vect_t_total)
+    #print('t_total_range is: ',vect_t_total)
     
     catch = np.array([])
     
     for i in vect_t_total:
-        print('t_total is: ',i)
+        #print('t_total is: ',i)
         #prior
         prior = prob_t_tot(i,dist)
         if i < t:
@@ -114,7 +114,7 @@ def compute_posterior(t,dist):
             likelihood = (n_t_tot(i,dist,N)) / ((n_t_tot(i,dist,N))*i)
         p_t = compute_p_t(t,dist)
         likelihood_ratio = likelihood/p_t
-        print('likelihood, p_t, likelihood_ratio, prior, post: ',likelihood, p_t, likelihood_ratio, prior, likelihood_ratio*prior)
+        #print('likelihood, p_t, likelihood_ratio, prior, post: ',likelihood, p_t, likelihood_ratio, prior, likelihood_ratio*prior)
         catch = np.append(catch,likelihood_ratio*prior)
         
     return catch
@@ -142,7 +142,8 @@ df_va_ts.index#JUST CHECKING
 df_va_ts['incident_cases'] = S_delta
 df_va_ts.report_date[485:640]#HOMING IN
 df_ts_delta = df_va_ts['incident_cases'][485:640]
-
+df_ts_delta.index = df_va_ts.report_date[485:640]
+df_ts_delta.plot()
 '''DATA FROM COVIDACTNOW BUT NOT PERFECT (METHOD GOOD) DATA NOT'''
 #df_va_ts = pd.read_csv('VA.timeseries.csv')
 
@@ -162,19 +163,19 @@ plt.plot(dist_prior_event_probs)
 '''GENERATE PRIOR'''
 #GENERATOR
 N = 1000
-dist_prior = np.random.poisson(165,N)
+dist_prior = np.random.poisson(145,N)
 #dist_prior = np.random.exponential(20,N)
 #dist_prior = np.round(dist_prior).copy()
-print(dist_prior)
+#print(dist_prior)
 plt.hist(dist_prior,bins=30)
-#plt.title('Prior Distribution (Poisson, M120)')
-#plt.xlabel('Duration of Epidemic')
-#plt.ylabel('Freq')
-#plt.savefig('Prior_Dist_Example_Poisson_M120.png',dpi=200)
-plt.title('Prior Distribution (Exponential, M20)')
+plt.title('Prior Distribution (Poisson, M145)')
 plt.xlabel('Duration of Epidemic')
 plt.ylabel('Freq')
-plt.savefig('Prior_Dist_Example_Exponential_M20.png',dpi=200)
+plt.savefig('Prior_Dist_Example_Poisson_M145.png',dpi=200)
+#plt.title('Prior Distribution (Exponential, M20)')
+#plt.xlabel('Duration of Epidemic')
+#plt.ylabel('Freq')
+#plt.savefig('Prior_Dist_Example_Exponential_M20.png',dpi=200)
 
 #COMPUTE PROBS FOR EACH EVENT
 dist_prior_event_probs = pd.Series(dist_prior).value_counts()/pd.Series(dist_prior).value_counts().sum()
@@ -197,25 +198,27 @@ catch_3 = ([])
 for t in range(1,int(dist_prior_event_probs.index[-1])): 
     dist_1 = compute_posterior(t, dist_prior_event_probs)
     dist_1 = pd.Series(dist_1, index=dist_prior_event_probs.index)
-    print('dist_1 sum: ', dist_1.sum())
-    print('median_prior', median_of_dist(dist_prior_event_probs))
-    print('median_posterior', median_of_dist(dist_1))
-    print('high_posterior', median_of_dist_p(dist_1,0.9))
-    print('low_posterior', median_of_dist_p(dist_1,0.1))
+    #print('dist_1 sum: ', dist_1.sum())
+    #print('median_prior', median_of_dist(dist_prior_event_probs))
+    #print('median_posterior', median_of_dist(dist_1))
+    #print('high_posterior', median_of_dist_p(dist_1,0.75))
+    #print('low_posterior', median_of_dist_p(dist_1,0.25))
     catch = np.append(catch, median_of_dist(dist_1))
-    catch_2 = np.append(catch_2, median_of_dist_p(dist_1,0.9))
-    catch_3 = np.append(catch_3, median_of_dist_p(dist_1,0.1))
+    catch_2 = np.append(catch_2, median_of_dist_p(dist_1,0.75))
+    catch_3 = np.append(catch_3, median_of_dist_p(dist_1,0.25))
 
 '''POINTS FOR PLOT FOR SUBJECT'''
 #FOR SUBJE 112076
 catch_4 = []
+offset = 10
 for i in df_112076.subj_input_int:
-    print(i)
-    x = compute_posterior(i, dist_prior_event_probs)
+    #print(i)
+    j = i - offset
+    x = compute_posterior(j, dist_prior_event_probs)
     x = pd.Series(x,index=dist_prior_event_probs.index)
     x.sum()
-    print(median_of_dist(x))
-    catch_4.append([i,median_of_dist(x)])
+    #print(median_of_dist(x))
+    catch_4.append([j,median_of_dist(x)])
 
 
 '''PLOT OVER t'''
@@ -223,7 +226,7 @@ plt.plot(catch,label='median')
 plt.plot(catch_2,label='high threshold')
 plt.plot(catch_3,label='low threshold')
 plt.legend()
-plt.title('DeltaWave')
+plt.title('DeltaWave_Prior')
 plt.xlabel('Subjective Days into Epidemic')
 plt.ylabel('Decision Value from Posterior')
 plt.axvline(x=median_of_dist(dist_prior_event_probs), c='b',dashes=(2,2,2,2),linewidth=1)
@@ -231,9 +234,11 @@ plt.axhline(y=catch[median_of_dist(dist_prior_event_probs)], c='b',dashes=(2,2,2
 #for i in range(0,len(catch_4)): 
 #    plt.plot(catch_4[i][0],catch_4[i][1],'ro')
 for i in range(0,len(catch_4)): 
-    plt.plot(catch_4[i][0],df_112076.decision_output_int[i],'ro')
+    plt.plot(catch_4[i][0],(df_112076.decision_output_int[i]-offset),'ro')
+for i in range(75,175):
+    plt.plot(i,i+45,'go')
 
-plt.savefig('DeltaWave_Decision_Predictions.png',dpi=200)
+plt.savefig('DeltaWavePrior_Decision_Predictions.png',dpi=200)
 #JUST A TEST THAT CPATURING THE HUMAN OUTPUT
 for i in range(0,len(catch_4)):
     print(df_112076.decision_output_int[i])
