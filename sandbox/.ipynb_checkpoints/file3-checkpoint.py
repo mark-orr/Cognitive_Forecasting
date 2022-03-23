@@ -132,10 +132,10 @@ N = 100
 catch_ts = [] #OPTIMAL DECISION FROM POSTERIOR
 catch_error = [] #ERROR ACROSS T FOR PRIORS
 catch_pred_dur = [] #PRED DUR ACROSS T FOR PRIORS
-catch_df = [] #??? NOTHING YET
 catch_error_zero_ts_across_decisions = [] #T OF MIN ERROR FOR EACH PRIOR for each DECISION
 
-for d in [8,9]:
+#for d in [0,1]:
+for d in range(0,len(df_112076.pred_duration_int)):
     
     catch_error_zero_ts_for_decision = [] #VECTOR OF T OF MIN ERROR FOR EACH PRIOR
     
@@ -181,10 +181,23 @@ for i in range(0,len(catch_error_zero_ts)):
     print(catch_ts[i][catch_error_zero_ts[i][0]])
     print(catch_pred_dur[i][catch_error_zero_ts[i][0]])
     print(catch_error[i][catch_error_zero_ts[i][0]])
-    
-catch_df.append(pd.DataFrame(catch_t_pred))
+
+#COMPARE
+catch_error_zero_ts_across_decisions
+np.array(catch_error_zero_ts_across_decisions)[:,0,0]
+df_112076.pred_duration_int
+
+plt.plot(np.array(catch_error_zero_ts_across_decisions)[:,0,0])
+plt.plot(np.array(catch_error_zero_ts_across_decisions)[:,1,0])
+plt.plot(np.array(catch_error_zero_ts_across_decisions)[:,2,0])
+plt.plot(np.array(catch_error_zero_ts_across_decisions)[:,3,0])
+plt.plot(np.array(catch_error_zero_ts_across_decisions)[:,4,0])
+plt.plot(df_112076.pred_duration_int)
 
 
+
+
+'''DEV AND TESTING'''
     
 '''SO FOR EACH PRIOR AND t WE COMPUTE (t + pred_duration_int) - catch_ts '''
 poisson_mean_list = [i for i in range(80,160)]   
@@ -226,12 +239,7 @@ for i in range(0,len(catch_ts)):
         
 
 
-
-
-
-
-
-
+'''FROM FILE2'''
 '''POINTS FOR PLOT FOR SUBJECT'''
 #FOR SUBJE 112076
 catch_sub = []
