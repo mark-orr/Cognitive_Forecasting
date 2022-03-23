@@ -128,69 +128,86 @@ df_112076 = pd.read_csv('Sub_112076_BayesData.csv')
 #FOR PRIOR
 N = 100
 
-'''GENERATE OPTIMAL GIVEN T BY PRIOR'''
+'''GENERATE OPTIMALl, GIVEN T AND PRIOR, AND ONE Ss PREDICTION'''
 catch_ts = []
-for i in range(80,160):
-    dist_prior = np.random.poisson(i,N)
+catch_error = []
+catch_pred_dur = []
+catch_df = []
+
+for d in [0,9,14]:
+    for i in range(110,160):
+        dist_prior = np.random.poisson(i,N)
 
     #COMPUTE PROBS FOR EACH EVENT
-    dist_prior_event_probs = pd.Series(dist_prior).value_counts()/pd.Series(dist_prior).value_counts().sum()
-    dist_prior_event_probs = dist_prior_event_probs.sort_index()
+        dist_prior_event_probs = pd.Series(dist_prior).value_counts()/pd.Series(dist_prior).value_counts().sum()
+        dist_prior_event_probs = dist_prior_event_probs.sort_index()
 
     #GET OPTIMAL OVER T
-    catch_bayes = ([])
-    for t in range(1,int(dist_prior_event_probs.index[-1])): 
-        dist_1 = compute_posterior(t, dist_prior_event_probs)
-        dist_1 = pd.Series(dist_1, index=dist_prior_event_probs.index)
-        catch_bayes = np.append(catch_bayes, median_of_dist(dist_1))
+        catch_bayes = ([])
+        catch_error_by_prior = ([])
+        catch_predicted_duration = ([])
+        for t in range(1,int(dist_prior_event_probs.index[-1])): 
+            dist_1 = compute_posterior(t, dist_prior_event_probs)
+            dist_1 = pd.Series(dist_1, index=dist_prior_event_probs.index)
+            catch_bayes = np.append(catch_bayes, median_of_dist(dist_1))
+            pred_dur = t + df_112076.pred_duration_int.iloc[9]
+            error = pred_dur - median_of_dist(dist_1)
+            catch_error_by_prior = np.append(catch_error_by_prior,error)
+            catch_predicted_duration = np.append(catch_predicted_duration,pred_dur)
     
-    catch_ts.append(catch_bayes)
-
+        catch_ts.append(catch_bayes)
+        catch_error.append(catch_error_by_prior)
+        catch_pred_dur.append(catch_predicted_duration)
     
-
+        catch_error_zero_ts_for_plot = ([])
+        for i in range(0,len(catch_ts)):
+            catch_error_zero_ts = [j for j, value in enumerate(catch_error[i]) if value == 0]
+            if len(catch_error_zero_ts)>1:
+                catch_error_zero_ts = [catch_error_zero_ts[0]]
+            print(catch_error_zero_ts[0])
+            catch_error_zero_ts_for_plot = np.append(catch_error_zero_ts_for_plot,catch_error_zero_ts[0])
     
-#THIS IS THE SUBJECT RESPONSE
-df_112076.pred_duration_int  
-#WE THEN COMPUTE THE BEST PRIOR/T COMBO AGAINST OPTIMAL
-#FOR EACH ONE
-m_offset = 100
-t_offset = 80
-k = np.array(df_112076.pred_duration_int)
-
-for h in k:
-    
-    #make matrix to find min from
-    catch_human_error = np.zeros([len(j),len(i)])
-    #for m in i:
-    #    for t in j:
-    for m in range(0,1):
-        for t in range(0,1):
-            m_offset = m + m_offset
-            t_offset = t + t_offset
-            #compute prior
-            dist_prior = np.random.poisson(m,N)
-            dist_prior_event_probs = pd.Series(dist_prior).value_counts()/pd.Series(dist_prior).value_counts().sum()
-            prior = dist_prior_event_probs.sort_index()
-    
-            #compute optimal median of posterior dist
-            dist_out_1 = compute_posterior(t, prior)
-            dist_out_2 = pd.Series(dist_out_1, index=prior.index)
-            posterior_decision = median_of_dist(dist_out_2)
+        catch_t_pred = []
+        for i in range(0,50): 
+            t = int(catch_error_zero_ts_for_plot[i])
+            pred = catch_pred_dur[i][t]
+            print(t,pred)
+            catch_t_pred.append([t,pred])
         
-            #compute S prediciton | t
-            human_decision = t + h
-            print('human decision: ',human_decision)
-            
-            #collect error
-            human_error = human_decision - posterior_decision
-            print('human error: ', human_error)
-            catch_human_error[t][m] = human_error
+        catch_df.append(pd.DataFrame(catch_t_pred)
 
+
+    
+'''SO FOR EACH PRIOR AND t WE COMPUTE (t + pred_duration_int) - catch_ts '''
+poisson_mean_list = [i for i in range(80,160)]   
+
+
+
+catch_error_zero_ts_for_plot = ([])
+for i in range(0,len(catch_ts)):
+    catch_error_zero_ts = [j for j, value in enumerate(catch_error[i]) if value == 0]
+    if len(catch_error_zero_ts)>1:
+        catch_error_zero_ts = [catch_error_zero_ts[0]]
+    print(catch_error_zero_ts[0])
+    catch_error_zero_ts_for_plot = np.append(catch_error_zero_ts_for_plot,catch_error_zero_ts[0])
+    
+
+    
+for i in catch_ts: plt.plot(i)
+for i in range(0,50): 
+    t = int(catch_error_zero_ts_for_plot[i])
+    pred = catch_pred_dur[i][t]
+    print(t,pred)
+    plt.plot(t,pred,'ro')
+
+    
+    
+     
         
-t = ?
-dist_prior = ?
-compute_posterior(j, dist_prior_event_probs)
-x + df_112076.pred_duration_int.iloc[1]
+        
+        
+        
+        
 
 
 
