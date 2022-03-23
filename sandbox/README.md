@@ -12,5 +12,12 @@ file3.py:
     Beta for optimizing t and prior for subject 112076 
     for application to all Ss (idiographically).
     
+file4.py:
+    Explore fixing of t and playing with multiple priors 
+    (similar to method in file3 but with fixed t).  All for sub
+    112076 as beta.
+    
+
+    
 
 EOF
