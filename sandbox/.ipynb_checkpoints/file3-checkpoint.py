@@ -129,13 +129,17 @@ df_112076 = pd.read_csv('Sub_112076_BayesData.csv')
 N = 100
 
 '''GENERATE OPTIMALl, GIVEN T AND PRIOR, AND ONE Ss PREDICTION'''
-catch_ts = []
-catch_error = []
-catch_pred_dur = []
-catch_df = []
+catch_ts = [] #OPTIMAL DECISION FROM POSTERIOR
+catch_error = [] #ERROR ACROSS T FOR PRIORS
+catch_pred_dur = [] #PRED DUR ACROSS T FOR PRIORS
+catch_df = [] #??? NOTHING YET
+catch_error_zero_ts_across_decisions = [] #T OF MIN ERROR FOR EACH PRIOR for each DECISION
 
-for d in [0,9,14]:
-    for i in range(110,160):
+for d in [8,9]:
+    
+    catch_error_zero_ts_for_decision = [] #VECTOR OF T OF MIN ERROR FOR EACH PRIOR
+    
+    for i in range(110,160,10):
         dist_prior = np.random.poisson(i,N)
 
     #COMPUTE PROBS FOR EACH EVENT
@@ -150,7 +154,7 @@ for d in [0,9,14]:
             dist_1 = compute_posterior(t, dist_prior_event_probs)
             dist_1 = pd.Series(dist_1, index=dist_prior_event_probs.index)
             catch_bayes = np.append(catch_bayes, median_of_dist(dist_1))
-            pred_dur = t + df_112076.pred_duration_int.iloc[9]
+            pred_dur = t + df_112076.pred_duration_int.iloc[d]
             error = pred_dur - median_of_dist(dist_1)
             catch_error_by_prior = np.append(catch_error_by_prior,error)
             catch_predicted_duration = np.append(catch_predicted_duration,pred_dur)
@@ -158,23 +162,27 @@ for d in [0,9,14]:
         catch_ts.append(catch_bayes)
         catch_error.append(catch_error_by_prior)
         catch_pred_dur.append(catch_predicted_duration)
-    
-        catch_error_zero_ts_for_plot = ([])
-        for i in range(0,len(catch_ts)):
-            catch_error_zero_ts = [j for j, value in enumerate(catch_error[i]) if value == 0]
-            if len(catch_error_zero_ts)>1:
-                catch_error_zero_ts = [catch_error_zero_ts[0]]
-            print(catch_error_zero_ts[0])
-            catch_error_zero_ts_for_plot = np.append(catch_error_zero_ts_for_plot,catch_error_zero_ts[0])
-    
-        catch_t_pred = []
-        for i in range(0,50): 
-            t = int(catch_error_zero_ts_for_plot[i])
-            pred = catch_pred_dur[i][t]
-            print(t,pred)
-            catch_t_pred.append([t,pred])
         
-        catch_df.append(pd.DataFrame(catch_t_pred)
+        catch_error_zero_ts_tmp = [j for j, value in enumerate(catch_error_by_prior) if value == 0]
+        if len(catch_error_zero_ts_tmp)>1:
+                catch_error_zero_ts_tmp = [catch_error_zero_ts_tmp[0]]
+        
+        catch_error_zero_ts_for_decision.append(catch_error_zero_ts_tmp)
+    
+    catch_error_zero_ts_across_decisions.append(catch_error_zero_ts_for_decision)
+    
+     
+        '''END LOOP HERE '''
+
+'''GIVEN PREDICTED DURATION OF X, GET MIN ERROR T FOR EACH PRIORS OPTIMAL'''
+
+for i in range(0,len(catch_error_zero_ts)):
+    print(catch_error_zero_ts[i][0])
+    print(catch_ts[i][catch_error_zero_ts[i][0]])
+    print(catch_pred_dur[i][catch_error_zero_ts[i][0]])
+    print(catch_error[i][catch_error_zero_ts[i][0]])
+    
+catch_df.append(pd.DataFrame(catch_t_pred))
 
 
     
@@ -202,8 +210,16 @@ for i in range(0,50):
 
     
     
-     
-        
+'''TESTING MAIN LOOP'''  
+catch_error_zero_ts_for_plot = ([])
+for i in range(0,len(catch_ts)):
+    catch_error_zero_ts = [j for j, value in enumerate(catch_error[i]) if value == 0]
+    print(catch_error_zero_ts[0])
+    
+    if len(catch_error_zero_ts)>1:
+        catch_error_zero_ts = [catch_error_zero_ts[0]]
+    print(catch_error_zero_ts[0])
+    #catch_error_zero_ts_for_plot = np.append(catch_error_zero_ts_for_plot,catch_error_zero_ts[0])
         
         
         
