@@ -235,6 +235,65 @@ y = catch_all_optimal_pred_over_t_over_p[12]
 x = catch_all_human_pred_over_t_over_p[12]
 plt.scatter(x,y)
 
+plt.plot(df_112076.prediction_duration_int)
+#BY EYE TEST, PRIOR SHIFT OCCURS AT
+min_index_neg_pred_duration = min(df_112076.prediction_duration_int.loc[df_112076.prediction_duration_int < 0].index)
+
+df_112076_w1 = df_112076.iloc[0:22]
+'''RUN IT AGAIN WITH TRUNCATED DATA'''
+    
+'''****TEST FOR WAVE 1****DELTA'''
+'''HAVE PRIORS NOW COMPUTE ERROR
+ASSUME ONE PRIOR FOR ALL JUDGEMENTS OF S'''
+catch_all_t_over_t_over_p = []
+catch_all_optimal_pred_over_t_over_p = []
+catch_all_human_pred_over_t_over_p = []
+catch_all_error_over_t_over_p = []
+
+for j in catch_all_prior_over_all_t: #LOOP OVER PRIORS
+    
+    print('NEW PRIOR')
+    catch_all_t_over_t = ([])
+    catch_all_optimal_pred_over_t = ([])
+    catch_all_human_pred_over_t = ([])
+    catch_all_error_over_t = ([])
+
+    for i in range(0,21):#CAPTURE HUMAN DATA T AND PRED
+        t = df_112076_w1.t_w1_int.iloc[i] #P
+        print('t',t)
+        catch_all_t_over_t = np.append(catch_all_t_over_t,t)
+        #optimal_pred = catch_all_prior_over_all_t[0][t-1]#index zero is t=1
+        #print('LEN of J',len(j))
+        if t-1<len(j):
+            optimal_pred = j[t-1]#index zero is t=1
+        else:
+            print('T-1 OUT OF RANGE OF Ts in PRIOR')
+            optimal_pred = j[-1]
+        catch_all_optimal_pred_over_t = np.append(catch_all_optimal_pred_over_t,optimal_pred)
+        print('optimal pred',optimal_pred)
+        human_pred = df_112076_w1.prediction_w1.iloc[i]
+        catch_all_human_pred_over_t = np.append(catch_all_human_pred_over_t,human_pred)
+        print('human pred', human_pred)
+        error = human_pred - optimal_pred
+        print('error',error)
+        catch_all_error_over_t = np.append(catch_all_error_over_t,error)
+    
+    catch_all_t_over_t_over_p.append(catch_all_t_over_t)
+    catch_all_optimal_pred_over_t_over_p.append(catch_all_optimal_pred_over_t)
+    catch_all_human_pred_over_t_over_p.append(catch_all_human_pred_over_t)
+    catch_all_error_over_t_over_p.append(catch_all_error_over_t)
+
+'''PICK BEST PRIOR'''
+for i in catch_all_error_over_t_over_p: plt.plot(i)
+for i in catch_all_error_over_t_over_p:
+    print(i, np.mean(i), np.std(i))
+for i in range(150,211,5):
+    print(i)
+'''MIN ERROR GETS IT, GOES 170 or 175'''
+plot_matter = np.random.poisson(175,1000)
+plt.hist(plot_matter,bins=100)
+
+
 '''****TEST FOR WAVE 2****OMICRON'''
 '''HAVE PRIORS NOW COMPUTE ERROR
 ASSUME ONE PRIOR FOR ALL JUDGEMENTS OF S'''
