@@ -134,7 +134,7 @@ df_112076['prediction_duration_int'] = df_112076['prediction_duration'].apply(la
 
 #WAVE BEGIN TIMES, SO CAN FIX t
 begin_w1 = datetime.strptime('20210615', "%Y%m%d")
-begin_w2 = datetime.strptime('20211215', "%Y%m%d")
+begin_w2 = datetime.strptime('20211115', "%Y%m%d")
 df_112076['begin_w1'] = begin_w1
 df_112076['begin_w2'] = begin_w2
 
@@ -147,16 +147,211 @@ df_112076['t_w2_int'] = df_112076['t_w2'].apply(lambda x: x.days)
 df_112076['prediction_w1'] = df_112076.t_w1_int + df_112076.prediction_duration_int
 df_112076['prediction_w2'] = df_112076.t_w2_int + df_112076.prediction_duration_int
 
-#df_use_sort = df_use.sort_values(by='date')
-'''STOPPED HERE'''
+df_112076.prediction_duration_int.plot()
+df_112076.prediction_w1.plot()
+df_112076.prediction_w2.plot()
 
-
-
-
-
-
+'''JOB IS TO FIND BEST PRIOR GIVEN THAT T IS NOW FIXED
+t_w1_int is var to use AS INPUT TO LIKELIHOOD
+prediction_w1 = t_w1_int + prediction_duration_int
+'''
 #FOR PRIOR
 N = 100
+
+'''COMPUTE PRIORS'''
+catch_all_prior_over_all_t = []
+#COMPUTE PRIORS
+for i in range(150,211,5):
+    #MAKE PRIOR FOR MEAN as i
+    dist_prior = np.random.poisson(i,N)
+    dist_prior_event_probs = pd.Series(dist_prior).value_counts()/pd.Series(dist_prior).value_counts().sum()
+    dist_prior_event_probs = dist_prior_event_probs.sort_index()
+    
+    #GENERATE OVER ALL T AND COLLECT 
+    #THEN COLLECT TO LIST OVER PRIORS (OVER i)
+    catch_prior_over_all_t = ([])
+    for t in range(1,int(dist_prior_event_probs.index[-1])): 
+        dist_1 = compute_posterior(t, dist_prior_event_probs)
+        dist_1 = pd.Series(dist_1, index=dist_prior_event_probs.index)
+        catch_prior_over_all_t = np.append(catch_prior_over_all_t, median_of_dist(dist_1))
+    catch_all_prior_over_all_t.append(catch_prior_over_all_t)
+
+    
+    
+'''****TEST FOR WAVE 1****DELTA'''
+'''HAVE PRIORS NOW COMPUTE ERROR
+ASSUME ONE PRIOR FOR ALL JUDGEMENTS OF S'''
+catch_all_t_over_t_over_p = []
+catch_all_optimal_pred_over_t_over_p = []
+catch_all_human_pred_over_t_over_p = []
+catch_all_error_over_t_over_p = []
+
+for j in catch_all_prior_over_all_t: #LOOP OVER PRIORS
+    
+    print('NEW PRIOR')
+    catch_all_t_over_t = ([])
+    catch_all_optimal_pred_over_t = ([])
+    catch_all_human_pred_over_t = ([])
+    catch_all_error_over_t = ([])
+
+    for i in range(0,79):#CAPTURE HUMAN DATA T AND PRED
+        t = df_112076.t_w1_int.iloc[i] #P
+        print('t',t)
+        catch_all_t_over_t = np.append(catch_all_t_over_t,t)
+        #optimal_pred = catch_all_prior_over_all_t[0][t-1]#index zero is t=1
+        #print('LEN of J',len(j))
+        if t-1<len(j):
+            optimal_pred = j[t-1]#index zero is t=1
+        else:
+            print('T-1 OUT OF RANGE OF Ts in PRIOR')
+            optimal_pred = j[-1]
+        catch_all_optimal_pred_over_t = np.append(catch_all_optimal_pred_over_t,optimal_pred)
+        print('optimal pred',optimal_pred)
+        human_pred = df_112076.prediction_w1.iloc[i]
+        catch_all_human_pred_over_t = np.append(catch_all_human_pred_over_t,human_pred)
+        print('human pred', human_pred)
+        error = human_pred - optimal_pred
+        print('error',error)
+        catch_all_error_over_t = np.append(catch_all_error_over_t,error)
+    
+    catch_all_t_over_t_over_p.append(catch_all_t_over_t)
+    catch_all_optimal_pred_over_t_over_p.append(catch_all_optimal_pred_over_t)
+    catch_all_human_pred_over_t_over_p.append(catch_all_human_pred_over_t)
+    catch_all_error_over_t_over_p.append(catch_all_error_over_t)
+
+'''PICK BEST PRIOR'''
+for i in catch_all_error_over_t_over_p: plt.plot(i)
+#SAVE FOR LATER 
+error_w1 = catch_all_error_over_t_over_p.copy()
+'''THE PLOT ABOVE REALLY NAILS THE TRANSITION
+1. THIS IS A DECISION PLOT, ALL DECISIONS
+2. USE IT TO DECIDE WHERE TO CUT PRIORS.
+3. THEN RUN SUBSET FOR EACH PRIOR AND COMPUTE
+BEST PRIOR BY ERROR
+'''
+#THESE ARE GOOD TOO
+len(catch_all_optimal_pred_over_t_over_p)
+y = catch_all_optimal_pred_over_t_over_p[12]
+x = catch_all_human_pred_over_t_over_p[12]
+plt.scatter(x,y)
+
+'''****TEST FOR WAVE 2****OMICRON'''
+'''HAVE PRIORS NOW COMPUTE ERROR
+ASSUME ONE PRIOR FOR ALL JUDGEMENTS OF S'''
+catch_all_t_over_t_over_p = []
+catch_all_optimal_pred_over_t_over_p = []
+catch_all_human_pred_over_t_over_p = []
+catch_all_error_over_t_over_p = []
+
+for j in catch_all_prior_over_all_t: #LOOP OVER PRIORS
+    
+    print('NEW PRIOR')
+    catch_all_t_over_t = ([])
+    catch_all_optimal_pred_over_t = ([])
+    catch_all_human_pred_over_t = ([])
+    catch_all_error_over_t = ([])
+
+    for i in range(0,79):#CAPTURE HUMAN DATA T AND PRED
+        t = df_112076.t_w2_int.iloc[i] #P
+        print('t',t)
+        catch_all_t_over_t = np.append(catch_all_t_over_t,t)
+        #optimal_pred = catch_all_prior_over_all_t[0][t-1]#index zero is t=1
+        #print('LEN of J',len(j))
+        if t-1<len(j):
+            optimal_pred = j[t-1]#index zero is t=1
+        else:
+            print('T-1 OUT OF RANGE OF Ts in PRIOR')
+            optimal_pred = j[-1]
+        catch_all_optimal_pred_over_t = np.append(catch_all_optimal_pred_over_t,optimal_pred)
+        print('optimal pred',optimal_pred)
+        human_pred = df_112076.prediction_w2.iloc[i]
+        catch_all_human_pred_over_t = np.append(catch_all_human_pred_over_t,human_pred)
+        print('human pred', human_pred)
+        error = human_pred - optimal_pred
+        print('error',error)
+        catch_all_error_over_t = np.append(catch_all_error_over_t,error)
+    
+    catch_all_t_over_t_over_p.append(catch_all_t_over_t)
+    catch_all_optimal_pred_over_t_over_p.append(catch_all_optimal_pred_over_t)
+    catch_all_human_pred_over_t_over_p.append(catch_all_human_pred_over_t)
+    catch_all_error_over_t_over_p.append(catch_all_error_over_t)
+
+
+'''PICK BEST PRIOR'''
+for i in catch_all_error_over_t_over_p: plt.plot(i)
+error_w2 = catch_all_error_over_t_over_p.copy()
+'''THE PLOT ABOVE REALLY NAILS THE TRANSITION
+1. THIS IS A DECISION PLOT, ALL DECISIONS
+'''
+
+'''PLOT BOTH TOGETHER'''
+'''THIS PLOT IS A SWITCH IN PRIORS'''
+for i in error_w1: plt.plot(i)
+for i in error_w2: plt.plot(i)
+
+
+#THESE TWO ARE INPUTS TO ERROR CALC.
+
+    #HAVE A PRIOR NOW RUN ERRORS
+    for d in range(0,len(df_112076)):
+        
+        compute_posterior(df_112076.)
+        
+        catch_bayes = ([])
+        catch_error_by_prior = ([])
+        catch_predicted_duration = ([])
+        for t in range(1,int(dist_prior_event_probs.index[-1])): 
+            dist_1 = compute_posterior(t, dist_prior_event_probs)
+            dist_1 = pd.Series(dist_1, index=dist_prior_event_probs.index)
+            catch_bayes = np.append(catch_bayes, median_of_dist(dist_1))
+            pred_dur = t + df_112076.pred_duration_int.iloc[d]
+            error = pred_dur - median_of_dist(dist_1)
+            catch_error_by_prior = np.append(catch_error_by_prior,error)
+            catch_predicted_duration = np.append(catch_predicted_duration,pred_dur)
+
+for d in range(0,len(df_112076):
+    #
+    
+    catch_error_zero_ts_for_decision = [] #VECTOR OF T OF MIN ERROR FOR EACH PRIOR
+    
+    for i in range(110,111):
+        dist_prior = np.random.poisson(i,N)
+
+    #COMPUTE PROBS FOR EACH EVENT
+        dist_prior_event_probs = pd.Series(dist_prior).value_counts()/pd.Series(dist_prior).value_counts().sum()
+        dist_prior_event_probs = dist_prior_event_probs.sort_index()
+
+    #GET OPTIMAL OVER T
+        catch_bayes = ([])
+        catch_error_by_prior = ([])
+        catch_predicted_duration = ([])
+        for t in range(1,int(dist_prior_event_probs.index[-1])): 
+            dist_1 = compute_posterior(t, dist_prior_event_probs)
+            dist_1 = pd.Series(dist_1, index=dist_prior_event_probs.index)
+            catch_bayes = np.append(catch_bayes, median_of_dist(dist_1))
+            pred_dur = t + df_112076.pred_duration_int.iloc[d]
+            error = pred_dur - median_of_dist(dist_1)
+            catch_error_by_prior = np.append(catch_error_by_prior,error)
+            catch_predicted_duration = np.append(catch_predicted_duration,pred_dur)
+    
+        catch_ts.append(catch_bayes)
+        catch_error.append(catch_error_by_prior)
+        catch_pred_dur.append(catch_predicted_duration)
+        
+        catch_error_zero_ts_tmp = [j for j, value in enumerate(catch_error_by_prior) if value == 0]
+        if len(catch_error_zero_ts_tmp)>1:
+                catch_error_zero_ts_tmp = [catch_error_zero_ts_tmp[0]]
+        
+        catch_error_zero_ts_for_decision.append(catch_error_zero_ts_tmp)
+    
+    catch_error_zero_ts_across_decisions.append(catch_error_zero_ts_for_decision)
+    
+     
+        '''END LOOP HERE '''
+
+
+
+'''OLD'''
 
 '''GENERATE OPTIMALl, GIVEN T AND PRIOR, AND ONE Ss PREDICTION'''
 catch_ts = [] #OPTIMAL DECISION FROM POSTERIOR
