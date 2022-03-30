@@ -126,23 +126,23 @@ def compute_posterior(t,dist):
 df_112076_in = pd.read_csv('Sub_112076_BayesData_r1_r4.csv')
 df_112076_tmp = df_112076_in[['user_id','date','0']]
 df_112076_tmp.columns = ['user_id','decision_date_str','prediction_date_str']
-df_112076_tmp['decision_date'] = df_112076_tmp['decision_date_str'].apply(lambda x: datetime.strptime(x.split(' ')[0], '%Y-%m-%d'))
-df_112076_tmp['prediction_date'] = df_112076_tmp['prediction_date_str'].apply(lambda x: datetime.strptime(x.split(' ')[0], '%Y-%m-%d'))
+df_112076_tmp['decision_date'] = df_112076_tmp['decision_date_str'].map(lambda x: datetime.strptime(x.split(' ')[0], '%Y-%m-%d'))
+df_112076_tmp['prediction_date'] = df_112076_tmp['prediction_date_str'].map(lambda x: datetime.strptime(x.split(' ')[0], '%Y-%m-%d'))
 df_112076 = df_112076_tmp.copy()
 df_112076['prediction_duration'] = df_112076.prediction_date - df_112076.decision_date
-df_112076['prediction_duration_int'] = df_112076['prediction_duration'].apply(lambda x: x.days)
+df_112076['prediction_duration_int'] = df_112076['prediction_duration'].map(lambda x: x.days)
 
 #WAVE BEGIN TIMES, SO CAN FIX t
-begin_w1 = datetime.strptime('20210615', "%Y%m%d")
-begin_w2 = datetime.strptime('20211115', "%Y%m%d")
+begin_w1 = datetime.strptime('20210623', "%Y%m%d")
+begin_w2 = datetime.strptime('20211105', "%Y%m%d")
 df_112076['begin_w1'] = begin_w1
 df_112076['begin_w2'] = begin_w2
 
 df_112076['t_w1'] = df_112076.decision_date - df_112076.begin_w1
-df_112076['t_w1_int'] = df_112076['t_w1'].apply(lambda x: x.days)
+df_112076['t_w1_int'] = df_112076['t_w1'].map(lambda x: x.days)
 
 df_112076['t_w2'] = df_112076.decision_date - df_112076.begin_w2
-df_112076['t_w2_int'] = df_112076['t_w2'].apply(lambda x: x.days)
+df_112076['t_w2_int'] = df_112076['t_w2'].map(lambda x: x.days)
 
 df_112076['prediction_w1'] = df_112076.t_w1_int + df_112076.prediction_duration_int
 df_112076['prediction_w2'] = df_112076.t_w2_int + df_112076.prediction_duration_int
@@ -151,28 +151,34 @@ df_112076.prediction_duration_int.plot()
 df_112076.prediction_w1.plot()
 df_112076.prediction_w2.plot()
 
+'''FURTHER EXPORE OF MIN JUDGMENTS
+1. WERE THEY ALL MINERS
+2. How INTERPRET NEGATIVES FROM '''
+df_112076[df_112076.prediction_duration_int<0]
+df_112076[['decision_date','prediction_duration_int']]
+'''THESE ARE ALL MINER JUDGEMENTS'''
 
 '''DATA FROM SUBJECT 114156'''
 df_114156_in = pd.read_csv('Sub_114156_BayesData_r1_r4.csv')
 df_114156_tmp = df_114156_in[['user_id','date','0']]
 df_114156_tmp.columns = ['user_id','decision_date_str','prediction_date_str']
-df_114156_tmp['decision_date'] = df_114156_tmp['decision_date_str'].apply(lambda x: datetime.strptime(x.split(' ')[0], '%Y-%m-%d'))
-df_114156_tmp['prediction_date'] = df_114156_tmp['prediction_date_str'].apply(lambda x: datetime.strptime(x.split(' ')[0], '%Y-%m-%d'))
+df_114156_tmp['decision_date'] = df_114156_tmp['decision_date_str'].map(lambda x: datetime.strptime(x.split(' ')[0], '%Y-%m-%d'))
+df_114156_tmp['prediction_date'] = df_114156_tmp['prediction_date_str'].map(lambda x: datetime.strptime(x.split(' ')[0], '%Y-%m-%d'))
 df_114156 = df_114156_tmp.copy()
 df_114156['prediction_duration'] = df_114156.prediction_date - df_114156.decision_date
-df_114156['prediction_duration_int'] = df_114156['prediction_duration'].apply(lambda x: x.days)
+df_114156['prediction_duration_int'] = df_114156['prediction_duration'].map(lambda x: x.days)
 
 #WAVE BEGIN TIMES, SO CAN FIX t
-begin_w1 = datetime.strptime('20210615', "%Y%m%d")
-begin_w2 = datetime.strptime('20211115', "%Y%m%d")
+begin_w1 = datetime.strptime('20210623', "%Y%m%d")
+begin_w2 = datetime.strptime('20211105', "%Y%m%d")
 df_114156['begin_w1'] = begin_w1
 df_114156['begin_w2'] = begin_w2
 
 df_114156['t_w1'] = df_114156.decision_date - df_114156.begin_w1
-df_114156['t_w1_int'] = df_114156['t_w1'].apply(lambda x: x.days)
+df_114156['t_w1_int'] = df_114156['t_w1'].map(lambda x: x.days)
 
 df_114156['t_w2'] = df_114156.decision_date - df_114156.begin_w2
-df_114156['t_w2_int'] = df_114156['t_w2'].apply(lambda x: x.days)
+df_114156['t_w2_int'] = df_114156['t_w2'].map(lambda x: x.days)
 
 df_114156['prediction_w1'] = df_114156.t_w1_int + df_114156.prediction_duration_int
 df_114156['prediction_w2'] = df_114156.t_w2_int + df_114156.prediction_duration_int
@@ -181,28 +187,36 @@ df_114156.prediction_duration_int.plot()
 df_114156.prediction_w1.plot()
 df_114156.prediction_w2.plot()
 
+'''FURTHER EXPORE OF MIN JUDGMENTS
+1. WERE THEY ALL MINERS
+2. How INTERPRET NEGATIVES FROM '''
+df_114156[df_114156.prediction_duration_int<0]
+df_114156[['decision_date','prediction_duration_int']]
+'''THESE ARE ALL MINER JUDGEMENTS'''
+
+
 
 '''DATA FROM SUBJECT 112197'''
 df_112197_in = pd.read_csv('Sub_112197_BayesData_r1_r4.csv')
 df_112197_tmp = df_112197_in[['user_id','date','0']]
 df_112197_tmp.columns = ['user_id','decision_date_str','prediction_date_str']
-df_112197_tmp['decision_date'] = df_112197_tmp['decision_date_str'].apply(lambda x: datetime.strptime(x.split(' ')[0], '%Y-%m-%d'))
-df_112197_tmp['prediction_date'] = df_112197_tmp['prediction_date_str'].apply(lambda x: datetime.strptime(x.split(' ')[0], '%Y-%m-%d'))
+df_112197_tmp['decision_date'] = df_112197_tmp['decision_date_str'].map(lambda x: datetime.strptime(x.split(' ')[0], '%Y-%m-%d'))
+df_112197_tmp['prediction_date'] = df_112197_tmp['prediction_date_str'].map(lambda x: datetime.strptime(x.split(' ')[0], '%Y-%m-%d'))
 df_112197 = df_112197_tmp.copy()
 df_112197['prediction_duration'] = df_112197.prediction_date - df_112197.decision_date
-df_112197['prediction_duration_int'] = df_112197['prediction_duration'].apply(lambda x: x.days)
+df_112197['prediction_duration_int'] = df_112197['prediction_duration'].map(lambda x: x.days)
 
 #WAVE BEGIN TIMES, SO CAN FIX t
-begin_w1 = datetime.strptime('20210615', "%Y%m%d")
-begin_w2 = datetime.strptime('20211115', "%Y%m%d")
+begin_w1 = datetime.strptime('20210623', "%Y%m%d")
+begin_w2 = datetime.strptime('20211105', "%Y%m%d")
 df_112197['begin_w1'] = begin_w1
 df_112197['begin_w2'] = begin_w2
 
 df_112197['t_w1'] = df_112197.decision_date - df_112197.begin_w1
-df_112197['t_w1_int'] = df_112197['t_w1'].apply(lambda x: x.days)
+df_112197['t_w1_int'] = df_112197['t_w1'].map(lambda x: x.days)
 
 df_112197['t_w2'] = df_112197.decision_date - df_112197.begin_w2
-df_112197['t_w2_int'] = df_112197['t_w2'].apply(lambda x: x.days)
+df_112197['t_w2_int'] = df_112197['t_w2'].map(lambda x: x.days)
 
 df_112197['prediction_w1'] = df_112197.t_w1_int + df_112197.prediction_duration_int
 df_112197['prediction_w2'] = df_112197.t_w2_int + df_112197.prediction_duration_int
@@ -211,6 +225,12 @@ df_112197.prediction_duration_int.plot()
 df_112197.prediction_w1.plot()
 df_112197.prediction_w2.plot()
 
+'''FURTHER EXPORE OF MIN JUDGMENTS
+1. WERE THEY ALL MINERS
+2. How INTERPRET NEGATIVES FROM '''
+df_112197[df_112197.prediction_duration_int<0]
+df_112197[['decision_date','prediction_duration_int']]
+'''THESE ARE ALL MINER JUDGEMENTS'''
 
 
 '''JOB IS TO FIND BEST PRIOR GIVEN THAT T IS NOW FIXED
@@ -346,15 +366,21 @@ for j in catch_all_prior_over_all_t: #LOOP OVER PRIORS
     catch_all_error_over_t_over_p.append(catch_all_error_over_t)
 
 '''PICK BEST PRIOR'''
+'''WE SEE A SHIFTING PRIOR'''
 for i in catch_all_error_over_t_over_p: plt.plot(i)
 for i in catch_all_error_over_t_over_p:
     print(np.mean(i), np.std(i))
 
 for i in range(150,211,5):
     print(i)
-'''MIN ERROR GETS IT, GOES 170 or 175'''
+'''MIN ERROR GETS IT, SHIFTING PRIOR'''
+plot_matter = np.random.poisson(170,1000)
+plt.hist(plot_matter,bins=100)
 plot_matter = np.random.poisson(175,1000)
 plt.hist(plot_matter,bins=100)
+plot_matter = np.random.poisson(180,1000)
+plt.hist(plot_matter,bins=100)
+
 
 
 '''****TEST FOR WAVE 2****OMICRON'''
@@ -401,6 +427,11 @@ for j in catch_all_prior_over_all_t: #LOOP OVER PRIORS
 
 '''PICK BEST PRIOR'''
 for i in catch_all_error_over_t_over_p: plt.plot(i)
+for i in catch_all_error_over_t_over_p:
+    print(np.mean(i), np.std(i))
+
+for i in range(150,211,5):
+    print(i)  
 error_w2 = catch_all_error_over_t_over_p.copy()
 '''THE PLOT ABOVE REALLY NAILS THE TRANSITION
 1. THIS IS A DECISION PLOT, ALL DECISIONS
@@ -410,14 +441,23 @@ error_w2 = catch_all_error_over_t_over_p.copy()
 '''THIS PLOT IS A SWITCH IN PRIORS'''
 for i in error_w1: plt.plot(i)
 for i in error_w2: plt.plot(i)
+    
+'''GOOD PLOT FOR FOLKS'''
+plot_matter = np.random.poisson(150,1000)
+plt.hist(plot_matter,bins=100)
+plot_matter = np.random.poisson(175,1000)
+plt.hist(plot_matter,bins=100)
 
+'''IDEA, MIXTURE OF PRIORS'''
+tmp_a = np.random.poisson(150,1000)
+tmp_b = np.random.poisson(175, 1000)
+plt.hist(np.concatenate([tmp_a,tmp_b]),bins=100)
     
     
     
     
     
-    
-    
+
 '''SUBJ 114156'''
 '''****TEST FOR WAVE 1****DELTA'''
 '''HAVE PRIORS NOW COMPUTE ERROR
