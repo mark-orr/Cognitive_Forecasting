@@ -121,7 +121,6 @@ def compute_posterior(t,dist):
     return catch
 
 
-
 '''DATA FROM SUBJECT 114156'''
 '''GENERATE BASIC DATA STRUCTURE'''
 df_114156_in = pd.read_csv('Sub_114156_BayesData_r1_r4.csv')
@@ -133,7 +132,7 @@ df_114156 = df_114156_tmp.copy()
 df_114156['prediction_duration'] = df_114156.prediction_date - df_114156.decision_date
 df_114156['prediction_duration_int'] = df_114156['prediction_duration'].map(lambda x: x.days)
 '''ESTIMATE OF t_0 for omicron = 1-19-22'''
-'''ENTER THIS BELOW FOR begin_w2'''
+'''JUST A NOTE'''
 
 #WAVE BEGIN TIMES, SO CAN FIX t
 begin_w1 = datetime.strptime('20210623', "%Y%m%d")
@@ -142,17 +141,22 @@ df_114156['begin_w1'] = begin_w1
 df_114156['begin_w2'] = begin_w2
 '''ESTIMATE OF PRIOR FROM W1'''
 begin_w1 - begin_w2
-#159 days
+#159 days BUT THIS IS FIXED ON A FIXED ACROSS S PRIOR
 
 df_114156['t_w2'] = df_114156.decision_date - df_114156.begin_w2
 df_114156['t_w2_int'] = df_114156['t_w2'].map(lambda x: x.days)
 
 df_114156['prediction_w2'] = df_114156.t_w2_int + df_114156.prediction_duration_int
+#NEXT SHOULD BE EQUVALENT TO ABOVE
+df_114156['prediction_w2_test'] = df_114156.prediction_date - df_114156.begin_w2
+#TEST GOOD
+
+#STOPPED TESTING HERE
 
 '''THESE TWO ARE TELLING 
 FIRST SHOWS PREDICTION
 SECOND SHOWS PREDICTED DATE
-Good For Publication
+Good For Publication, MAYBE
 '''
 df_114156.prediction_duration_int.plot()
 df_114156.prediction_w2.plot()
@@ -331,6 +335,7 @@ for i in df_error_2.index:
     catch_df_error_min.append(tmp)
 S_for_bar = pd.Series(catch_df_error_min,index=plot_this.index)
 
+#BAR PLOT WITH ANNOTATIONS FOR PRIOR, DOESN"T RELLAY WORK
 fig, ax = plt.subplots()
 
 bar_x = S_for_bar.index
