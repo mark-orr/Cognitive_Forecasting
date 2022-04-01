@@ -137,19 +137,16 @@ df_114156['prediction_duration_int'] = df_114156['prediction_duration'].map(lamb
 
 #WAVE BEGIN TIMES, SO CAN FIX t
 begin_w1 = datetime.strptime('20210623', "%Y%m%d")
-begin_w2 = datetime.strptime('20220119', "%Y%m%d")
+begin_w2 = datetime.strptime('20211129', "%Y%m%d")
 df_114156['begin_w1'] = begin_w1
 df_114156['begin_w2'] = begin_w2
 '''ESTIMATE OF PRIOR FROM W1'''
 begin_w1 - begin_w2
-#177 days
+#159 days
 
 df_114156['t_w2'] = df_114156.decision_date - df_114156.begin_w2
 df_114156['t_w2_int'] = df_114156['t_w2'].map(lambda x: x.days)
-'''SPECIAL FIX FOR THIS Ss'''
-df_114156.loc[df_114156['t_w2_int']<0,'t_w2_int']=1
 
-#STOP HERE
 df_114156['prediction_w2'] = df_114156.t_w2_int + df_114156.prediction_duration_int
 
 '''THESE TWO ARE TELLING 
@@ -181,12 +178,14 @@ t_w1_int is var to use AS INPUT TO LIKELIHOOD
 prediction_w1 = t_w1_int + prediction_duration_int
 '''
 #FOR PRIOR
-N = 100
+N = 10
 
 '''COMPUTE PRIORS'''
 catch_all_prior_over_all_t = []
+catch_prior_index = []
 #COMPUTE PRIORS
-for i in range(30,51,5):
+for i in range(80,131,5):
+    catch_prior_index.append(i)
     #MAKE PRIOR FOR MEAN as i
     dist_prior = np.random.poisson(i,N)
     dist_prior_event_probs = pd.Series(dist_prior).value_counts()/pd.Series(dist_prior).value_counts().sum()
@@ -208,14 +207,17 @@ catch_all_t_over_t_over_p = []
 catch_all_optimal_pred_over_t_over_p = []
 catch_all_human_pred_over_t_over_p = []
 catch_all_error_over_t_over_p = []
+catch_all_date_over_t_over_p = []
 
 for j in catch_all_prior_over_all_t: #LOOP OVER PRIORS
     
+    print('NEW PRIOR')
     print('NEW PRIOR')
     catch_all_t_over_t = ([])
     catch_all_optimal_pred_over_t = ([])
     catch_all_human_pred_over_t = ([])
     catch_all_error_over_t = ([])
+    catch_all_date_over_t = ([])
 
     for i in range(0,len(df_114156_w2)):#CAPTURE HUMAN DATA T AND PRED
         t = df_114156_w2.t_w2_int.iloc[i] #P
@@ -236,18 +238,33 @@ for j in catch_all_prior_over_all_t: #LOOP OVER PRIORS
         error = human_pred - optimal_pred
         print('error',error)
         catch_all_error_over_t = np.append(catch_all_error_over_t,error)
+        catch_all_date_over_t = np.append(catch_all_date_over_t,df_114156_w2.decision_date.iloc[i])
+        print('decision_date',df_114156_w2.decision_date.iloc[i])
     
     catch_all_t_over_t_over_p.append(catch_all_t_over_t)
     catch_all_optimal_pred_over_t_over_p.append(catch_all_optimal_pred_over_t)
     catch_all_human_pred_over_t_over_p.append(catch_all_human_pred_over_t)
     catch_all_error_over_t_over_p.append(catch_all_error_over_t)
+    catch_all_date_over_t_over_p.append(catch_all_date_over_t)
 
 
 '''PICK BEST PRIOR'''
 for i in catch_all_error_over_t_over_p: plt.plot(i)
-#S HAS TWO REGIMES
+#S HAS TWO REGIMES (one with constant decreasing)
 #SEE:
-pd.DataFrame(catch_all_error_over_t_over_p).T
+df_error = pd.DataFrame(catch_all_error_over_t_over_p).T
+#df_error['decision_date'] = df_114156_w2.decision_date.reset_index(drop=True)
+df_error.index = df_114156_w2.decision_date.reset_index(drop=True)
+df_error.columns = catch_prior_index
+df_error.abs().idxmin(axis=1).plot()
+df_error.abs().idxmin(axis=1)
+df_error.abs().min(axis=1)
+df_error.min(axis=both)
+
+
+df_error.min(axis=1)
+
+
 #COMPUTE ERROR SEP FOR FIRST AND SECOND REGIME
 #REGIME 1
 for i in catch_all_error_over_t_over_p:
@@ -266,12 +283,99 @@ plot_matter = np.random.poisson(110,100)
 plt.hist(plot_matter,bins=100,label='110')
 plt.legend()
 
+'''PLAYING WITH PLOTS'''
+plt.scatter(catch_all_optimal_pred_over_t_over_p[0],catch_all_human_pred_over_t_over_p[0])
     
+catch_all_error_over_t_over_p
+    
+    
+pd.to_datetime(datetime.strptime('2021-12-25T17:00:00','%Y-%m-%dT%H:%M:%S'))
+df_error.iat[0,3]
 
+#PAYDIRT
+plot_this = df_error.abs().idxmin(axis=1)
+#IF HAVE MUTIPLE RETURNS ON THIS
+df_error.at[plot_this.index[2],plot_this.iloc[2]]
+type(df_error.at[plot_this.index[1],plot_this.iloc[1]])
+
+isinstance(1, np.floating)
+
+#ELSE< SIMPLE CASE
+type(df_error.at[plot_this.index[2],plot_this.iloc[2]])
+for j in range(0,len(plot_this)):
+    print('j ',j)
+    if isinstance(df_error.at[plot_this.index[j],plot_this.iloc[j]],np.floating):
+        print('i: is float', i)
+        print(df_error.at[plot_this.index[j],plot_this.iloc[j]])
+    else:
+        print('i: is len > 1', i)
+        print(len(df_error.at[plot_this.index[j],plot_this.iloc[j]]))
+        for i in range(0,len(df_error.at[plot_this.index[j],plot_this.iloc[j]])):
+            print(df_error.at[plot_this.index[j],plot_this.iloc[j]][i])
+
+
+for i in range(0,len(plot_this)):
+    print(df_error.at[plot_this.index[i],plot_this.iloc[i]])
+df
+
+'''
+ABOVE IS COOL, BUT NEED SIMPLE ANSWER
+CAN USE ABOVE TO GET DATE AND PRIOR INFO IN COMPACT FORMAT AND BELOW FOR PLOTTING
+'''
+df_error_2 = df_error.reset_index(drop=True).copy()
+catch_df_error_min = []
+plot_this_2 = df_error_2.abs().idxmin(axis=1)
+for i in df_error_2.index:
+    tmp = df_error_2.at[i,plot_this_2.iloc[i]]
+    print(tmp)
+    catch_df_error_min.append(tmp)
+S_for_bar = pd.Series(catch_df_error_min,index=plot_this.index)
+
+fig, ax = plt.subplots()
+
+bar_x = S_for_bar.index
+bar_height = S_for_bar
+bar_tick_label = S_for_bar.index
+bar_label = plot_this_2
+
+bar_plot = plt.bar(bar_x,bar_height,tick_label=bar_tick_label)
+
+def autolabel(rects):
+    for idx,rect in enumerate(bar_plot):
+        height = rect.get_height()
+        ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
+                bar_label[idx],
+                ha='center', va='bottom', rotation=0)
+
+autolabel(bar_plot)
+plt.xticks(rotation=90)
+plt.ylim(-4,4)
+plt.axhline(y=0, c='b',dashes=(2,2,2,2),linewidth=1)
+plt.title('Add text for each bar with matplotlib')
+
+plt.savefig("add_text_bar_matplotlib_01.png", bbox_inches='tight')
+plt.show()
+
+
+#JUST NEED TO ADD THE PRIORS
+
+
+#OR THIS:
+for i in plot_this:
+    plot_matter = np.random.poisson(i,100)
+    plt.hist(plot_matter,bins=100,label=i)
+#MESSY
+range_of_priors = [plot_this.min(),plot_this.max()]
+for i in range_of_priors:
+    plot_matter = np.random.poisson(i,1000)
+    plt.hist(plot_matter,bins=20,label=i)
+plt.legend()
     
-    
-    
-    
+plot_matter = np.random.poisson(110,100)
+plt.hist(plot_matter,bins=100,label='110')
+plt.legend()
+
+###THIS WORKS
 
 #EOF
 #EOF
