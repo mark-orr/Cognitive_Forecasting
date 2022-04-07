@@ -382,6 +382,10 @@ plt.legend()
 
 ###THIS WORKS
 
+
+'''THIS IS AN INSTRUCTURE DATA STRUCTURE'''
+df_114156[['t_w2_int','prediction_w2','prediction_duration_int','decision_date','prediction_date']]
+
 #EOF
 #EOF
 #EOF
