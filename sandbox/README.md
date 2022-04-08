@@ -21,5 +21,9 @@ file5_XXXXXXX.py:
     Data plan for generating a manuscript table for high activity
     S.  Uses model built in file4.  
     Made one for each high activity subject.
+    
+file6.py:
+    Analysis of file5_xxx.py work.
+    
 
 EOF

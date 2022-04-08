@@ -120,60 +120,54 @@ def compute_posterior(t,dist):
         
     return catch
 
-'''
-I. GENERATE BASIC DATA STRUCTURE
-'''
-
 S_no = 114156
 
-df_S_in = pd.read_csv(f'Sub_{S_no}_BayesData_r1_r4.csv')
-df_S_tmp = df_S_in[['user_id','date','0']]
-df_S_tmp.columns = ['user_id','decision_date_str','prediction_date_str']
-df_S_tmp['decision_date'] = df_S_tmp['decision_date_str'].map(lambda x: datetime.strptime(x.split(' ')[0], '%Y-%m-%d'))
-df_S_tmp['prediction_date'] = df_S_tmp['prediction_date_str'].map(lambda x: datetime.strptime(x.split(' ')[0], '%Y-%m-%d'))
-df_S = df_S_tmp.copy()
-df_S['prediction_duration'] = df_S.prediction_date - df_S.decision_date
-df_S['prediction_duration_int'] = df_S['prediction_duration'].map(lambda x: x.days)
+'''DATA FROM SUBJECT 114156'''
+'''GENERATE BASIC DATA STRUCTURE'''
+df_114156_in = pd.read_csv(f'Sub_{S_no}_BayesData_r1_r4.csv')
+df_114156_tmp = df_114156_in[['user_id','date','0']]
+df_114156_tmp.columns = ['user_id','decision_date_str','prediction_date_str']
+df_114156_tmp['decision_date'] = df_114156_tmp['decision_date_str'].map(lambda x: datetime.strptime(x.split(' ')[0], '%Y-%m-%d'))
+df_114156_tmp['prediction_date'] = df_114156_tmp['prediction_date_str'].map(lambda x: datetime.strptime(x.split(' ')[0], '%Y-%m-%d'))
+df_114156 = df_114156_tmp.copy()
+df_114156['prediction_duration'] = df_114156.prediction_date - df_114156.decision_date
+df_114156['prediction_duration_int'] = df_114156['prediction_duration'].map(lambda x: x.days)
+'''ESTIMATE OF t_0 for omicron = 1-19-22'''
+'''JUST A NOTE'''
 
 #WAVE BEGIN TIMES, SO CAN FIX t
 begin_w1 = datetime.strptime('20210623', "%Y%m%d")
 begin_w2 = datetime.strptime('20211129', "%Y%m%d")
-df_S['begin_w1'] = begin_w1
-df_S['begin_w2'] = begin_w2
+df_114156['begin_w1'] = begin_w1
+df_114156['begin_w2'] = begin_w2
 '''ESTIMATE OF PRIOR FROM W1'''
 begin_w1 - begin_w2
 #159 days BUT THIS IS FIXED ON A FIXED ACROSS S PRIOR
 
-df_S['t_w2'] = df_S.decision_date - df_S.begin_w2
-df_S['t_w2_int'] = df_S['t_w2'].map(lambda x: x.days)
+df_114156['t_w2'] = df_114156.decision_date - df_114156.begin_w2
+df_114156['t_w2_int'] = df_114156['t_w2'].map(lambda x: x.days)
 
-df_S['prediction_w2'] = df_S.t_w2_int + df_S.prediction_duration_int
+df_114156['prediction_w2'] = df_114156.t_w2_int + df_114156.prediction_duration_int
 #NEXT SHOULD BE EQUVALENT TO ABOVE
-df_S['prediction_w2_test'] = df_S.prediction_date - df_S.begin_w2
+df_114156['prediction_w2_test'] = df_114156.prediction_date - df_114156.begin_w2
 #TEST GOOD
 
+#STOPPED TESTING HERE
 
-
-
-'''
-II.  DECIDE ON CUT POINT FOR W2
-'''
-
-'''
+'''THESE TWO ARE TELLING 
 FIRST SHOWS PREDICTION
 SECOND SHOWS PREDICTED DATE
+Good For Publication, MAYBE
 '''
-df_S.prediction_duration_int.plot()
-df_S.prediction_w2.plot()
-
-'''THIS IS AN USEFUL DATA STRUCTURE FOR DECIDTING WHEN W2 DECISIONS ARE MADE'''
-df_S[['t_w2_int','prediction_w2','prediction_duration_int','decision_date','prediction_date']]
+df_114156.prediction_duration_int.plot()
+df_114156.prediction_w2.plot()
 
 '''FURTHER EXPORE OF MIN JUDGMENTS
 1. WERE THEY ALL MINERS
 2. How INTERPRET NEGATIVES FROM '''
-df_S[df_S.prediction_duration_int<0]
-df_S[['decision_date','prediction_duration_int']]
+df_114156[df_114156.prediction_duration_int<0]
+df_114156[['decision_date','prediction_duration_int']]
+'''THESE ARE ALL MINER JUDGEMENTS'''
 
 '''
 ONLY INCLUDE DECISION DATES AFTER THE FOLLOWING CRITERIA
@@ -181,15 +175,13 @@ ONLY INCLUDE DECISION DATES AFTER THE FOLLOWING CRITERIA
 2. May DELETE OR RE-INTERPRET NEGATIVEs 
 '''
 tmp_t = pd.to_datetime(datetime.strptime('2021-12-25T17:00:00','%Y-%m-%dT%H:%M:%S')) 
-df_S_w2 = df_S[df_S.decision_date > tmp_t ]
+df_114156_w2 = df_114156[df_114156.decision_date > tmp_t ]
 
 
-
-
+'''JOB IS TO FIND BEST PRIOR GIVEN THAT T IS NOW FIXED
+t_w1_int is var to use AS INPUT TO LIKELIHOOD
+prediction_w1 = t_w1_int + prediction_duration_int
 '''
-III.  GENERATE PRIORS
-'''
-
 #FOR PRIOR
 N = 10
 
@@ -197,7 +189,7 @@ N = 10
 catch_all_prior_over_all_t = []
 catch_prior_index = []
 #COMPUTE PRIORS
-for i in range(60,180):
+for i in range(80,131,5):
     catch_prior_index.append(i)
     #MAKE PRIOR FOR MEAN as i
     dist_prior = np.random.poisson(i,N)
@@ -213,12 +205,9 @@ for i in range(60,180):
         catch_prior_over_all_t = np.append(catch_prior_over_all_t, median_of_dist(dist_1))
     catch_all_prior_over_all_t.append(catch_prior_over_all_t)
 
-
-
-    
-'''
-IV.  GENERATE BEST PRIORS FOR W2
-'''    
+'''****TEST FOR WAVE 2****OMICRON'''
+'''HAVE PRIORS NOW COMPUTE ERROR
+ASSUME ONE PRIOR FOR ALL JUDGEMENTS OF S'''
 catch_all_t_over_t_over_p = []
 catch_all_optimal_pred_over_t_over_p = []
 catch_all_human_pred_over_t_over_p = []
@@ -235,8 +224,8 @@ for j in catch_all_prior_over_all_t: #LOOP OVER PRIORS
     catch_all_error_over_t = ([])
     catch_all_date_over_t = ([])
 
-    for i in range(0,len(df_S_w2)):#CAPTURE HUMAN DATA T AND PRED
-        t = df_S_w2.t_w2_int.iloc[i] #P
+    for i in range(0,len(df_114156_w2)):#CAPTURE HUMAN DATA T AND PRED
+        t = df_114156_w2.t_w2_int.iloc[i] #P
         print('t',t)
         catch_all_t_over_t = np.append(catch_all_t_over_t,t)
         #optimal_pred = catch_all_prior_over_all_t[0][t-1]#index zero is t=1
@@ -248,14 +237,14 @@ for j in catch_all_prior_over_all_t: #LOOP OVER PRIORS
             optimal_pred = j[-1]
         catch_all_optimal_pred_over_t = np.append(catch_all_optimal_pred_over_t,optimal_pred)
         print('optimal pred',optimal_pred)
-        human_pred = df_S_w2.prediction_w2.iloc[i]
+        human_pred = df_114156_w2.prediction_w2.iloc[i]
         catch_all_human_pred_over_t = np.append(catch_all_human_pred_over_t,human_pred)
         print('human pred', human_pred)
         error = human_pred - optimal_pred
         print('error',error)
         catch_all_error_over_t = np.append(catch_all_error_over_t,error)
-        catch_all_date_over_t = np.append(catch_all_date_over_t,df_S_w2.decision_date.iloc[i])
-        print('decision_date',df_S_w2.decision_date.iloc[i])
+        catch_all_date_over_t = np.append(catch_all_date_over_t,df_114156_w2.decision_date.iloc[i])
+        print('decision_date',df_114156_w2.decision_date.iloc[i])
     
     catch_all_t_over_t_over_p.append(catch_all_t_over_t)
     catch_all_optimal_pred_over_t_over_p.append(catch_all_optimal_pred_over_t)
@@ -267,23 +256,136 @@ for j in catch_all_prior_over_all_t: #LOOP OVER PRIORS
 '''PICK BEST PRIOR'''
 for i in catch_all_error_over_t_over_p: plt.plot(i)
 #S HAS TWO REGIMES (one with constant decreasing)
-#SEE: 
+#SEE:
 df_error = pd.DataFrame(catch_all_error_over_t_over_p).T
-#df_error['decision_date'] = df_S_w2.decision_date.reset_index(drop=True)
-df_error.index = df_S_w2.decision_date.reset_index(drop=True)
+#df_error['decision_date'] = df_114156_w2.decision_date.reset_index(drop=True)
+df_error.index = df_114156_w2.decision_date.reset_index(drop=True)
 df_error.columns = catch_prior_index
-#TESTS BLOW
 df_error.abs().idxmin(axis=1).plot()
 df_error.abs().idxmin(axis=1)
 df_error.abs().min(axis=1)
+df_error.min(axis=both)
+
+
 df_error.min(axis=1)
-#MAKE THIS FOR MAIN ANALYSIS STRUCTUR
+
+
+#COMPUTE ERROR SEP FOR FIRST AND SECOND REGIME
+#REGIME 1
+for i in catch_all_error_over_t_over_p:
+    print(np.mean(i[0:17]), np.std(i[0:17]))
+#REGIME 2
+for i in catch_all_error_over_t_over_p:
+    print(np.mean(i[17:]), np.std(i[17:]))
+#MAP TO THE PRIORS
+for i in range(30,51,5): print(i)
+'''BEST PRIOR is 90 for first regime and 110 for sec.'''
+
+'''GOOD PLOT FOR FOLKS'''
+plot_matter = np.random.poisson(90,100)
+plt.hist(plot_matter,bins=100,label='90')
+plot_matter = np.random.poisson(110,100)
+plt.hist(plot_matter,bins=100,label='110')
+plt.legend()
+
+'''PLAYING WITH PLOTS'''
+plt.scatter(catch_all_optimal_pred_over_t_over_p[0],catch_all_human_pred_over_t_over_p[0])
+    
+catch_all_error_over_t_over_p
+    
+    
+pd.to_datetime(datetime.strptime('2021-12-25T17:00:00','%Y-%m-%dT%H:%M:%S'))
+df_error.iat[0,3]
+
+#PAYDIRT
 plot_this = df_error.abs().idxmin(axis=1)
-plot_this.to_csv(f'plot_this_{S_no}.csv',header=['best_prior'])
+#IF HAVE MUTIPLE RETURNS ON THIS
+df_error.at[plot_this.index[2],plot_this.iloc[2]]
+type(df_error.at[plot_this.index[1],plot_this.iloc[1]])
+
+isinstance(1, np.floating)
+
+#ELSE< SIMPLE CASE
+type(df_error.at[plot_this.index[2],plot_this.iloc[2]])
+for j in range(0,len(plot_this)):
+    print('j ',j)
+    if isinstance(df_error.at[plot_this.index[j],plot_this.iloc[j]],np.floating):
+        print('i: is float', i)
+        print(df_error.at[plot_this.index[j],plot_this.iloc[j]])
+    else:
+        print('i: is len > 1', i)
+        print(len(df_error.at[plot_this.index[j],plot_this.iloc[j]]))
+        for i in range(0,len(df_error.at[plot_this.index[j],plot_this.iloc[j]])):
+            print(df_error.at[plot_this.index[j],plot_this.iloc[j]][i])
 
 
+for i in range(0,len(plot_this)):
+    print(df_error.at[plot_this.index[i],plot_this.iloc[i]])
+df
+
+'''
+ABOVE IS COOL, BUT NEED SIMPLE ANSWER
+CAN USE ABOVE TO GET DATE AND PRIOR INFO IN COMPACT FORMAT AND BELOW FOR PLOTTING
+'''
+df_error_2 = df_error.reset_index(drop=True).copy()
+catch_df_error_min = []
+plot_this_2 = df_error_2.abs().idxmin(axis=1)
+for i in df_error_2.index:
+    tmp = df_error_2.at[i,plot_this_2.iloc[i]]
+    print(tmp)
+    catch_df_error_min.append(tmp)
+S_for_bar = pd.Series(catch_df_error_min,index=plot_this.index)
+
+#BAR PLOT WITH ANNOTATIONS FOR PRIOR, DOESN"T RELLAY WORK
+fig, ax = plt.subplots()
+
+bar_x = S_for_bar.index
+bar_height = S_for_bar
+bar_tick_label = S_for_bar.index
+bar_label = plot_this_2
+
+bar_plot = plt.bar(bar_x,bar_height,tick_label=bar_tick_label)
+
+def autolabel(rects):
+    for idx,rect in enumerate(bar_plot):
+        height = rect.get_height()
+        ax.text(rect.get_x() + rect.get_width()/2., 1.05*height,
+                bar_label[idx],
+                ha='center', va='bottom', rotation=0)
+
+autolabel(bar_plot)
+plt.xticks(rotation=90)
+plt.ylim(-4,4)
+plt.axhline(y=0, c='b',dashes=(2,2,2,2),linewidth=1)
+plt.title('Add text for each bar with matplotlib')
+
+plt.savefig("add_text_bar_matplotlib_01.png", bbox_inches='tight')
+plt.show()
 
 
+#JUST NEED TO ADD THE PRIORS
+
+
+#OR THIS:
+for i in plot_this:
+    plot_matter = np.random.poisson(i,100)
+    plt.hist(plot_matter,bins=100,label=i)
+#MESSY
+range_of_priors = [plot_this.min(),plot_this.max()]
+for i in range_of_priors:
+    plot_matter = np.random.poisson(i,1000)
+    plt.hist(plot_matter,bins=20,label=i)
+plt.legend()
+    
+plot_matter = np.random.poisson(110,100)
+plt.hist(plot_matter,bins=100,label='110')
+plt.legend()
+
+###THIS WORKS
+
+
+'''THIS IS AN INSTRUCTURE DATA STRUCTURE'''
+df_114156[['t_w2_int','prediction_w2','prediction_duration_int','decision_date','prediction_date']]
 
 #EOF
 #EOF

@@ -124,9 +124,9 @@ def compute_posterior(t,dist):
 I. GENERATE BASIC DATA STRUCTURE
 '''
 
-S_no = 114156
+S_no = 'AllSubs'
 
-df_S_in = pd.read_csv(f'Sub_{S_no}_BayesData_r1_r4.csv')
+df_S_in = pd.read_csv(f'{S_no}_BayesData_r1_r4.csv')
 df_S_tmp = df_S_in[['user_id','date','0']]
 df_S_tmp.columns = ['user_id','decision_date_str','prediction_date_str']
 df_S_tmp['decision_date'] = df_S_tmp['decision_date_str'].map(lambda x: datetime.strptime(x.split(' ')[0], '%Y-%m-%d'))
@@ -159,6 +159,8 @@ df_S['prediction_w2_test'] = df_S.prediction_date - df_S.begin_w2
 II.  DECIDE ON CUT POINT FOR W2
 '''
 
+'''SPECIAL FOR THIS SET REMOVE HIGH_FREQ Ss'''
+df_S = df_S[~(df_S.user_id==112076) & ~(df_S.user_id==109742) & ~(df_S.user_id==112197) & ~(df_S.user_id==114156) & ~(df_S.user_id==115725)]
 '''
 FIRST SHOWS PREDICTION
 SECOND SHOWS PREDICTED DATE
@@ -180,9 +182,11 @@ ONLY INCLUDE DECISION DATES AFTER THE FOLLOWING CRITERIA
 1. ON OR AFTER ESTIMATED t_0 DATE
 2. May DELETE OR RE-INTERPRET NEGATIVEs 
 '''
-tmp_t = pd.to_datetime(datetime.strptime('2021-12-25T17:00:00','%Y-%m-%dT%H:%M:%S')) 
+tmp_t = pd.to_datetime(datetime.strptime('2021-12-24T17:00:00','%Y-%m-%dT%H:%M:%S')) 
 df_S_w2 = df_S[df_S.decision_date > tmp_t ]
-
+'''SPECIAL CASE FOR ALLSUBS:  REMOVE NEG ALSO AFTER 12-24 SELECTION'''
+df_S_w2[['t_w2_int','prediction_w2','prediction_duration_int','decision_date','prediction_date']]
+df_S_w2 = df_S_w2[~df_S_w2.prediction_duration_int<0]
 
 
 
@@ -279,7 +283,7 @@ df_error.abs().min(axis=1)
 df_error.min(axis=1)
 #MAKE THIS FOR MAIN ANALYSIS STRUCTUR
 plot_this = df_error.abs().idxmin(axis=1)
-plot_this.to_csv(f'plot_this_{S_no}.csv',header=['best_prior'])
+plot_this.to_csv(f'plot_this_LowSubs.csv',header=['best_prior'])
 
 
 

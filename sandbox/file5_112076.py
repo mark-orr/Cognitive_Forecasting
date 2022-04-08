@@ -120,49 +120,60 @@ def compute_posterior(t,dist):
         
     return catch
 
+'''
+I. GENERATE BASIC DATA STRUCTURE
+'''
 
+S_no = 112076
 
-'''DATA FROM SUBJECT 112076'''
-'''GENERATE BASIC DATA STRUCTURE'''
-df_112076_in = pd.read_csv('Sub_112076_BayesData_r1_r4.csv')
-df_112076_tmp = df_112076_in[['user_id','date','0']]
-df_112076_tmp.columns = ['user_id','decision_date_str','prediction_date_str']
-df_112076_tmp['decision_date'] = df_112076_tmp['decision_date_str'].map(lambda x: datetime.strptime(x.split(' ')[0], '%Y-%m-%d'))
-df_112076_tmp['prediction_date'] = df_112076_tmp['prediction_date_str'].map(lambda x: datetime.strptime(x.split(' ')[0], '%Y-%m-%d'))
-df_112076 = df_112076_tmp.copy()
-df_112076['prediction_duration'] = df_112076.prediction_date - df_112076.decision_date
-df_112076['prediction_duration_int'] = df_112076['prediction_duration'].map(lambda x: x.days)
-'''ESTIMATE OF t_0 for omicron = 12-17'''
-'''ENTER THIS BELOW FOR begin_w2'''
+df_S_in = pd.read_csv(f'Sub_{S_no}_BayesData_r1_r4.csv')
+df_S_tmp = df_S_in[['user_id','date','0']]
+df_S_tmp.columns = ['user_id','decision_date_str','prediction_date_str']
+df_S_tmp['decision_date'] = df_S_tmp['decision_date_str'].map(lambda x: datetime.strptime(x.split(' ')[0], '%Y-%m-%d'))
+df_S_tmp['prediction_date'] = df_S_tmp['prediction_date_str'].map(lambda x: datetime.strptime(x.split(' ')[0], '%Y-%m-%d'))
+df_S = df_S_tmp.copy()
+df_S['prediction_duration'] = df_S.prediction_date - df_S.decision_date
+df_S['prediction_duration_int'] = df_S['prediction_duration'].map(lambda x: x.days)
 
 #WAVE BEGIN TIMES, SO CAN FIX t
 begin_w1 = datetime.strptime('20210623', "%Y%m%d")
-begin_w2 = datetime.strptime('20211217', "%Y%m%d")
-df_112076['begin_w1'] = begin_w1
-df_112076['begin_w2'] = begin_w2
+begin_w2 = datetime.strptime('20211129', "%Y%m%d")
+df_S['begin_w1'] = begin_w1
+df_S['begin_w2'] = begin_w2
 '''ESTIMATE OF PRIOR FROM W1'''
 begin_w1 - begin_w2
-#177 days
+#159 days BUT THIS IS FIXED ON A FIXED ACROSS S PRIOR
 
-df_112076['t_w2'] = df_112076.decision_date - df_112076.begin_w2
-df_112076['t_w2_int'] = df_112076['t_w2'].map(lambda x: x.days)
+df_S['t_w2'] = df_S.decision_date - df_S.begin_w2
+df_S['t_w2_int'] = df_S['t_w2'].map(lambda x: x.days)
 
-df_112076['prediction_w2'] = df_112076.t_w2_int + df_112076.prediction_duration_int
+df_S['prediction_w2'] = df_S.t_w2_int + df_S.prediction_duration_int
+#NEXT SHOULD BE EQUVALENT TO ABOVE
+df_S['prediction_w2_test'] = df_S.prediction_date - df_S.begin_w2
+#TEST GOOD
 
-'''THESE TWO ARE TELLING 
+
+
+
+'''
+II.  DECIDE ON CUT POINT FOR W2
+'''
+
+'''
 FIRST SHOWS PREDICTION
 SECOND SHOWS PREDICTED DATE
-Good For Publication
 '''
-df_112076.prediction_duration_int.plot()
-df_112076.prediction_w2.plot()
+df_S.prediction_duration_int.plot()
+df_S.prediction_w2.plot()
+
+'''THIS IS AN USEFUL DATA STRUCTURE FOR DECIDTING WHEN W2 DECISIONS ARE MADE'''
+df_S[['t_w2_int','prediction_w2','prediction_duration_int','decision_date','prediction_date']]
 
 '''FURTHER EXPORE OF MIN JUDGMENTS
 1. WERE THEY ALL MINERS
 2. How INTERPRET NEGATIVES FROM '''
-df_112076[df_112076.prediction_duration_int<0]
-df_112076[['decision_date','prediction_duration_int']]
-'''THESE ARE ALL MINER JUDGEMENTS'''
+df_S[df_S.prediction_duration_int<0]
+df_S[['decision_date','prediction_duration_int']]
 
 '''
 ONLY INCLUDE DECISION DATES AFTER THE FOLLOWING CRITERIA
@@ -170,20 +181,24 @@ ONLY INCLUDE DECISION DATES AFTER THE FOLLOWING CRITERIA
 2. May DELETE OR RE-INTERPRET NEGATIVEs 
 '''
 tmp_t = pd.to_datetime(datetime.strptime('2021-12-24T17:00:00','%Y-%m-%dT%H:%M:%S')) 
-df_112076_w2 = df_112076[df_112076.decision_date > tmp_t ]
+df_S_w2 = df_S[df_S.decision_date > tmp_t ]
 
 
-'''JOB IS TO FIND BEST PRIOR GIVEN THAT T IS NOW FIXED
-t_w1_int is var to use AS INPUT TO LIKELIHOOD
-prediction_w1 = t_w1_int + prediction_duration_int
+
+
 '''
+III.  GENERATE PRIORS
+'''
+
 #FOR PRIOR
-N = 100
+N = 10
 
 '''COMPUTE PRIORS'''
 catch_all_prior_over_all_t = []
+catch_prior_index = []
 #COMPUTE PRIORS
-for i in range(90,130,5):
+for i in range(60,180):
+    catch_prior_index.append(i)
     #MAKE PRIOR FOR MEAN as i
     dist_prior = np.random.poisson(i,N)
     dist_prior_event_probs = pd.Series(dist_prior).value_counts()/pd.Series(dist_prior).value_counts().sum()
@@ -198,24 +213,30 @@ for i in range(90,130,5):
         catch_prior_over_all_t = np.append(catch_prior_over_all_t, median_of_dist(dist_1))
     catch_all_prior_over_all_t.append(catch_prior_over_all_t)
 
-'''****TEST FOR WAVE 2****OMICRON'''
-'''HAVE PRIORS NOW COMPUTE ERROR
-ASSUME ONE PRIOR FOR ALL JUDGEMENTS OF S'''
+
+
+    
+'''
+IV.  GENERATE BEST PRIORS FOR W2
+'''    
 catch_all_t_over_t_over_p = []
 catch_all_optimal_pred_over_t_over_p = []
 catch_all_human_pred_over_t_over_p = []
 catch_all_error_over_t_over_p = []
+catch_all_date_over_t_over_p = []
 
 for j in catch_all_prior_over_all_t: #LOOP OVER PRIORS
     
+    print('NEW PRIOR')
     print('NEW PRIOR')
     catch_all_t_over_t = ([])
     catch_all_optimal_pred_over_t = ([])
     catch_all_human_pred_over_t = ([])
     catch_all_error_over_t = ([])
+    catch_all_date_over_t = ([])
 
-    for i in range(0,len(df_112076_w2)):#CAPTURE HUMAN DATA T AND PRED
-        t = df_112076_w2.t_w2_int.iloc[i] #P
+    for i in range(0,len(df_S_w2)):#CAPTURE HUMAN DATA T AND PRED
+        t = df_S_w2.t_w2_int.iloc[i] #P
         print('t',t)
         catch_all_t_over_t = np.append(catch_all_t_over_t,t)
         #optimal_pred = catch_all_prior_over_all_t[0][t-1]#index zero is t=1
@@ -227,49 +248,42 @@ for j in catch_all_prior_over_all_t: #LOOP OVER PRIORS
             optimal_pred = j[-1]
         catch_all_optimal_pred_over_t = np.append(catch_all_optimal_pred_over_t,optimal_pred)
         print('optimal pred',optimal_pred)
-        human_pred = df_112076_w2.prediction_w2.iloc[i]
+        human_pred = df_S_w2.prediction_w2.iloc[i]
         catch_all_human_pred_over_t = np.append(catch_all_human_pred_over_t,human_pred)
         print('human pred', human_pred)
         error = human_pred - optimal_pred
         print('error',error)
         catch_all_error_over_t = np.append(catch_all_error_over_t,error)
+        catch_all_date_over_t = np.append(catch_all_date_over_t,df_S_w2.decision_date.iloc[i])
+        print('decision_date',df_S_w2.decision_date.iloc[i])
     
     catch_all_t_over_t_over_p.append(catch_all_t_over_t)
     catch_all_optimal_pred_over_t_over_p.append(catch_all_optimal_pred_over_t)
     catch_all_human_pred_over_t_over_p.append(catch_all_human_pred_over_t)
     catch_all_error_over_t_over_p.append(catch_all_error_over_t)
+    catch_all_date_over_t_over_p.append(catch_all_date_over_t)
 
 
 '''PICK BEST PRIOR'''
 for i in catch_all_error_over_t_over_p: plt.plot(i)
-#S HAS TWO REGIMES
-#SEE:
-pd.DataFrame(catch_all_error_over_t_over_p).T
-#COMPUTE ERROR SEP FOR FIRST AND SECOND REGIME
-#REGIME 1
-for i in catch_all_error_over_t_over_p:
-    print(np.mean(i[0:17]), np.std(i[0:17]))
-#REGIME 2
-for i in catch_all_error_over_t_over_p:
-    print(np.mean(i[17:]), np.std(i[17:]))
-#MAP TO THE PRIORS
-for i in range(90,130,5):
-    print(i)
-'''BEST PRIOR is 90 for first regime and 110 for sec.'''
+#S HAS TWO REGIMES (one with constant decreasing)
+#SEE: 
+df_error = pd.DataFrame(catch_all_error_over_t_over_p).T
+#df_error['decision_date'] = df_S_w2.decision_date.reset_index(drop=True)
+df_error.index = df_S_w2.decision_date.reset_index(drop=True)
+df_error.columns = catch_prior_index
+#TESTS BLOW
+df_error.abs().idxmin(axis=1).plot()
+df_error.abs().idxmin(axis=1)
+df_error.abs().min(axis=1)
+df_error.min(axis=1)
+#MAKE THIS FOR MAIN ANALYSIS STRUCTUR
+plot_this = df_error.abs().idxmin(axis=1)
+plot_this.to_csv(f'plot_this_{S_no}.csv',header=['best_prior'])
 
-'''GOOD PLOT FOR FOLKS'''
-plot_matter = np.random.poisson(90,100)
-plt.hist(plot_matter,bins=100,label='90')
-plot_matter = np.random.poisson(110,100)
-plt.hist(plot_matter,bins=100,label='110')
-plt.legend()
 
-    
 
-    
-    
-    
-    
+
 
 #EOF
 #EOF

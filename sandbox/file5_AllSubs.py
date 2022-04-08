@@ -124,9 +124,9 @@ def compute_posterior(t,dist):
 I. GENERATE BASIC DATA STRUCTURE
 '''
 
-S_no = 114156
+S_no = 'AllSubs'
 
-df_S_in = pd.read_csv(f'Sub_{S_no}_BayesData_r1_r4.csv')
+df_S_in = pd.read_csv(f'{S_no}_BayesData_r1_r4.csv')
 df_S_tmp = df_S_in[['user_id','date','0']]
 df_S_tmp.columns = ['user_id','decision_date_str','prediction_date_str']
 df_S_tmp['decision_date'] = df_S_tmp['decision_date_str'].map(lambda x: datetime.strptime(x.split(' ')[0], '%Y-%m-%d'))
@@ -180,12 +180,12 @@ ONLY INCLUDE DECISION DATES AFTER THE FOLLOWING CRITERIA
 1. ON OR AFTER ESTIMATED t_0 DATE
 2. May DELETE OR RE-INTERPRET NEGATIVEs 
 '''
-tmp_t = pd.to_datetime(datetime.strptime('2021-12-25T17:00:00','%Y-%m-%dT%H:%M:%S')) 
+tmp_t = pd.to_datetime(datetime.strptime('2021-12-24T17:00:00','%Y-%m-%dT%H:%M:%S')) 
 df_S_w2 = df_S[df_S.decision_date > tmp_t ]
-
-
-
-
+'''SPECIAL CASE FOR ALLSUBS:  REMOVE NEG ALSO AFTER 12-24 SELECTION'''
+df_S_w2[['t_w2_int','prediction_w2','prediction_duration_int','decision_date','prediction_date']]
+df_S_w2 = df_S_w2[~df_S_w2.prediction_duration_int<0]
+2
 '''
 III.  GENERATE PRIORS
 '''

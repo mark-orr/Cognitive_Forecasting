@@ -124,7 +124,7 @@ def compute_posterior(t,dist):
 I. GENERATE BASIC DATA STRUCTURE
 '''
 
-S_no = 114156
+S_no = 115725
 
 df_S_in = pd.read_csv(f'Sub_{S_no}_BayesData_r1_r4.csv')
 df_S_tmp = df_S_in[['user_id','date','0']]
