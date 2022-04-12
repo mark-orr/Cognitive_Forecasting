@@ -21,9 +21,15 @@ file5_XXXXXXX.py:
     Data plan for generating a manuscript table for high activity
     S.  Uses model built in file4.  
     Made one for each high activity subject.
+    Also has right-bounded decision analysis in it. (prior to prior estimation)
     
 file6.py:
     Analysis of file5_xxx.py work.
     
-
+file7_xxx.py:
+    From file5_X adapted for highest.
+    
+file8.py:
+    Analysis of file7_xxx.py (copy of file6)
+    
 EOF

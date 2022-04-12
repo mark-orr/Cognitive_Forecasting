@@ -3,130 +3,17 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from datetime import datetime
 
-'''DEF'''
-def prob_t_tot(x,dist):
-    '''
-    x = t_total
-    dist is the right distribution and should be a pd.Series
-    returns the event probability of t_total as a discrete event, not integrated
-    NOTE, the ifelse control should really interpolate but for now it doesnt.
-    '''
-    if x in dist.index:
-        a = dist[x]
-    else:
-        a = np.float64(0)
-    #NOTE, THISFU  
-    return a
-#EG
-#prob_t_tot(34,dist_prior_event_probs)
-
-def n_t_tot(x,dist,n):
-    '''
-    x=t_total
-    dist same as prob_t_tot
-    n is N from generating dist.
-    returns the N of t_total from the generating distribution
-    '''
-    if x in dist.index:
-        a = dist[x]*n
-    else:
-        a = np.float64(0)
-    #NOTE, THISFU  
-    return a
-#EG
-#n_t_tot(70,dist_prior_event_probs,N)
-
-def median_of_dist(dist):
-    '''
-    dist is a pd.Series
-    returns the median index value which should be
-    the value of the poisson
-    '''
-    return dist.loc[dist.cumsum()>0.5].index[0]
-#EG
-#median_of_dist(dist_prior_event_probs)
-
-def median_of_dist_p(dist,p):
-    '''
-    dist is a pd.Series
-    returns the median index value which should be
-    the value of the poisson
-    p = prob value to grab above, 0.5 is median
-    '''
-    return dist.loc[dist.cumsum()>p].index[0]
-#EG
-#median_of_dist(dist_prior_event_probs)
-
-
-
-
-def compute_p_t(t,dist):
-    '''
-    t is for current problem
-    dist is dist_prior_event_probs, will be pd series.
-    returns a scalar numpy.float64
-    '''
-    subset = dist_prior_event_probs.iloc[dist_prior_event_probs.index>=t]
-    #print('subset',subset)
-    one_over_t_total = pd.Series(1/subset.index,index=subset.index) 
-    #print('one over t tot',one_over_t_total)
-    
-    return (subset*one_over_t_total).sum()
-#EG
-#compute_p_t(5,dist_prior_event_probs)
-#compute_p_t(75,dist_prior_event_probs)
-'''compute_p_t LOGIpC'''
-#dist_prior_event_probs.index
-#one_over_ttot = pd.Series(1/dist_prior_event_probs.index,index=dist_prior_event_probs.index)
-
-
-
-'''EXAMPLE LOGIC
-provide context, 'if 10 days into an epidemic wave (t=10), how many days total (t_total) will be until the peak(or end)'
-want to generate the distribution of t_total|t over range of t_total;
-t_total drives all the variables, so this function will take in an vector t_total and compute and collect once per
-index of t_total
-'''
-
-def compute_posterior(t,dist):
-    '''
-    dist is the ordered probablility lookup table fro each event t_total
-    t_total is what we are computing the distribution over
-    it is a np.array, ordered
-    
-    returns np.array, ordered as the 
-    NOTE: using index of prior doesn't cover, necessarily, all
-    possible values of t_total. Will fix later.
-    '''
-    #print('t is: ',t)
-    vect_t_total = dist.index
-    #print('t_total_range is: ',vect_t_total)
-    
-    catch = np.array([])
-    
-    for i in vect_t_total:
-        #print('t_total is: ',i)
-        #prior
-        prior = prob_t_tot(i,dist)
-        if i < t:
-            likelihood = 0
-        else: 
-            #likelihood = (1/i)*(n_t_tot(i,dist_prior_event_probs,N))
-            likelihood = (n_t_tot(i,dist,N)) / ((n_t_tot(i,dist,N))*i)
-        p_t = compute_p_t(t,dist)
-        likelihood_ratio = likelihood/p_t
-        #print('likelihood, p_t, likelihood_ratio, prior, post: ',likelihood, p_t, likelihood_ratio, prior, likelihood_ratio*prior)
-        catch = np.append(catch,likelihood_ratio*prior)
-        
-    return catch
+import sys
+sys.path.insert(1,'/Users/biocomplexity/Projects/SocioCognitiveModeling/Metaculus_CogModeling/bayes_pack')
+import bayes
 
 '''
 I. GENERATE BASIC DATA STRUCTURE
 '''
 
-S_no = 'AllSubs'
+S_no = 109742
 
-df_S_in = pd.read_csv(f'{S_no}_BayesData_r1_r4.csv')
+df_S_in = pd.read_csv(f'Sub_{S_no}_BayesData_r1_r4.csv')
 df_S_tmp = df_S_in[['user_id','date','0']]
 df_S_tmp.columns = ['user_id','decision_date_str','prediction_date_str']
 df_S_tmp['decision_date'] = df_S_tmp['decision_date_str'].map(lambda x: datetime.strptime(x.split(' ')[0], '%Y-%m-%d'))
@@ -169,12 +56,6 @@ df_S.prediction_w2.plot()
 '''THIS IS AN USEFUL DATA STRUCTURE FOR DECIDTING WHEN W2 DECISIONS ARE MADE'''
 df_S[['t_w2_int','prediction_w2','prediction_duration_int','decision_date','prediction_date']]
 
-#QUICK LOOK AT RIGHT BOUNDING ON DECISIONS
-#SEEMS OK
-tmp_t = pd.to_datetime(datetime.strptime('2022-04-04T17:00:00','%Y-%m-%dT%H:%M:%S')) 
-df_S[['user_id','t_w2_int','prediction_w2','prediction_duration_int','decision_date','prediction_date']].loc[df_S.prediction_date > tmp_t]
-df_S[['user_id','t_w2_int','prediction_w2','prediction_duration_int','decision_date','prediction_date']].loc[df_S.user_id==112076]
-
 '''FURTHER EXPORE OF MIN JUDGMENTS
 1. WERE THEY ALL MINERS
 2. How INTERPRET NEGATIVES FROM '''
@@ -188,16 +69,16 @@ ONLY INCLUDE DECISION DATES AFTER THE FOLLOWING CRITERIA
 '''
 tmp_t = pd.to_datetime(datetime.strptime('2021-12-24T17:00:00','%Y-%m-%dT%H:%M:%S')) 
 df_S_w2 = df_S[df_S.decision_date > tmp_t ]
-'''SPECIAL CASE FOR ALLSUBS:  REMOVE NEG ALSO AFTER 12-24 SELECTION'''
-df_S_w2[['t_w2_int','prediction_w2','prediction_duration_int','decision_date','prediction_date']]
-df_S_w2 = df_S_w2[~df_S_w2.prediction_duration_int<0]
+
+
+
 
 '''
 III.  GENERATE PRIORS
 '''
 
 #FOR PRIOR
-N = 10
+N = 100
 
 '''COMPUTE PRIORS'''
 catch_all_prior_over_all_t = []
@@ -214,9 +95,9 @@ for i in range(60,180):
     #THEN COLLECT TO LIST OVER PRIORS (OVER i)
     catch_prior_over_all_t = ([])
     for t in range(1,int(dist_prior_event_probs.index[-1])): 
-        dist_1 = compute_posterior(t, dist_prior_event_probs)
+        dist_1 = bayes.compute_posterior(t, dist_prior_event_probs, N)
         dist_1 = pd.Series(dist_1, index=dist_prior_event_probs.index)
-        catch_prior_over_all_t = np.append(catch_prior_over_all_t, median_of_dist(dist_1))
+        catch_prior_over_all_t = np.append(catch_prior_over_all_t, bayes.median_of_dist(dist_1))
     catch_all_prior_over_all_t.append(catch_prior_over_all_t)
 
 
@@ -285,7 +166,7 @@ df_error.abs().min(axis=1)
 df_error.min(axis=1)
 #MAKE THIS FOR MAIN ANALYSIS STRUCTUR
 plot_this = df_error.abs().idxmin(axis=1)
-plot_this.to_csv(f'plot_this_{S_no}.csv',header=['best_prior'])
+#plot_this.to_csv(f'plot_this_{S_no}.csv',header=['best_prior'])
 
 
 

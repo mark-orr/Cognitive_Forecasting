@@ -159,6 +159,8 @@ df_S['prediction_w2_test'] = df_S.prediction_date - df_S.begin_w2
 II.  DECIDE ON CUT POINT FOR W2
 '''
 
+'''SPECIAL FOR THIS SET REMOVE HIGH_FREQ Ss'''
+df_S = df_S[~(df_S.user_id==112076) & ~(df_S.user_id==109742) & ~(df_S.user_id==112197) & ~(df_S.user_id==114156) & ~(df_S.user_id==115725)]
 '''
 FIRST SHOWS PREDICTION
 SECOND SHOWS PREDICTED DATE
@@ -168,12 +170,6 @@ df_S.prediction_w2.plot()
 
 '''THIS IS AN USEFUL DATA STRUCTURE FOR DECIDTING WHEN W2 DECISIONS ARE MADE'''
 df_S[['t_w2_int','prediction_w2','prediction_duration_int','decision_date','prediction_date']]
-
-#QUICK LOOK AT RIGHT BOUNDING ON DECISIONS
-#SEEMS OK
-tmp_t = pd.to_datetime(datetime.strptime('2022-04-04T17:00:00','%Y-%m-%dT%H:%M:%S')) 
-df_S[['user_id','t_w2_int','prediction_w2','prediction_duration_int','decision_date','prediction_date']].loc[df_S.prediction_date > tmp_t]
-df_S[['user_id','t_w2_int','prediction_w2','prediction_duration_int','decision_date','prediction_date']].loc[df_S.user_id==112076]
 
 '''FURTHER EXPORE OF MIN JUDGMENTS
 1. WERE THEY ALL MINERS
@@ -186,11 +182,13 @@ ONLY INCLUDE DECISION DATES AFTER THE FOLLOWING CRITERIA
 1. ON OR AFTER ESTIMATED t_0 DATE
 2. May DELETE OR RE-INTERPRET NEGATIVEs 
 '''
-tmp_t = pd.to_datetime(datetime.strptime('2021-12-24T17:00:00','%Y-%m-%dT%H:%M:%S')) 
-df_S_w2 = df_S[df_S.decision_date > tmp_t ]
+#tmp_t = pd.to_datetime(datetime.strptime('2021-12-24T17:00:00','%Y-%m-%dT%H:%M:%S')) 
+#df_S_w2 = df_S[df_S.decision_date > tmp_t ]
 '''SPECIAL CASE FOR ALLSUBS:  REMOVE NEG ALSO AFTER 12-24 SELECTION'''
-df_S_w2[['t_w2_int','prediction_w2','prediction_duration_int','decision_date','prediction_date']]
-df_S_w2 = df_S_w2[~df_S_w2.prediction_duration_int<0]
+#df_S_w2[['t_w2_int','prediction_w2','prediction_duration_int','decision_date','prediction_date']]
+#df_S_w2 = df_S_w2[~df_S_w2.prediction_duration_int<0]
+df_S_w2 = df_S.copy()
+
 
 '''
 III.  GENERATE PRIORS
@@ -203,7 +201,7 @@ N = 10
 catch_all_prior_over_all_t = []
 catch_prior_index = []
 #COMPUTE PRIORS
-for i in range(60,180):
+for i in range(30,180):
     catch_prior_index.append(i)
     #MAKE PRIOR FOR MEAN as i
     dist_prior = np.random.poisson(i,N)
@@ -285,7 +283,7 @@ df_error.abs().min(axis=1)
 df_error.min(axis=1)
 #MAKE THIS FOR MAIN ANALYSIS STRUCTUR
 plot_this = df_error.abs().idxmin(axis=1)
-plot_this.to_csv(f'plot_this_{S_no}.csv',header=['best_prior'])
+plot_this.to_csv(f'plot_this_LowSubs_highest.csv',header=['best_prior'])
 
 
 

@@ -191,7 +191,7 @@ III.  GENERATE PRIORS
 '''
 
 #FOR PRIOR
-N = 10
+N = 100
 
 '''COMPUTE PRIORS'''
 catch_all_prior_over_all_t = []

@@ -169,6 +169,12 @@ df_S.prediction_w2.plot()
 '''THIS IS AN USEFUL DATA STRUCTURE FOR DECIDTING WHEN W2 DECISIONS ARE MADE'''
 df_S[['t_w2_int','prediction_w2','prediction_duration_int','decision_date','prediction_date']]
 
+#QUICK LOOK AT RIGHT BOUNDING ON DECISIONS
+#SEEMS OK
+tmp_t = pd.to_datetime(datetime.strptime('2022-04-04T17:00:00','%Y-%m-%dT%H:%M:%S')) 
+df_S[['user_id','t_w2_int','prediction_w2','prediction_duration_int','decision_date','prediction_date']].loc[df_S.prediction_date > tmp_t]
+df_S[['user_id','t_w2_int','prediction_w2','prediction_duration_int','decision_date','prediction_date']].loc[df_S.user_id==112076]
+
 '''FURTHER EXPORE OF MIN JUDGMENTS
 1. WERE THEY ALL MINERS
 2. How INTERPRET NEGATIVES FROM '''
@@ -185,7 +191,7 @@ df_S_w2 = df_S[df_S.decision_date > tmp_t ]
 '''SPECIAL CASE FOR ALLSUBS:  REMOVE NEG ALSO AFTER 12-24 SELECTION'''
 df_S_w2[['t_w2_int','prediction_w2','prediction_duration_int','decision_date','prediction_date']]
 df_S_w2 = df_S_w2[~df_S_w2.prediction_duration_int<0]
-2
+
 '''
 III.  GENERATE PRIORS
 '''
