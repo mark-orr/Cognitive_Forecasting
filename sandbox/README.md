@@ -31,5 +31,9 @@ file7_xxx.py:
     
 file8.py:
     Analysis of file7_xxx.py (copy of file6)
-    
+
+bayes_test.py:
+    Testing env. for code review the bayes modeling and
+    generate the appendix for equations.
+
 EOF
