@@ -197,7 +197,7 @@ N = 10
 catch_all_prior_over_all_t = []
 catch_prior_index = []
 #COMPUTE PRIORS
-for i in range(20,90):
+for i in range(40,60):
     catch_prior_index.append(i)
     #MAKE PRIOR FOR MEAN as i
     dist_prior = np.random.poisson(i,N)

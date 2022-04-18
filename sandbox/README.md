@@ -34,6 +34,15 @@ file8.py:
 
 bayes_test.py:
     Testing env. for code review the bayes modeling and
-    generate the appendix for equations.
+    generate the appendix for equations and simplify the code
+    where possible.
+
+NOTE: ERROR
+NOTE: ERROR
+Some of the 'plot_this_' outputs (csv) are not labeled correctly (e.g., has highest
+in place of lowest) due to overwrites.   Similar issue on Rivanna for some of the
+generating files.  Post 4-18-22, this will be corrected on Rivanna but not in ./ because
+we are redoing all analysis.
+
 
 EOF

@@ -28,10 +28,6 @@ df_S_tmp['decision_date'] = df_S_tmp['decision_date_str'].map(lambda x: datetime
 df_S_tmp['prediction_date'] = df_S_tmp['prediction_date_str'].map(lambda x: datetime.strptime(x.split(' ')[0], '%Y-%m-%d'))
 df_S = df_S_tmp.copy()
 
-
-#df_S['prediction_duration'] = df_S.prediction_date - df_S.decision_date
-#df_S['prediction_duration_int'] = df_S['prediction_duration'].map(lambda x: x.days)
-
 #WAVE BEGIN TIMES, SO CAN FIX t
 #begin_w1 = datetime.strptime('20210623', "%Y%m%d")
 begin_w2 = datetime.strptime('20211129', "%Y%m%d")
@@ -46,8 +42,13 @@ df_S['t_w2_int'] = df_S['t_w2'].map(lambda x: x.days)
 
 #df_S['prediction_w2'] = df_S.t_w2_int + df_S.prediction_duration_int
 #NEXT SHOULD BE EQUVALENT TO ABOVE
-df_S['prediction_w2_test'] = df_S.prediction_date - df_S.begin_w2
+df_S['prediction_w2'] = df_S.prediction_date - df_S.begin_w2
+df_S['prediction_w2_int'] = df_S['prediction_w2'].map(lambda x: x.days)
 #TEST GOOD
+
+df_S['prediction_duration'] = df_S.prediction_date - df_S.decision_date
+df_S['prediction_duration_int'] = df_S['prediction_duration'].map(lambda x: x.days)
+
 
 df_S_w2 = df_S.copy()
 
@@ -64,7 +65,7 @@ N = 10
 catch_all_prior_over_all_t = []
 catch_prior_index = []
 #COMPUTE PRIORS
-for i in range(20,21):
+for i in range(40,60):
     catch_prior_index.append(i)
     #MAKE PRIOR FOR MEAN as i
     dist_prior = np.random.poisson(i,N)
@@ -94,7 +95,7 @@ catch_all_error_over_t_over_p = []
 catch_all_date_over_t_over_p = []
 
 for j in catch_all_prior_over_all_t: #LOOP OVER PRIORS
-    
+    print('J is:',j)
     print('NEW PRIOR')
     print('NEW PRIOR')
     catch_all_t_over_t = ([])
@@ -104,19 +105,25 @@ for j in catch_all_prior_over_all_t: #LOOP OVER PRIORS
     catch_all_date_over_t = ([])
 
     for i in range(0,len(df_S_w2)):#CAPTURE HUMAN DATA T AND PRED
+    #for i in range(0,3):#CAPTURE HUMAN DATA T AND PRED
         t = df_S_w2.t_w2_int.iloc[i] #P
         print('t',t)
         catch_all_t_over_t = np.append(catch_all_t_over_t,t)
         #optimal_pred = catch_all_prior_over_all_t[0][t-1]#index zero is t=1
-        #print('LEN of J',len(j))
-        if t-1<len(j):
-            optimal_pred = j[t-1]#index zero is t=1
+        print('LEN of J',len(j))
+        if (t>=0) & (t<=len(j)-1):
+            print('T IS WITHIN PRIOR,  GOOOD')
+            optimal_pred = j[t]
         else:
-            print('T-1 OUT OF RANGE OF Ts in PRIOR')
-            optimal_pred = j[-1]
+            if t-1<len(j):
+                optimal_pred = j[0]#index zero is t=1
+                print('T is LESS THAN j[t-1] is: ',j[t-1])
+            else:
+                print('T IS GREATER THAN OUT OF RANGE OF Ts in PRIOR')
+                optimal_pred = j[-1]
         catch_all_optimal_pred_over_t = np.append(catch_all_optimal_pred_over_t,optimal_pred)
         print('optimal pred',optimal_pred)
-        human_pred = df_S_w2.prediction_w2.iloc[i]
+        human_pred = df_S_w2.prediction_w2_int.iloc[i]
         catch_all_human_pred_over_t = np.append(catch_all_human_pred_over_t,human_pred)
         print('human pred', human_pred)
         error = human_pred - optimal_pred
