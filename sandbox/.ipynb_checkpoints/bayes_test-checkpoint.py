@@ -19,7 +19,7 @@ but modified as needed below for testing purposes.
 '''
 
 '''GENERATE BASIC DATA STRUCTURE'''
-S_no = 109742
+S_no = 112197
 
 df_S_in = pd.read_csv(f'Sub_{S_no}_BayesData_r1_r4_highest.csv')
 df_S_tmp = df_S_in[['user_id','date','0']]
@@ -65,7 +65,7 @@ III.  GENERATE PRIORS
 '''
 
 #FOR PRIOR
-N = 10
+N = 100
 
 '''COMPUTE PRIORS'''
 catch_all_prior_over_all_t = []
@@ -158,7 +158,7 @@ for j in catch_all_prior_over_all_t: #LOOP OVER PRIORS
 for i in catch_all_error_over_t_over_p: plt.plot(i)
 for i in catch_all_p_dur_over_t_over_p: plt.plot(i)
 for i in catch_all_optimal_pred_over_t_over_p: plt.plot(i)
-'''PLOT THESE TOGETHER FOR A NICE LOOK'''
+'''PLOT THESE TOGETHER FOR A NICE LOOK AND SANITY CHECK'''
 #S HAS TWO REGIMES (one with constant decreasing)
 #SEE: 
 df_error = pd.DataFrame(catch_all_error_over_t_over_p).T
@@ -166,16 +166,32 @@ df_error = pd.DataFrame(catch_all_error_over_t_over_p).T
 df_error.index = df_S_w2.decision_date.reset_index(drop=True)
 df_error.columns = catch_prior_index
 #TESTS BLOW
-df_error.abs().idxmin(axis=1).plot()
-df_error.abs().idxmin(axis=1)
-df_error.abs().min(axis=1)
-df_error.min(axis=1)
+#df_error.abs().idxmin(axis=1).plot()
+#df_error.abs().idxmin(axis=1)
+#df_error.abs().min(axis=1)
+#df_error.min(axis=1)
 #MAKE THIS FOR MAIN ANALYSIS STRUCTUR
 plot_this = df_error.abs().idxmin(axis=1)
-plot_this.to_csv(f'plot_this_{S_no}_highest.csv',header=['best_prior'])
+#plot_this.to_csv(f'plot_this_{S_no}_highest.csv',header=['best_prior'])
 
+#MAKE THIS FOR SANITY CHECK
+S_ts = pd.Series(catch_all_t_over_t,index=df_S_w2.decision_date.reset_index(drop=True),name='t')
+S_hp = pd.Series(catch_all_human_pred_over_t,index=df_S_w2.decision_date.reset_index(drop=True),name='hum')
+S_pd = pd.Series(catch_all_p_dur_over_t,index=df_S_w2.decision_date.reset_index(drop=True),name='p_dur')
+S_er = df_error.abs().min(axis=1)
+plot_this.name='prior'
+S_er.name='err'
 
+#THIS DATAFRAME IS FUCKED UP, NOT QUITE WORK AS EXPECTED
+S_tmp = pd.merge(S_ts,S_hp,left_index=True,right_index=True,how='outer')
+S_tmp = pd.merge(S_tmp,S_pd,left_index=True,right_index=True,how='outer')
+S_tmp = pd.merge(S_tmp,plot_this,left_index=True,right_index=True,how='ou
+                 ter')
+S_tmp = pd.merge(S_tmp,S_er,left_index=True,right_index=True,how='outer')
 
+S_tmp.plot()
+
+pd.concat([S_ts, S_hp, S_pd, plot_this, S_er], axis=1)
 
 
 #EOF
