@@ -52,7 +52,13 @@ df_S['prediction_duration_int'] = df_S['prediction_duration'].map(lambda x: x.da
 
 df_S_w2 = df_S.copy()
 
-
+'''
+SHOULD ADD SOME ADDITIONAL CLEANING STEPS
+1. remove t < 0
+2. remove pred duration < 0
+'''
+df_S_w2 = df_S_w2[df_S_w2.t_w2_int > 0]
+df_S_w2 = df_S_w2[df_S_w2.prediction_duration_int>0]
 
 '''
 III.  GENERATE PRIORS
@@ -90,9 +96,11 @@ IV.  GENERATE BEST PRIORS FOR W2
 '''    
 catch_all_t_over_t_over_p = []
 catch_all_optimal_pred_over_t_over_p = []
+catch_tmp_optimal_over_p = []
 catch_all_human_pred_over_t_over_p = []
 catch_all_error_over_t_over_p = []
 catch_all_date_over_t_over_p = []
+catch_all_p_dur_over_t_over_p = []
 
 for j in catch_all_prior_over_all_t: #LOOP OVER PRIORS
     print('J is:',j)
@@ -100,29 +108,33 @@ for j in catch_all_prior_over_all_t: #LOOP OVER PRIORS
     print('NEW PRIOR')
     catch_all_t_over_t = ([])
     catch_all_optimal_pred_over_t = ([])
+    catch_tmp_optimal_over_t = ([])
     catch_all_human_pred_over_t = ([])
     catch_all_error_over_t = ([])
     catch_all_date_over_t = ([])
+    catch_all_p_dur_over_t = ([])
 
     for i in range(0,len(df_S_w2)):#CAPTURE HUMAN DATA T AND PRED
     #for i in range(0,3):#CAPTURE HUMAN DATA T AND PRED
         t = df_S_w2.t_w2_int.iloc[i] #P
+        
+        p_dur = df_S_w2.prediction_duration_int.iloc[i]
+        catch_all_p_dur_over_t = np.append(catch_all_p_dur_over_t,p_dur)
+        
         print('t',t)
         catch_all_t_over_t = np.append(catch_all_t_over_t,t)
         #optimal_pred = catch_all_prior_over_all_t[0][t-1]#index zero is t=1
         print('LEN of J',len(j))
-        if (t>=0) & (t<=len(j)-1):
+        if (t>0) & (t<=len(j)):#t-time is j[j.index+1]
             print('T IS WITHIN PRIOR,  GOOOD')
-            optimal_pred = j[t]
+            optimal_pred = j[t-1]
         else:
-            if t-1<len(j):
-                optimal_pred = j[0]#index zero is t=1
-                print('T is LESS THAN j[t-1] is: ',j[t-1])
-            else:
-                print('T IS GREATER THAN OUT OF RANGE OF Ts in PRIOR')
-                optimal_pred = j[-1]
+            print('T IS GREATER THAN Ts in PRIOR')
+            optimal_pred = j[-1]
         catch_all_optimal_pred_over_t = np.append(catch_all_optimal_pred_over_t,optimal_pred)
         print('optimal pred',optimal_pred)
+        catch_tmp_optimal_over_t = np.append(catch_tmp_optimal_over_t,b_fit.find_optimal(t,j))
+        
         human_pred = df_S_w2.prediction_w2_int.iloc[i]
         catch_all_human_pred_over_t = np.append(catch_all_human_pred_over_t,human_pred)
         print('human pred', human_pred)
@@ -134,13 +146,19 @@ for j in catch_all_prior_over_all_t: #LOOP OVER PRIORS
     
     catch_all_t_over_t_over_p.append(catch_all_t_over_t)
     catch_all_optimal_pred_over_t_over_p.append(catch_all_optimal_pred_over_t)
+    catch_tmp_optimal_over_p.append(catch_tmp_optimal_over_t)
     catch_all_human_pred_over_t_over_p.append(catch_all_human_pred_over_t)
     catch_all_error_over_t_over_p.append(catch_all_error_over_t)
     catch_all_date_over_t_over_p.append(catch_all_date_over_t)
-
+    catch_all_p_dur_over_t_over_p.append(catch_all_p_dur_over_t)
+#TEST FOR FINDAL OPTIMAL FUNCTION SHOULD BE ZERO SUM
+(np.array(catch_all_optimal_pred_over_t_over_p)-np.array(catch_tmp_optimal_over_p)).sum()
 
 '''PICK BEST PRIOR'''
 for i in catch_all_error_over_t_over_p: plt.plot(i)
+for i in catch_all_p_dur_over_t_over_p: plt.plot(i)
+for i in catch_all_optimal_pred_over_t_over_p: plt.plot(i)
+'''PLOT THESE TOGETHER FOR A NICE LOOK'''
 #S HAS TWO REGIMES (one with constant decreasing)
 #SEE: 
 df_error = pd.DataFrame(catch_all_error_over_t_over_p).T
