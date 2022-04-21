@@ -60,18 +60,33 @@ SHOULD ADD SOME ADDITIONAL CLEANING STEPS
 df_S_w2 = df_S_w2[df_S_w2.t_w2_int > 0]
 df_S_w2 = df_S_w2[df_S_w2.prediction_duration_int>0]
 
+
+
+'''
+FUN TEST
+
+'''
+index_for_all = pd.date_range('2022-01-01','2022-02-14')
+S_0 = pd.Series(pd.date_range('2022-01-01','2022-02-14'),name='decision_date')
+S_1 = pd.Series(range(1,1+len(index_for_all)),name='t_w2_int')
+S_2 = pd.Series(np.repeat(45,len(index_for_all)),name='prediction_w2_int')
+S_3 = pd.Series(45-S_1,name='prediction_duration_int')
+
+df_S_w2 = pd.concat([S_0,S_1,S_2,S_3],axis=1)
+
+
 '''
 III.  GENERATE PRIORS
 '''
 
 #FOR PRIOR
-N = 100
+N = 1000
 
 '''COMPUTE PRIORS'''
 catch_all_prior_over_all_t = []
 catch_prior_index = []
 #COMPUTE PRIORS
-for i in range(40,60):
+for i in range(38,46):
     catch_prior_index.append(i)
     #MAKE PRIOR FOR MEAN as i
     dist_prior = np.random.poisson(i,N)
@@ -89,7 +104,6 @@ for i in range(40,60):
     catch_all_prior_over_all_t.append(catch_prior_over_all_t)
 
 for t in range(1,int(dist_prior_event_probs.index[-1])): print(t)
-
     
 '''
 IV.  GENERATE BEST PRIORS FOR W2
@@ -182,16 +196,8 @@ S_er = df_error.abs().min(axis=1)
 plot_this.name='prior'
 S_er.name='err'
 
-#THIS DATAFRAME IS FUCKED UP, NOT QUITE WORK AS EXPECTED
-S_tmp = pd.merge(S_ts,S_hp,left_index=True,right_index=True,how='outer')
-S_tmp = pd.merge(S_tmp,S_pd,left_index=True,right_index=True,how='outer')
-S_tmp = pd.merge(S_tmp,plot_this,left_index=True,right_index=True,how='ou
-                 ter')
-S_tmp = pd.merge(S_tmp,S_er,left_index=True,right_index=True,how='outer')
-
-S_tmp.plot()
-
-pd.concat([S_ts, S_hp, S_pd, plot_this, S_er], axis=1)
+S_all = pd.concat([S_ts, S_hp, S_pd, plot_this, S_er], axis=1)
+S_all.plot()
 
 
 #EOF
