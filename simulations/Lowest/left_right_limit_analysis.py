@@ -11,6 +11,88 @@ import bayes
 
 datadir = '/Users/biocomplexity/Projects/SocioCognitiveModeling/Metaculus_CogModeling/simulations/InputData'
 
+'''WILL DO:
+RD 3 and 4 for lowest bc judgements were left-mins mostly
+RD 1, 2 and 3 for highest because peak was first day of 
+'''
+
+'''DATES FOR MIN MAX'''
+min_r1 = datetime.strptime('20211111', "%Y%m%d")
+max_r1 = datetime.strptime('20220202', "%Y%m%d")#offset of -1 from published date accounted for here
+min_r2 = datetime.strptime('20211203', "%Y%m%d")
+max_r2 = datetime.strptime('20220224', "%Y%m%d")#offset of -1 from published date accounted for here
+min_r3 = datetime.strptime('20211224', "%Y%m%d")
+max_r3 = datetime.strptime('20220317', "%Y%m%d")#offset of -1 from published date accounted for here
+min_r4 = datetime.strptime('20220114', "%Y%m%d")
+max_r4 = datetime.strptime('20220407', "%Y%m%d")#offset of -1 from published date accounted for here
+
+
+
+'''QUESTION'''
+'''TEST FOR question level data.'''
+df_S_in = pd.read_csv(f'{datadir}/AllSubs_q8568.csv')
+df_S_tmp = df_S_in[['user_id','date','0']]
+df_S_tmp.columns = ['user_id','decision_date_str','prediction_date_str']
+df_S_tmp['decision_date'] = df_S_tmp['decision_date_str'].map(lambda x: datetime.strptime(x.split(' ')[0], '%Y-%m-%d'))
+df_S_tmp['prediction_date'] = df_S_tmp['prediction_date_str'].map(lambda x: datetime.strptime(x.split(' ')[0], '%Y-%m-%d'))
+df_use = df_S_tmp.copy()
+df_use = df_use.sort_values(by='decision_date')
+
+#RD 1 Q
+df_use['min_r1'] = min_r1
+df_use['min_diff_r1'] = df_use['min_r1'] - df_use['prediction_date'] 
+df_use['min_diff_r1_days'] = df_use.min_diff_r1.map(lambda x: x.days)
+df_use['max_r1'] = max_r1
+df_use['max_diff_r1'] = df_use['prediction_date'] - df_use['max_r1']
+df_use['max_diff_r1_days'] = df_use.max_diff_r1.map(lambda x: x.days)
+'''NEED SIMPLE METHOD TO DETECT MAX-MINers'''
+
+'''MAXERS'''
+df_use['maxers'] = 0
+df_use.loc[df_use.max_diff_r1_days==0,'maxers'] = 1
+df_use.maxers.value_counts()
+
+df_use['max_gooders'] = 0
+df_use.loc[df_use.max_diff_r1_days<0,'max_gooders'] = 1
+df_use.max_gooders.value_counts()
+
+'''BASIC FREQ PLOT'''
+'''LOOKING FOR ZERO OR +-1 of ZERO'''
+plt.hist(df_use.max_diff_r1_days,bins=140)
+
+'''MINERS'''
+df_use['miners'] = 0
+df_use.loc[df_use.min_diff_r1_days==0,'miners'] = 1
+df_use.miners.value_counts()
+
+df_use['min_gooders'] = 0
+df_use.loc[df_use.min_diff_r1_days<0,'min_gooders'] = 1
+df_use.min_gooders.value_counts()
+
+'''BASIC FREQ PLOT'''
+'''LOOKING FOR ZERO OR +-1 of ZERO'''
+plt.hist(df_use.min_diff_r1_days,bins=140)
+
+
+'''MINERS FUTHER ANALYSIS'''
+df_use_gb_user_id_sum = df_use.groupby(by=df_use.user_id).sum()
+df_use_gb_user_id_sum.loc[df_use_gb_user_id_sum.miners>0]['miners']
+
+
+
+
+
+
+
+
+
+
+
+
+
+'''OLD BELOW HERE'''
+'''OLD BELOW HERE'''
+'''OLD BELOW HERE'''
 '''GENERATE BASIC DATA STRUCTURE'''
 df_S_in = pd.read_csv(f'{datadir}/AllSubs_HighestLowest_r1_r4.csv')
 df_S_tmp = df_S_in[['user_id','date','date_hms','0']]
