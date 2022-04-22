@@ -8,8 +8,9 @@ from imp import reload
 import sys
 sys.path.insert(1,'/Users/biocomplexity/Projects/SocioCognitiveModeling/Metaculus_CogModeling/bayes_pack_testing')
 import bayes
+import b_fit
 
-#reload(bayes)
+reload(bayes)
 
 
 '''
@@ -19,7 +20,7 @@ but modified as needed below for testing purposes.
 '''
 
 '''GENERATE BASIC DATA STRUCTURE'''
-S_no = 112197
+S_no = 112076
 
 df_S_in = pd.read_csv(f'Sub_{S_no}_BayesData_r1_r4_highest.csv')
 df_S_tmp = df_S_in[['user_id','date','0']]
@@ -169,9 +170,9 @@ for j in catch_all_prior_over_all_t: #LOOP OVER PRIORS
 (np.array(catch_all_optimal_pred_over_t_over_p)-np.array(catch_tmp_optimal_over_p)).sum()
 
 '''PICK BEST PRIOR'''
-for i in catch_all_error_over_t_over_p: plt.plot(i)
-for i in catch_all_p_dur_over_t_over_p: plt.plot(i)
-for i in catch_all_optimal_pred_over_t_over_p: plt.plot(i)
+#for i in catch_all_error_over_t_over_p: plt.plot(i)
+#for i in catch_all_p_dur_over_t_over_p: plt.plot(i)
+#for i in catch_all_optimal_pred_over_t_over_p: plt.plot(i)
 '''PLOT THESE TOGETHER FOR A NICE LOOK AND SANITY CHECK'''
 #S HAS TWO REGIMES (one with constant decreasing)
 #SEE: 

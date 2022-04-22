@@ -1,0 +1,23 @@
+,0,1,2,3,4,5,6,7,8
+0,9018,"('right-min', -83)","('right-max', -1)","('left-min', -82)","('left-max', 0)",MINERS Ss,"user_id
+118777    1
+119839    2
+Name: miners, dtype: int64",MAXERS Ss,"Series([], Name: maxers, dtype: int64)"
+1,9426,"('right-min', -17)","('right-max', -1)","('left-min', -82)","('left-max', -66)",MINERS Ss,"Series([], Name: miners, dtype: int64)",MAXERS Ss,"Series([], Name: maxers, dtype: int64)"
+2,8570,"('right-min', -92)","('right-max', -36)","('left-min', -47)","('left-max', 9)",MINERS Ss,"Series([], Name: miners, dtype: int64)",MAXERS Ss,"Series([], Name: maxers, dtype: int64)"
+3,8799,"('right-min', -75)","('right-max', -23)","('left-min', -60)","('left-max', -8)",MINERS Ss,"Series([], Name: miners, dtype: int64)",MAXERS Ss,"Series([], Name: maxers, dtype: int64)"
+4,9016,"('right-min', -96)","('right-max', -62)","('left-min', -21)","('left-max', 13)",MINERS Ss,"user_id
+109233     1
+109742     5
+111856     1
+112076    13
+112197     4
+112705     2
+113141     2
+114156     2
+115725     7
+116440     1
+116812     1
+119005     1
+119188     2
+Name: miners, dtype: int64",MAXERS Ss,"Series([], Name: maxers, dtype: int64)"
