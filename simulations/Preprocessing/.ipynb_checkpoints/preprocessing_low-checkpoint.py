@@ -13,13 +13,13 @@ import b_fit
 reload(bayes)
 
 datadir = '/Users/biocomplexity/Projects/SocioCognitiveModeling/Metaculus_CogModeling/simulations/InputData'
-
+datasavename='Final_Cleaned_Low_R3_R4'
 
 '''
-DO HIGHEST FIRST
-ROUND 1,2,3
+DO LOWEST
+ROUND 3, 4
 '''
-q_list = [8570, 8799, 9016]
+q_list = [9018, 9426]
 
 '''DATES FOR MIN MAX'''
 min_r1 = datetime.strptime('20211111', "%Y%m%d")
@@ -35,6 +35,7 @@ max_r4 = datetime.strptime('20220407', "%Y%m%d")#offset of -1 from published dat
 catch_miners_maxers_analy = []
 counter = 0
 for i in q_list:
+    print('QUESTION NUMBER: ',i)
     df_S_in = pd.read_csv(f'{datadir}/AllSubs_q{i}.csv')
     df_S_tmp = df_S_in[['user_id','date','0']].copy()
     df_S_tmp.columns = ['user_id','decision_date_str','prediction_date_str']
@@ -121,7 +122,20 @@ for i in q_list:
 
 #LOOP END
 
+'''DOUBLE CHECK ON MINER MAXERS'''
+catch_miners_maxers_analy
+#OOOD
+
 '''BEGIN DATA CLEANING'''
+#MINERS
+df_use_all.miners.value_counts(dropna=False)
+#NONE, but put code here for generality
+df_use_all = df_use_all[df_use_all.miners==0]
+#MAXERS
+df_use_all.maxers.value_counts()
+#NONE, but put code here for generality
+df_use_all = df_use_all[df_use_all.maxers==0]
+
 #T less than the begin_wave, t_int is negative
 plt.hist(df_use_all.t_int,bins=100)
 df_use_all = df_use_all[df_use_all.t_int>0]
@@ -129,19 +143,19 @@ df_use_all = df_use_all[df_use_all.t_int>0]
 #t greater than prediction (horizon is negative)
 plt.hist(df_use_all.prediction_horiz_int,bins=100)
 df_use_all = df_use_all[df_use_all.prediction_horiz_int>0]
+'''CLEAN FROM HERE ON'''
+len(df_use_all)
+#LEN IS 195
 
-'''SHOULD BE CLEAN'''
 #TAKE A LOOK FOR SANITY CHECK
 df_use_all.columns
 df_use_all[['decision_date','prediction_date','t_int','prediction_int','prediction_horiz']]
 #SAVE AS PICKLE
-df_use_all.to_pickle('.pkl')
-df_test = pd.read_pickle('test.pkl')
-
+df_use_all.to_pickle(f'{datasavename}.pkl')
 
 '''ANALYSIS OF FREQUENCY OF JUDGMENTS PER S'''
 user_gb = df_use_all.groupby(by=df_use_all.user_id).count() 
-user_gb.decision_date.sort_values()
-
+user_gb_out = user_gb.decision_date.sort_values()
+user_gb_out.to_csv(f'{datasavename}_S_freqs.csv')
 
 #EOF
