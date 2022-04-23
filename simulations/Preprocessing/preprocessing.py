@@ -14,6 +14,7 @@ reload(bayes)
 
 datadir = '/Users/biocomplexity/Projects/SocioCognitiveModeling/Metaculus_CogModeling/simulations/InputData'
 
+
 '''
 DO HIGHEST FIRST
 ROUND 1,2,3
@@ -130,7 +131,17 @@ plt.hist(df_use_all.prediction_horiz_int,bins=100)
 df_use_all = df_use_all[df_use_all.prediction_horiz_int>0]
 
 '''SHOULD BE CLEAN'''
+#TAKE A LOOK FOR SANITY CHECK
 df_use_all.columns
-df_use_all[['decision_date','prediction_date']]
+df_use_all[['decision_date','prediction_date','t_int','prediction_int','prediction_horiz']]
+#SAVE AS PICKLE
+df_use_all.to_pickle('.pkl')
+df_test = pd.read_pickle('test.pkl')
+
+
+'''ANALYSIS OF FREQUENCY OF JUDGMENTS PER S'''
+user_gb = df_use_all.groupby(by=df_use_all.user_id).count() 
+user_gb.decision_date.sort_values()
+
 
 #EOF
