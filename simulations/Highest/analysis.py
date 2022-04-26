@@ -145,37 +145,54 @@ plt.savefig('Final_Plot.png', dpi=300, transparent=False, bbox_inches='tight')
 
 
 '''ALL GPs on ONE PLOT'''
+plt.style.use('fast')
 #COLORBLIND SAFE
-colors = ['#ff0000', '#a68465', '#bb8a86', '#da8ba2', '#92a6b1', '#778688', '#5c6673', '#17439b']
-#colors = ['#ee5553', '#ca6357', '#a9685d', '#8b6865', '#70656e', '#576079', '#405886', '#284e95', '#0041a6']
+#colors = ['#ff0000', '#a68465', '#bb8a86', '#da8ba2', '#92a6b1', '#778688', '#5c6673', '#17439b']
+colors = ['#ee5553', '#ca6357', '#a9685d', '#8b6865', '#70656e', '#576079', '#405886', '#284e95', '#0041a6']
 fig = plt.figure(figsize=(7, 5))
 
 ax = fig.add_axes([0, 0, 2, 2])
-ax.set_title(f'Human Judgments and Optimal All Individuals')
-ax.set_xlabel('Date', labelpad=10)
-ax.set_ylabel('Days', labelpad=10)
+ax.set_title(f'Human Judgments and Optimal All Individuals',size=20)
+ax.set_xlabel('Date', labelpad=10,size=20)
+ax.set_ylabel('Days', labelpad=10,size=20)
 
 ax.set_ylim(0, 90)
 ax.xaxis.set_tick_params(which='major', size=10, width=2, direction='in', top='on')
 ax.xaxis.set_tick_params(which='minor', size=7, width=2, direction='in', top='on')
 ax.yaxis.set_tick_params(which='major', size=10, width=2, direction='in', right='on')
 ax.yaxis.set_tick_params(which='minor', size=7, width=2, direction='in', right='on')
+ax.tick_params(axis='x', labelsize=15)
+ax.tick_params(axis='y', labelsize=15)
 ax.spines['right'].set_visible(False)
 ax.spines['top'].set_visible(False)
 
-#gp_no = group_list[0]
-#i = catch_groups[0]
-#ax.scatter(i.index, i.p_dur,linewidth=2,color=colors[0],label='raw')
-#ax.plot(i.prior.rolling(21).mean(),label='optimal',color='black')
-#ax.plot(i.hum.rolling(21).mean(),label='human',color='red')
-#ax.plot(i.p_dur.rolling(21).mean(),label='raw',color=colors[0])
+gp_no = group_list[0]
+i = catch_groups[0]
+'''aVE OVER DAY'''
+grouped = i.groupby(level=0)
 
-gp_no = group_list[1]
-i = catch_groups[1]
-ax.scatter(i.index, i.p_dur,linewidth=2,color=colors[0],label=f'{gp_no}')
-ax.plot(i.prior.rolling(2).mean(),color='black')
-ax.plot(i.hum.rolling(2).mean(),color='red')
-ax.plot(i.p_dur.rolling(2).mean(),color=colors[0])
+ax.scatter(i.index, i.p_dur,color='black',label='horizon',marker='+',s=150,alpha=0.25)
+ax.plot(grouped.prior.mean().rolling(4).mean(),color='black',label='optimal | t',dashes=(0,2,2,2))
+ax.plot(grouped.hum.mean().rolling(4).mean(),color='black',label='human')
+ax.plot(grouped.p_dur.mean().rolling(4).mean(),color='black',label='horizon',dashes=(0,0,2,2))
+
+ax.axvline(x=datetime.strptime('2021-12-24','%Y-%m-%d'),c='black',dashes=(6,6,6,6),linewidth=1)
+ax.axvline(x=datetime.strptime('2022-01-14','%Y-%m-%d'),c='black',dashes=(6,6,6,6),linewidth=1)
+ax.axhline(y=42,c='black',dashes=(2,2,2,2),linewidth=1,alpha=0.2)
+ax.legend(bbox_to_anchor=(.85, .85), loc=1, frameon=False, fontsize=20)
+plt.savefig('All_Ss_BandW.png', dpi=300, transparent=False, bbox_inches='tight')
+plt.show()
+
+
+
+
+
+ax.scatter(i.index, i.p_dur,linewidth=2,color=colors[0],label='raw')
+ax.plot(i.prior.rolling(21).mean(),label='optimal',color='black')
+ax.plot(i.hum.rolling(21).mean(),label='human',color='red')
+ax.plot(i.p_dur.rolling(21).mean(),label='raw',color=colors[0])
+
+
 
 gp_no = group_list[2]
 i = catch_groups[2]
