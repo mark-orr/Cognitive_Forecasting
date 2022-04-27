@@ -86,6 +86,9 @@ ax.legend(bbox_to_anchor=(.85, .85), loc=1, frameon=False, fontsize=20)
 plt.show()
 
 
+
+
+
 '''
 NEXT MAKE DELTA PLOT
 AND ADD EPI CURVE DELTA PLOT
@@ -166,14 +169,7 @@ plt.savefig(f'Good_Delta{gp_no}.png', dpi=300, transparent=False, bbox_inches='t
 plt.show()
 
 
-
-
-
-
-
-
-
-
+'''END ALL S PLOTTING'''
 
 
 
@@ -183,7 +179,6 @@ plt.show()
 
 '''PANELS'''
 '''ALL GPs on ONE PLOT'''
-
 fig_ax_dim_x=2
 fig_ax_dim_y=4
 fig, axes = plt.subplots(fig_ax_dim_y,fig_ax_dim_x,figsize=(8,8),sharex=True,sharey=True)
@@ -224,114 +219,63 @@ plt.savefig(f'Single_Subjects.png', dpi=300, transparent=False, bbox_inches='tig
 
 
 
+'''PANELS FOR DELTA'''
+fig_ax_dim_x=2
+fig_ax_dim_y=4
+fig, axes = plt.subplots(fig_ax_dim_y,fig_ax_dim_x,figsize=(8,8),sharex=True,sharey=True)
+leg_x = .92
+leg_y = 1
+#PANEL 0,0
+gp_ordering = [8,7,6,5,4,3,2,1]
+gp_counter = 0
+for k in range(0,fig_ax_dim_y):
+    for j in range(0,fig_ax_dim_x):
+        print(k,j,': is k,j')
+        print(gp_counter,': is GP COUNTER')
+        gp_no = group_list[gp_ordering[gp_counter]]
+        i = catch_groups[gp_ordering[gp_counter]]
+        '''aVE OVER DAY'''
+        grouped = i.groupby(level=0)
+        
+        '''ADD IN THE DELTA COMPUTE'''
+        test_mean = grouped.hum.mean().rolling(4).mean()
 
+        fwd_value = 5
+        test_mean_forward = test_mean.copy()
+        test_mean_forward = test_mean_forward.reset_index(drop=True)
+        test_mean_forward = test_mean_forward[:-fwd_value].reset_index(drop=True)
+        test_mean_forward = pd.concat([pd.Series(np.full(fwd_value,fill_value=np.NaN)),test_mean_forward],axis=0)
+        test_mean_forward.index = test_mean.index
+        test_mean_forward.name = 'forward'
 
+        df_test_mean_forward = pd.concat([test_mean,test_mean_forward],axis=1)
+        df_test_mean_forward['delta'] = df_test_mean_forward.hum - df_test_mean_forward.forward
+        df_test_mean_forward['delta_norm']=df_test_mean_forward.delta/df_test_mean_forward.delta.max()
+        
+        
+        axes[k,j].plot(df_test_mean_forward.delta_norm,color='black',label='human t_total delta',alpha=0.7)
+        axes[k,j].plot(df_vdh_use_forward.delta_norm,color='black',label='cases',dashes=(2,2,2,2),alpha=0.7,linewidth=1.3)
+        
+        
+        axes[k,j].legend(bbox_to_anchor=(leg_x,leg_y), loc=1, frameon=False, fontsize=5)
+        axes[k,j].set_ylim(-1.8, 1.8)
+        axes[k,j].axvline(x=datetime.strptime('2021-12-24','%Y-%m-%d'),c='black',dashes=(6,6,6,6),linewidth=1)
+        axes[k,j].axvline(x=datetime.strptime('2022-01-14','%Y-%m-%d'),c='black',dashes=(6,6,6,6),linewidth=1)
+        axes[k,j].text(datetime.strptime('2021-12-06','%Y-%m-%d'),1.5,gp_no,fontsize=10)
+        gp_counter += 1
+#LABELS
+axes[3,0].set_xlabel('Date', labelpad=10,size=10)
+axes[3,0].tick_params(axis='x', labelsize=5)
+axes[3,1].set_xlabel('Date', labelpad=10,size=10)
+axes[3,1].tick_params(axis='x', labelsize=5)
 
+axes[0,0].set_ylabel('Normed Delta', labelpad=10,size=10)
+axes[1,0].set_ylabel('Normed Delta', labelpad=10,size=10)
+axes[2,0].set_ylabel('Normed Delta', labelpad=10,size=10)
+axes[3,0].set_ylabel('Normed Delta', labelpad=10,size=10)
+plt.subplots_adjust(wspace=.1,hspace=0.1)
 
-
-
-
-ax.xaxis.set_tick_params(which='major', size=10, width=2, direction='in', top='on')
-ax.xaxis.set_tick_params(which='minor', size=7, width=2, direction='in', top='on')
-ax.yaxis.set_tick_params(which='major', size=10, width=2, direction='in', right='on')
-ax.yaxis.set_tick_params(which='minor', size=7, width=2, direction='in', right='on')
-ax.tick_params(axis='x', labelsize=15)
-ax.tick_params(axis='y', labelsize=15)
-ax.spines['right'].set_visible(False)
-ax.spines['top'].set_visible(False)
-
-gp_no = group_list[0]
-i = catch_groups[0]
-'''aVE OVER DAY'''
-grouped = i.groupby(level=0)
-ax.scatter(i.index, i.p_dur,color='black',label='human horizon',marker='+',s=150,alpha=0.25)
-ax.plot(grouped.prior.mean().rolling(4).mean(),color='black',label='prior',dashes=(0,2,2,2))
-ax.plot(grouped.hum.mean().rolling(4).mean(),color='black',label='human t_total')
-ax.plot(grouped.p_dur.mean().rolling(4).mean(),color='black',label='human horizon',dashes=(0,0,2,2))
-#ax.plot(df_test_mean_forward.delta,color='black',label='human t_total delta',dashes=(6,6,6,6),alpha=0.3)
-
-ax.axvline(x=datetime.strptime('2021-12-24','%Y-%m-%d'),c='black',dashes=(6,6,6,6),linewidth=1)
-ax.axvline(x=datetime.strptime('2022-01-14','%Y-%m-%d'),c='black',dashes=(6,6,6,6),linewidth=1)
-ax.axhline(y=42,c='black',dashes=(2,2,2,2),linewidth=1,alpha=0.2)
-ax.axhline(y=0,c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.3)
-ax.legend(bbox_to_anchor=(.85, .85), loc=1, frameon=False, fontsize=20)
-#plt.savefig(f'Good_{gp_no}.png', dpi=300, transparent=False, bbox_inches='tight')
-plt.show()
-
-
-
-
-
-
-'''
-NOTE TO DO
-MAKE PANELS AND PLOT EACH ONE OF THESE
-'''
-gp_no = group_list[2]
-i = catch_groups[2]
-ax.scatter(i.index, i.p_dur,linewidth=2,color=colors[1],label=f'{gp_no}')
-ax.plot(i.prior.rolling(2).mean(),color='black')
-ax.plot(i.hum.rolling(2).mean(),color='red')
-ax.plot(i.p_dur.rolling(2).mean(),color=colors[1])
-
-gp_no = group_list[3]
-i = catch_groups[3]
-ax.scatter(i.index, i.p_dur,linewidth=2,color=colors[2],label=f'{gp_no}')
-ax.plot(i.prior.rolling(2).mean(),color=colors[2])
-ax.plot(i.hum.rolling(2).mean(),color='red')
-ax.plot(i.p_dur.rolling(2).mean(),color=colors[2])
-
-gp_no = group_list[4]
-i = catch_groups[4]
-ax.scatter(i.index, i.p_dur,linewidth=2,color=colors[3],label=f'{gp_no}')
-ax.plot(i.prior.rolling(2).mean(),color=colors[3])
-ax.plot(i.hum.rolling(2).mean(),color='red')
-ax.plot(i.p_dur.rolling(2).mean(),color=colors[3])
-
-gp_no = group_list[5]
-i = catch_groups[5]
-ax.scatter(i.index, i.p_dur,linewidth=2,color=colors[4],label=f'{gp_no}')
-ax.plot(i.prior.rolling(2).mean(),color='black')
-ax.plot(i.hum.rolling(2).mean(),color='red')
-ax.plot(i.p_dur.rolling(2).mean(),color=colors[4])
-
-gp_no = group_list[6]
-i = catch_groups[6]
-ax.scatter(i.index, i.p_dur,linewidth=2,color=colors[5],label=f'{gp_no}')
-ax.plot(i.prior.rolling(2).mean(),color='black')
-ax.plot(i.hum.rolling(2).mean(),color='red')
-ax.plot(i.p_dur.rolling(2).mean(),color=colors[5])
-
-gp_no = group_list[7]
-i = catch_groups[7]
-ax.scatter(i.index, i.p_dur,linewidth=2,color=colors[6],label=f'{gp_no}')
-ax.plot(i.prior.rolling(2).mean(),color='black')
-ax.plot(i.hum.rolling(2).mean(),color='red')
-ax.plot(i.p_dur.rolling(2).mean(),color=colors[6])
-
-gp_no = group_list[8]
-i = catch_groups[8]
-ax.scatter(i.index, i.p_dur,linewidth=2,color=colors[7],label=f'{gp_no}')
-ax.plot(i.prior.rolling(2).mean(),color='black')
-ax.plot(i.hum.rolling(2).mean(),color='red')
-ax.plot(i.p_dur.rolling(2).mean(),color=colors[7])
-
-
-ax.legend(bbox_to_anchor=(1, 1), loc=1, frameon=False, fontsize=16)
-plt.savefig('Final_Plot.png', dpi=300, transparent=False, bbox_inches='tight')
-plt.show()
-
-
-
-
-
-
-
-
-
-
-
-
+plt.savefig(f'Single_Subjects_Delta.png', dpi=300, transparent=False, bbox_inches='tight')
 
 
 
