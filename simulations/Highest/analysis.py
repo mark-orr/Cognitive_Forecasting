@@ -4,6 +4,10 @@ import pandas as pd
 from datetime import datetime
 import pickle
 
+import matplotlib.font_manager as fm   
+from pylab import cm
+import matplotlib as mpl
+
 from imp import reload
 import sys
 sys.path.insert(1,'/Users/biocomplexity/Projects/SocioCognitiveModeling/Metaculus_CogModeling/bayes_pack_testing')
@@ -29,134 +33,30 @@ for i in group_list:
 
     '''GRAB DATA'''
     S_all = pd.read_pickle(f'S_all_{infile_name}_{infile_group}.csv')
-
     
-'''PLOT MESSY'''
-counter=0
-for i in catch_groups: 
-    if counter==0:
-        plt.scatter(i.index,i.p_dur)
-        i.prior.rolling(14).mean().plot(label='optimal')
-        i.hum.rolling(14).mean().plot(label='human')
-        i.p_dur.rolling(14).mean().plot(label='raw')
-    else:
-        i.prior.rolling(14).mean().plot(label='optimal')
-        i.hum.rolling(14).mean().plot(label='human')
-        i.p_dur.rolling(14).mean().plot(label='raw')
-    
-    #plt.legend()
-
-    counter =+ 1
-
-
-'''CLEAN: GNEERATES PNGS FOR EACH GROUP
-DOESNT QUITE WORK'''
-counter = 0 #FOR GROUP NAME in group_list
-for i in catch_groups: 
-        print(counter)
-        plt.scatter(i.index,i.p_dur)
-        i.prior.rolling(14).mean().plot(label='optimal')
-        i.hum.rolling(14).mean().plot(label='human')
-        i.p_dur.rolling(14).mean().plot(label='raw')
-        plt.savefig(f'{infile_name}_{group_list[counter]}.png',dpi=200)
-        counter += 1
+    catch_groups.append(S_all)
     
 
-group_list
-'''INITIAL PLOTS FOR WRITING'''
-gp_no = group_list[0]
-i = catch_groups[0]  
-plt.scatter(i.index,i.p_dur,label='raw')
-i.prior.rolling(4).mean().plot(label='optimal')
-i.hum.rolling(4).mean().plot(label='human')
-i.p_dur.rolling(4).mean().plot(label='raw')
-plt.title(f'Human Judgments and Optimal (GP={gp_no}')
-plt.ylabel('Days')
-plt.xlabel('DateTime')
-plt.axvline(x=datetime.strptime('2021-12-24','%Y-%m-%d'),c='b',dashes=(2,2,2,2),linewidth=1)
-plt.axvline(x=datetime.strptime('2022-01-14','%Y-%m-%d'),c='b',dashes=(2,2,2,2),linewidth=1)
-plt.legend()
-    
-
-    
-    
     
 '''FANCIER METHOD'''
 mpl.rcParams['font.family'] = 'Avenir'
 plt.rcParams['font.size'] = 18
 plt.rcParams['axes.linewidth'] = 2
-
-import matplotlib.font_manager as fm   
-from pylab import cm
-import matplotlib as mpl
-
 font_names = [f.name for f in fm.fontManager.ttflist]
 print(font_names)
-# Generate 2 colors from the 'tab10' colormap
-#colors = cm.get_cmap('tab10', 2)
-colors = ['#ab0049', '#ab7972', '#abc07e', '#d1ff00']
-# Create figure and add axes object
-fig = plt.figure()
-ax = fig.add_axes([0, 0, 1, 1])
-# Plot and show our data
-ax.scatter(i.index, i.p_dur)
-ax.plot(i.prior.rolling(4).mean())
-plt.show()
-    
-gp_no = group_list[0]
-i = catch_groups[0]
-
-fig = plt.figure(figsize=(7, 5))
-
-ax = fig.add_axes([0, 0, 2, 2])
-ax.set_title(f'Human Judgments and Optimal (GP={gp_no})')
-ax.set_xlabel('Date', labelpad=10)
-ax.set_ylabel('Days', labelpad=10)
-
-ax.set_ylim(0, 90)
-ax.xaxis.set_tick_params(which='major', size=10, width=2, direction='in', top='on')
-ax.xaxis.set_tick_params(which='minor', size=7, width=2, direction='in', top='on')
-ax.yaxis.set_tick_params(which='major', size=10, width=2, direction='in', right='on')
-ax.yaxis.set_tick_params(which='minor', size=7, width=2, direction='in', right='on')
-ax.spines['right'].set_visible(False)
-ax.spines['top'].set_visible(False)
-
-
-gp_no = group_list[0]
-i = catch_groups[0]
-ax.scatter(i.index, i.p_dur,linewidth=2,color=colors[0],label='raw')
-ax.plot(i.prior.rolling(21).mean(),label='optimal',color=colors[1])
-ax.plot(i.hum.rolling(21).mean(),label='human',color=colors[2])
-ax.plot(i.p_dur.rolling(21).mean(),label='raw',color=colors[0])
-
-gp_no = group_list[6]
-i = catch_groups[6]
-ax.scatter(i.index, i.p_dur,linewidth=2,color=colors[3],label='raw')
-ax.plot(i.prior.rolling(2).mean(),label='optimal',color=colors[1])
-ax.plot(i.hum.rolling(2).mean(),label='human',color=colors[2])
-ax.plot(i.p_dur.rolling(2).mean(),label='raw',color=colors[3])
-
-ax.legend(bbox_to_anchor=(1, 1), loc=1, frameon=False, fontsize=16)
-plt.show()
-
-
-plt.savefig('Final_Plot.png', dpi=300, transparent=False, bbox_inches='tight')
-
 
 
 '''ALL GPs on ONE PLOT'''
-plt.style.use('fast')
-#COLORBLIND SAFE
-#colors = ['#ff0000', '#a68465', '#bb8a86', '#da8ba2', '#92a6b1', '#778688', '#5c6673', '#17439b']
-colors = ['#ee5553', '#ca6357', '#a9685d', '#8b6865', '#70656e', '#576079', '#405886', '#284e95', '#0041a6']
+plt.style.use('default')
+
 fig = plt.figure(figsize=(7, 5))
 
 ax = fig.add_axes([0, 0, 2, 2])
-ax.set_title(f'Human Judgments and Optimal All Individuals',size=20)
+ax.set_title(f'Human Judgments and Estimated Priors',size=20)
 ax.set_xlabel('Date', labelpad=10,size=20)
 ax.set_ylabel('Days', labelpad=10,size=20)
 
-ax.set_ylim(0, 90)
+ax.set_ylim(-10, 90)
 ax.xaxis.set_tick_params(which='major', size=10, width=2, direction='in', top='on')
 ax.xaxis.set_tick_params(which='minor', size=7, width=2, direction='in', top='on')
 ax.yaxis.set_tick_params(which='major', size=10, width=2, direction='in', right='on')
@@ -170,30 +70,80 @@ gp_no = group_list[0]
 i = catch_groups[0]
 '''aVE OVER DAY'''
 grouped = i.groupby(level=0)
-
-ax.scatter(i.index, i.p_dur,color='black',label='horizon',marker='+',s=150,alpha=0.25)
-ax.plot(grouped.prior.mean().rolling(4).mean(),color='black',label='optimal | t',dashes=(0,2,2,2))
-ax.plot(grouped.hum.mean().rolling(4).mean(),color='black',label='human')
-ax.plot(grouped.p_dur.mean().rolling(4).mean(),color='black',label='horizon',dashes=(0,0,2,2))
+ax.scatter(i.index, i.p_dur,color='black',label='human horizon',marker='+',s=150,alpha=0.25)
+ax.plot(grouped.prior.mean().rolling(4).mean(),color='black',label='prior',dashes=(0,2,2,2))
+ax.plot(grouped.hum.mean().rolling(4).mean(),color='black',label='human t_total')
+ax.plot(grouped.p_dur.mean().rolling(4).mean(),color='black',label='human horizon',dashes=(0,0,2,2))
+ax.plot(df_test_mean_forward.delta,color='black',label='human t_total delta',dashes=(6,6,6,6),alpha=0.3)
 
 ax.axvline(x=datetime.strptime('2021-12-24','%Y-%m-%d'),c='black',dashes=(6,6,6,6),linewidth=1)
 ax.axvline(x=datetime.strptime('2022-01-14','%Y-%m-%d'),c='black',dashes=(6,6,6,6),linewidth=1)
 ax.axhline(y=42,c='black',dashes=(2,2,2,2),linewidth=1,alpha=0.2)
+ax.axhline(y=0,c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.3)
 ax.legend(bbox_to_anchor=(.85, .85), loc=1, frameon=False, fontsize=20)
-plt.savefig('All_Ss_BandW.png', dpi=300, transparent=False, bbox_inches='tight')
+#plt.savefig(f'Good_{gp_no}.png', dpi=300, transparent=False, bbox_inches='tight')
 plt.show()
 
 
+'''
+NEXT MAKE DELTA PLOT
+AND ADD EPI CURVE DELTA PLOT
+THEN MAKE PANEL FOR ALL Ss
+'''
+#ERROR PER GROUPTING
+grouped.hum.std()/grouped.hum.count()
+test_mean = grouped.hum.mean().rolling(4).mean()
+
+fwd_value = 3
+test_mean_forward = test_mean.copy()
+test_mean_forward = test_mean_forward.reset_index(drop=True)
+test_mean_forward = test_mean_forward[:-fwd_value].reset_index(drop=True)
+test_mean_forward = pd.concat([pd.Series(np.full(fwd_value,fill_value=np.NaN)),test_mean_forward],axis=0)
+test_mean_forward.index = test_mean.index
+test_mean_forward.name = 'forward'
+
+df_test_mean_forward = pd.concat([test_mean,test_mean_forward],axis=1)
+df_test_mean_forward['delta'] = df_test_mean_forward.hum - df_test_mean_forward.forward
+plt.plot(df_test_mean_forward.delta)
+
+
+'''ADD EPI'''
+'''DATA FROM VIRGINIA'''
+#SRINI RECOMMEND:
+'''/project/biocomplexity/COVID-19_commons/data/VDH_public/VDH-COVID-19-PublicUseDataset-Cases.csv'''
 
 
 
-ax.scatter(i.index, i.p_dur,linewidth=2,color=colors[0],label='raw')
-ax.plot(i.prior.rolling(21).mean(),label='optimal',color='black')
-ax.plot(i.hum.rolling(21).mean(),label='human',color='red')
-ax.plot(i.p_dur.rolling(21).mean(),label='raw',color=colors[0])
+#THIS IS COVID CAST EXAMPLE I THINK (DATA IN SANDBOX)
+df_va_ts = pd.read_csv('VA_Case_timeSeries.csv')
+#MAKE DELTA FOR index > 0
+S_cases = df_va_ts.total_cases
+S_delta = np.array([])
+S_delta = np.append(S_delta,10)
+for i in range(1,len(S_cases)):
+    delta_cases = S_cases[i]-S_cases[i-1]
+    S_delta = np.append(S_delta,delta_cases)
+S_cases.iloc[-1] - S_delta.sum()#should equal 57
+S_cases.index#JUST CHECKING
+df_va_ts.index#JUST CHECKING
+df_va_ts['incident_cases'] = S_delta
+df_va_ts.report_date[485:640]#HOMING IN
+df_ts_delta = df_va_ts['incident_cases'][485:640]
+df_ts_delta.index = df_va_ts.report_date[485:640]
+df_ts_delta.plot()
 
 
 
+
+
+
+
+
+
+'''
+NOTE TO DO
+MAKE PANELS AND PLOT EACH ONE OF THESE
+'''
 gp_no = group_list[2]
 i = catch_groups[2]
 ax.scatter(i.index, i.p_dur,linewidth=2,color=colors[1],label=f'{gp_no}')
@@ -262,39 +212,5 @@ plt.show()
 
 
 
-
-
-'''DEV HERE WITHOUT LOOP'''
-
-'''ANALYZE All Ss'''
-infile_group = 'all_S'
-
-'''GRAB DATA'''
-S_all = pd.read_pickle(f'S_all_{infile_name}_{infile_group}.csv')
-#FOR ANALYSIS
-S_all.plot()
-plt.scatter(S_all.index,S_all.hum)
-
-S_all.prior.rolling(14).mean().plot(label='optimal')
-S_all.hum.rolling(14).mean().plot(label='human')
-S_all.p_dur.rolling(14).mean().plot(label='raw')
-plt.legend()
-catch.append(S_all)
-
-
-'''SUBJECT X'''
-'''ANALYZE All Ss'''
-infile_group = 112076
-
-'''GRAB DATA'''
-S_all = pd.read_pickle(f'S_all_{infile_name}_{infile_group}.csv')
-#FOR ANALYSIS
-S_all.plot()
-plt.scatter(S_all.index,S_all.hum)
-
-S_all.prior.rolling(14).mean().plot(label='optimal')
-S_all.hum.rolling(14).mean().plot(label='human')
-S_all.p_dur.rolling(14).mean().plot(label='raw')
-plt.legend()
 
 #EOF

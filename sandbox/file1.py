@@ -130,8 +130,8 @@ def compute_posterior(t,dist):
 
 '''GENERATE PRIOR'''
 #GENERATOR
-N = 100
-dist_prior = np.random.poisson(140,N)
+N = 1000
+dist_prior = np.random.poisson(50,N)
 #dist_prior = np.random.exponential(20,N)
 #dist_prior = np.round(dist_prior).copy()
 print(dist_prior)
@@ -179,12 +179,12 @@ for t in range(1,int(dist_prior_event_probs.index[-1])):
     
     
 '''PLOT POISSON AS EXAMPLE'''
-mean_of_dist = 120
+mean_of_dist = 50
 plt.plot(catch,label='median')
 plt.plot(catch_2,label='high threshold')
 plt.plot(catch_3,label='low threshold')
 plt.legend()
-plt.title('Poisson_Mean_120_Days_N10')
+plt.title('Poisson_Mean_50_Days_N1000')
 plt.xlabel('Subjective Days into Epidemic')
 plt.ylabel('Decision Value from Posterior')
 plt.axvline(x=mean_of_dist, c='b',dashes=(2,2,2,2),linewidth=1)
@@ -211,7 +211,7 @@ plt.savefig('Exponential_Mean_20D_N10000.png',dpi=200)
 
 '''HOW IT WORKS'''
 #RUN FOR ONE t
-x = compute_posterior(40,dist_prior_event_probs)
+x = compute_posterior(43,dist_prior_event_probs)
 x = pd.Series(x,index=dist_prior_event_probs.index)
 x.sum()
 #x_adj = x*(1/x.sum())
@@ -227,12 +227,28 @@ plt.legend()
 
 plt.savefig('Example_Decision_Dist_Poisson_Mean_120_N1000_Input40.png',dpi=200)
 
+'''LOOP IT'''
+for i in range(49,52,1):
+    x = compute_posterior(i,dist_prior_event_probs)
+    x = pd.Series(x,index=dist_prior_event_probs.index)
+    x.sum()
+    #x_adj = x*(1/x.sum())
+    #x_adj.sum()
+    prior_med = median_of_dist(dist_prior_event_probs)
+    decision_med = median_of_dist(x)
+    plt.title('Decision Process with 40 Days as Input')
+    plt.plot(dist_prior_event_probs,label=f'prior, median={prior_med}')
+    plt.plot(x,label=f'decision {i} -> median={decision_med}')
+    plt.axvline(x=prior_med, c='b',dashes=(2,2,2,2),linewidth=1)
+    plt.axvline(x=decision_med, c='b',linewidth=1)
+    plt.legend()
+
 
 '''HELPER'''
 '''RUN ONE VALUE OF t'''
 
 #RUN FOR ONE t
-x = compute_posterior(130,dist_prior_event_probs)
+x = compute_posterior(145,dist_prior_event_probs)
 x = pd.Series(x,index=dist_prior_event_probs.index)
 x.sum()
 #x_adj = x*(1/x.sum())
