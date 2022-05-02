@@ -67,14 +67,15 @@ df_S_w2 = df_S_w2[df_S_w2.prediction_duration_int>0]
 FUN TEST
 
 '''
-index_for_all = pd.date_range('2022-01-01','2022-02-14')
-S_0 = pd.Series(pd.date_range('2022-01-01','2022-02-14'),name='decision_date')
+judgment_offset = 1
+index_for_all = pd.date_range('2022-01-01','2022-04-14')
+S_0 = pd.Series(pd.date_range('2022-01-01','2022-04-14'),name='decision_date')
 S_1 = pd.Series(range(1,1+len(index_for_all)),name='t_w2_int')
-S_2 = pd.Series(np.repeat(45,len(index_for_all)),name='prediction_w2_int')
-S_3 = pd.Series(45-S_1,name='prediction_duration_int')
+S_2 = pd.Series(np.repeat(len(index_for_all)-judgment_offset,len(index_for_all)),name='prediction_w2_int')
+S_3 = pd.Series((len(index_for_all)-judgment_offset)-S_1,name='prediction_duration_int')
 
 df_S_w2 = pd.concat([S_0,S_1,S_2,S_3],axis=1)
-
+len(index_for_all)
 
 '''
 III.  GENERATE PRIORS
@@ -87,7 +88,7 @@ N = 1000
 catch_all_prior_over_all_t = []
 catch_prior_index = []
 #COMPUTE PRIORS
-for i in range(38,46,2):
+for i in range(100,109,2):
     catch_prior_index.append(i)
     #MAKE PRIOR FOR MEAN as i
     dist_prior = np.random.poisson(i,N)
