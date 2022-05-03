@@ -130,7 +130,7 @@ def compute_posterior(t,dist):
 
 '''GENERATE PRIOR'''
 #GENERATOR
-N = 1000
+N = 10000
 dist_prior = np.random.poisson(50,N)
 #dist_prior = np.random.exponential(20,N)
 #dist_prior = np.round(dist_prior).copy()
@@ -211,7 +211,7 @@ plt.savefig('Exponential_Mean_20D_N10000.png',dpi=200)
 
 '''HOW IT WORKS'''
 #RUN FOR ONE t
-x = compute_posterior(43,dist_prior_event_probs)
+x = compute_posterior(40,dist_prior_event_probs)
 x = pd.Series(x,index=dist_prior_event_probs.index)
 x.sum()
 #x_adj = x*(1/x.sum())
@@ -228,7 +228,7 @@ plt.legend()
 plt.savefig('Example_Decision_Dist_Poisson_Mean_120_N1000_Input40.png',dpi=200)
 
 '''LOOP IT'''
-for i in range(49,52,1):
+for i in range(30,51,10):
     x = compute_posterior(i,dist_prior_event_probs)
     x = pd.Series(x,index=dist_prior_event_probs.index)
     x.sum()
@@ -239,9 +239,9 @@ for i in range(49,52,1):
     plt.title('Decision Process with 40 Days as Input')
     plt.plot(dist_prior_event_probs,label=f'prior, median={prior_med}')
     plt.plot(x,label=f'decision {i} -> median={decision_med}')
-    plt.axvline(x=prior_med, c='b',dashes=(2,2,2,2),linewidth=1)
-    plt.axvline(x=decision_med, c='b',linewidth=1)
-    plt.legend()
+    #plt.axvline(x=prior_med, c='b',dashes=(2,2,2,2),linewidth=1)
+    #plt.axvline(x=decision_med, c='b',linewidth=1)
+    #plt.legend()
 
 
 '''HELPER'''
