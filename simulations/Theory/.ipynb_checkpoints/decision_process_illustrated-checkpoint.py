@@ -25,8 +25,8 @@ prior_means = pd.read_pickle(f'{priors_in}/catch_prior_index_out')
 prior_dist = pd.read_pickle(f'{priors_in}/catch_all_dist_prior_over_all_mean_out')
 
 '''GENERATE_DENSITY'''#FROM FILE.1 in sandbox
-dist_prior = prior_dist[30]
-dist_mean = prior_means[30]
+dist_prior = prior_dist[25]
+dist_mean = prior_means[25]
 #COMPUTE PROBS FOR EACH EVENT
 dist_prior_event_probs = pd.Series(dist_prior).value_counts()/pd.Series(dist_prior).value_counts().sum()
 dist_prior_event_probs = dist_prior_event_probs.sort_index()

@@ -67,9 +67,9 @@ df_S_w2 = df_S_w2[df_S_w2.prediction_duration_int>0]
 FUN TEST
 
 '''
-judgment_offset = 1
-index_for_all = pd.date_range('2022-01-01','2022-04-14')
-S_0 = pd.Series(pd.date_range('2022-01-01','2022-04-14'),name='decision_date')
+judgment_offset = 0
+index_for_all = pd.date_range('2022-01-01','2022-02-14')
+S_0 = pd.Series(pd.date_range('2022-01-01','2022-02-14'),name='decision_date')
 S_1 = pd.Series(range(1,1+len(index_for_all)),name='t_w2_int')
 S_2 = pd.Series(np.repeat(len(index_for_all)-judgment_offset,len(index_for_all)),name='prediction_w2_int')
 S_3 = pd.Series((len(index_for_all)-judgment_offset)-S_1,name='prediction_duration_int')
@@ -88,7 +88,7 @@ N = 1000
 catch_all_prior_over_all_t = []
 catch_prior_index = []
 #COMPUTE PRIORS
-for i in range(100,109,2):
+for i in range(35,47,1):
     catch_prior_index.append(i)
     #MAKE PRIOR FOR MEAN as i
     dist_prior = np.random.poisson(i,N)
@@ -106,7 +106,11 @@ for i in range(100,109,2):
     catch_all_prior_over_all_t.append(catch_prior_over_all_t)
 
 for t in range(1,int(dist_prior_event_probs.index[-1])): print(t)
+
     
+priors_in = '/Users/biocomplexity/Projects/SocioCognitiveModeling/Metaculus_CogModeling/simulations/Priors'
+catch_all_prior_over_all_t = pd.read_pickle(f'{priors_in}/catch_all_prior_over_all_t_out')
+catch_prior_index = pd.read_pickle(f'{priors_in}/catch_prior_index_out')
 '''
 IV.  GENERATE BEST PRIORS FOR W2
 '''    
@@ -201,5 +205,113 @@ S_er.name='err'
 S_all = pd.concat([S_ts, S_hp, S_pd, plot_this, S_er], axis=1)
 S_all.plot()
 
+
+
+
+'''NOW MOD df_S_w2 
+TO MAKE IT OPTIMAL
+DOING IT BY HAND TO SHOW EXAMPLE
+'''
+df_S_w2.prediction_w2_int.iloc[38]=39
+df_S_w2.prediction_w2_int.iloc[39]=40
+df_S_w2.prediction_w2_int.iloc[40]=41
+df_S_w2.prediction_w2_int.iloc[41]=42
+df_S_w2.prediction_w2_int.iloc[42]=43
+df_S_w2.prediction_w2_int.iloc[43]=44
+df_S_w2.prediction_w2_int.iloc[44]=45
+
+'''
+IV.  GENERATE BEST PRIORS FOR W2
+'''    
+catch_all_t_over_t_over_p = []
+catch_all_optimal_pred_over_t_over_p = []
+catch_tmp_optimal_over_p = []
+catch_all_human_pred_over_t_over_p = []
+catch_all_error_over_t_over_p = []
+catch_all_date_over_t_over_p = []
+catch_all_p_dur_over_t_over_p = []
+
+for j in catch_all_prior_over_all_t: #LOOP OVER PRIORS
+    print('J is:',j)
+    print('NEW PRIOR')
+    print('NEW PRIOR')
+    catch_all_t_over_t = ([])
+    catch_all_optimal_pred_over_t = ([])
+    catch_tmp_optimal_over_t = ([])
+    catch_all_human_pred_over_t = ([])
+    catch_all_error_over_t = ([])
+    catch_all_date_over_t = ([])
+    catch_all_p_dur_over_t = ([])
+
+    for i in range(0,len(df_S_w2)):#CAPTURE HUMAN DATA T AND PRED
+    #for i in range(0,3):#CAPTURE HUMAN DATA T AND PRED
+        t = df_S_w2.t_w2_int.iloc[i] #P
+        
+        p_dur = df_S_w2.prediction_duration_int.iloc[i]
+        catch_all_p_dur_over_t = np.append(catch_all_p_dur_over_t,p_dur)
+        
+        print('t',t)
+        catch_all_t_over_t = np.append(catch_all_t_over_t,t)
+        #optimal_pred = catch_all_prior_over_all_t[0][t-1]#index zero is t=1
+        print('LEN of J',len(j))
+        if (t>0) & (t<=len(j)):#t-time is j[j.index+1]
+            print('T IS WITHIN PRIOR,  GOOOD')
+            optimal_pred = j[t-1]
+        else:
+            print('T IS GREATER THAN Ts in PRIOR')
+            optimal_pred = j[-1]
+        catch_all_optimal_pred_over_t = np.append(catch_all_optimal_pred_over_t,optimal_pred)
+        print('optimal pred',optimal_pred)
+        catch_tmp_optimal_over_t = np.append(catch_tmp_optimal_over_t,b_fit.find_optimal(t,j))
+        
+        human_pred = df_S_w2.prediction_w2_int.iloc[i]
+        catch_all_human_pred_over_t = np.append(catch_all_human_pred_over_t,human_pred)
+        print('human pred', human_pred)
+        error = human_pred - optimal_pred
+        print('error',error)
+        catch_all_error_over_t = np.append(catch_all_error_over_t,error)
+        catch_all_date_over_t = np.append(catch_all_date_over_t,df_S_w2.decision_date.iloc[i])
+        print('decision_date',df_S_w2.decision_date.iloc[i])
+    
+    catch_all_t_over_t_over_p.append(catch_all_t_over_t)
+    catch_all_optimal_pred_over_t_over_p.append(catch_all_optimal_pred_over_t)
+    catch_tmp_optimal_over_p.append(catch_tmp_optimal_over_t)
+    catch_all_human_pred_over_t_over_p.append(catch_all_human_pred_over_t)
+    catch_all_error_over_t_over_p.append(catch_all_error_over_t)
+    catch_all_date_over_t_over_p.append(catch_all_date_over_t)
+    catch_all_p_dur_over_t_over_p.append(catch_all_p_dur_over_t)
+#TEST FOR FINDAL OPTIMAL FUNCTION SHOULD BE ZERO SUM
+(np.array(catch_all_optimal_pred_over_t_over_p)-np.array(catch_tmp_optimal_over_p)).sum()
+
+'''PICK BEST PRIOR'''
+#for i in catch_all_error_over_t_over_p: plt.plot(i)
+#for i in catch_all_p_dur_over_t_over_p: plt.plot(i)
+#for i in catch_all_optimal_pred_over_t_over_p: plt.plot(i)
+'''PLOT THESE TOGETHER FOR A NICE LOOK AND SANITY CHECK'''
+#S HAS TWO REGIMES (one with constant decreasing)
+#SEE: 
+df_error = pd.DataFrame(catch_all_error_over_t_over_p).T
+#df_error['decision_date'] = df_S_w2.decision_date.reset_index(drop=True)
+df_error.index = df_S_w2.decision_date.reset_index(drop=True)
+df_error.columns = catch_prior_index
+#TESTS BLOW
+#df_error.abs().idxmin(axis=1).plot()
+#df_error.abs().idxmin(axis=1)
+#df_error.abs().min(axis=1)
+#df_error.min(axis=1)
+#MAKE THIS FOR MAIN ANALYSIS STRUCTUR
+plot_this = df_error.abs().idxmin(axis=1)
+#plot_this.to_csv(f'plot_this_{S_no}_highest.csv',header=['best_prior'])
+
+#MAKE THIS FOR SANITY CHECK
+S_ts = pd.Series(catch_all_t_over_t,index=df_S_w2.decision_date.reset_index(drop=True),name='t')
+S_hp = pd.Series(catch_all_human_pred_over_t,index=df_S_w2.decision_date.reset_index(drop=True),name='hum')
+S_pd = pd.Series(catch_all_p_dur_over_t,index=df_S_w2.decision_date.reset_index(drop=True),name='p_dur')
+S_er = df_error.abs().min(axis=1)
+plot_this.name='prior'
+S_er.name='err'
+
+S_all = pd.concat([S_ts, S_hp, S_pd, plot_this, S_er], axis=1)
+S_all.plot()
 
 #EOF
