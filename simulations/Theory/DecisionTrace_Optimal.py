@@ -119,15 +119,71 @@ S_all = pd.concat([S_ts, S_hp, S_pd, plot_this, S_er], axis=1)
 
 S_all.plot()
 
-'''NEXT STEPS:  
-1. MAKE GRAPH NICE FROM ABOVE DATA, CAN USE HUMAN DATA GRAPH FORMAT
-2. Make COMPANION GRAPH THAT SHOWS THE CHANGE IN PRIORS
-AT THREE POINTS IN THESE SIMULATED DATA. STACKED VERTICALLY
-THAT SHOWS HOW PRIOR --> POSTERIOR CHANGES FIXING THE JUDGMENT
-AT 50 DAYS AS T PROGRESSES TO 50:  CAN USE THE Decision_process_illustrated.py
+'''MAKE FANCY'''
+mpl.rcParams['font.family'] = 'Avenir'
+plt.rcParams['font.size'] = 18
+plt.rcParams['axes.linewidth'] = 2
+#font_names = [f.name for f in fm.fontManager.ttflist]
+#print(font_names)
+'''ALL GPs on ONE PLOT'''
+plt.style.use('default')
 
-'''
+fig = plt.figure(figsize=(7, 5))
 
+ax = fig.add_axes([0, 0, 2, 2])
+ax.set_xlabel('Date', labelpad=10,size=20)
+ax.set_ylabel('Days', labelpad=10,size=20)
+
+ax.set_ylim(0, 55)
+ax.xaxis.set_tick_params(which='major', size=10, width=2, direction='in', top='on')
+ax.xaxis.set_tick_params(which='minor', size=7, width=2, direction='in', top='on')
+ax.yaxis.set_tick_params(which='major', size=10, width=2, direction='in', right='on')
+ax.yaxis.set_tick_params(which='minor', size=7, width=2, direction='in', right='on')
+ax.tick_params(axis='x', labelsize=15)
+ax.tick_params(axis='y', labelsize=15)
+ax.spines['right'].set_visible(False)
+ax.spines['top'].set_visible(False)
+
+
+ax.scatter(S_all.index, S_all.p_dur,color='black',label='human horizon',marker='+',s=150,alpha=0.25)
+ax.plot(S_all.prior,color='black',label='prior',dashes=(0,2,2,2))
+ax.plot(S_all.hum,color='black',label='human t_total')
+ax.plot(S_all.p_dur,color='black',label='human horizon',dashes=(0,0,2,2))
+
+ax.axvline(x=datetime.strptime('2022-02-16','%Y-%m-%d'),c='black',dashes=(8,8,8,8),linewidth=1)
+#ax.axhline(y=44,c='black',dashes=(8,8,8,8),linewidth=1)
+ax.axvline(x=datetime.strptime('2022-02-18','%Y-%m-%d'),c='black',dashes=(8,8,8,8),linewidth=1)
+#ax.axhline(y=32,c='black',dashes=(8,8,8,8),linewidth=1)
+
+ax.legend(bbox_to_anchor=(.8, .8), loc=1, frameon=False, fontsize=20)
+plt.savefig(f'Theory_PriorShift_2.png', dpi=300, transparent=False, bbox_inches='tight')
+plt.show()
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+'''NOW PLOT PRIOR DISTRIBUTION SHIFT'''
 
 '''LOAD PRIORS'''
 prior_dist = pd.read_pickle(f'{priors_in}/catch_all_dist_prior_over_all_mean_out')
@@ -180,7 +236,7 @@ catch_t.append(t)
 
 
 '''
-t=47, prior=44, decision=50, posterior=50
+t=49, prior=32, decision=50, posterior=50
 '''
 '''GENERATE_DENSITY'''#FROM FILE.1 in sandbox
 dist_prior = prior_dist[12]
@@ -201,7 +257,7 @@ catch_t.append(t)
 
 
 
-'''GOOD PLOT'''
+'''GOOD PLOT BUT FOR GETTTING DATA STRUCTURE CORRECT'''
 mpl.rcParams['font.family'] = 'Avenir'
 plt.rcParams['font.size'] = 18
 plt.rcParams['axes.linewidth'] = 2
@@ -241,49 +297,29 @@ ax.axvline(x=bayes.median_of_dist(catch_posteriors[2]),c='black',dashes=(0,0,1,1
 plt.show()
 
 
-'''MAKE PANELS USING THIS TEMPLATE'''
-fix, axes = plt.subplots(1,3,figsize=5,7,sharex=True,sharey=False)
+'''MAKE PANELS'''
+fix, axes = plt.subplots(3,1,figsize=(5,7),sharex=True,sharey=False)
 leg_x = 1
 leg_y = 1
+gp_list = ['t=41,prior=50','t=47,prior=44','t=49,prior=32']
 
-'''TEMPLATE'''
-'''PANELS'''
-'''ALL GPs on ONE PLOT'''
-fig_ax_dim_x=2
-fig_ax_dim_y=4
-fig, axes = plt.subplots(fig_ax_dim_y,fig_ax_dim_x,figsize=(8,8),sharex=True,sharey=True)
-leg_x = .92
-leg_y = 1
-#PANEL 0,0
-gp_ordering = np.array([8,7,6,5,4,3,2,1])
-gp_counter = 0
-for k in range(0,fig_ax_dim_y):
-    for j in range(0,fig_ax_dim_x):
-        print(i,j)
-        gp_no = group_list[gp_ordering[gp_counter]]
-        i = catch_groups[gp_ordering[gp_counter]]
-        '''aVE OVER DAY'''
-        grouped = i.groupby(level=0)
-        axes[k,j].scatter(i.index, i.p_dur,color='black',label='human horizon',marker='+',s=150,alpha=0.25)
-        axes[k,j].plot(grouped.prior.mean().rolling(4).mean(),color='black',label='prior',dashes=(0,2,2,2))
-        axes[k,j].plot(grouped.hum.mean().rolling(4).mean(),color='black',label='human t_total')
-        axes[k,j].plot(grouped.p_dur.mean().rolling(4).mean(),color='black',label='human horizon',dashes=(0,0,2,2))
-        axes[k,j].legend(bbox_to_anchor=(leg_x,leg_y), loc=1, frameon=False, fontsize=5)
-        axes[k,j].set_ylim(0, 86)
-        axes[k,j].axvline(x=datetime.strptime('2021-12-24','%Y-%m-%d'),c='black',dashes=(6,6,6,6),linewidth=1)
-        axes[k,j].axvline(x=datetime.strptime('2022-01-14','%Y-%m-%d'),c='black',dashes=(6,6,6,6),linewidth=1)
-        axes[k,j].text(datetime.strptime('2021-12-01','%Y-%m-%d'),75,gp_no,fontsize=10)
-        gp_counter += 1
+for i in range(0,3):
+    axes[i].plot(catch_dist_priors[i],color='black',label='prior',linewidth=2)
+    axes[i].plot(catch_posteriors[i],color='black',label='posterior',dashes=(0,2,2,2))
+    axes[i].axvline(x=bayes.median_of_dist(catch_posteriors[i]),c='black',dashes=(0,2,2,2),linewidth=2,alpha=0.3)
+    axes[i].set_ylim(0,0.15)
+    axes[i].text(15,.13,gp_list[i],fontsize=10)
+    axes[i].legend(bbox_to_anchor=(leg_x,leg_y), loc=1, frameon=False, fontsize=10)
+
 #LABELS
-axes[3,0].set_xlabel('Date', labelpad=10,size=10)
-axes[3,0].tick_params(axis='x', labelsize=5)
-axes[3,1].set_xlabel('Date', labelpad=10,size=10)
-axes[3,1].tick_params(axis='x', labelsize=5)
+axes[2].set_xlabel('t_total', labelpad=10,size=10)
+axes[0].set_ylabel('Density', labelpad=10,size=10)
+axes[1].set_ylabel('Density', labelpad=10,size=10)
+axes[2].set_ylabel('Density', labelpad=10,size=10)
 
-axes[0,0].set_ylabel('Days', labelpad=10,size=10)
-axes[1,0].set_ylabel('Days', labelpad=10,size=10)
-axes[2,0].set_ylabel('Days', labelpad=10,size=10)
-axes[3,0].set_ylabel('Days', labelpad=10,size=10)
 plt.subplots_adjust(wspace=.1,hspace=0.1)
-plt.savefig(f'Single_Subjects.png', dpi=300, transparent=False, bbox_inches='tight')
+plt.savefig(f'Theory_PriorShift_1.png', dpi=300, transparent=False, bbox_inches='tight')
+
+
+
 
