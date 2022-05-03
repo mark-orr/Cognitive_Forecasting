@@ -49,15 +49,6 @@ for i in range(30,51,10):
     catch_posteriors.append(x)
     catch_t.append(i)
 
-'''CAN ADD THIS STUFF LATER'''
-prior_med = bayes.median_of_dist(dist_prior_event_probs)
-decision_med = bayes.median_of_dist(x)
-plt.title('Decision Process with 40 Days as Input')
-plt.plot(dist_prior_event_probs,label=f'prior, median={prior_med}')
-plt.plot(x,label=f'decision {i} -> median={decision_med}')
-plt.axvline(x=prior_med, c='b',dashes=(2,2,2,2),linewidth=1)
-plt.axvline(x=decision_med, c='b',linewidth=1)
-plt.legend()
 
 '''GOOD PLOT'''
 mpl.rcParams['font.family'] = 'Avenir'
@@ -90,7 +81,11 @@ ax.plot(catch_posteriors[0],color='black',label='t=30',dashes=(0,2,2,2))
 ax.plot(catch_posteriors[1],color='black',label='t=40',dashes=(0,0,2,2))
 ax.plot(catch_posteriors[2],color='black',label='t=50',dashes=(0,0,1,1))
 ax.legend(bbox_to_anchor=(.85, .85), loc=1, frameon=False, fontsize=20)
+ax.axvline(x=bayes.median_of_dist(catch_posteriors[0]),c='black',dashes=(0,2,2,2),linewidth=2,alpha=0.3)
+ax.axvline(x=bayes.median_of_dist(catch_posteriors[1]),c='black',dashes=(0,0,2,2),linewidth=2,alpha=0.3)
+ax.axvline(x=bayes.median_of_dist(catch_posteriors[2]),c='black',dashes=(0,0,1,1),linewidth=2,alpha=0.3)
 plt.savefig('TheoryPosteriorDists_1', dpi=300, transparent=False, bbox_inches='tight')
 plt.show()
+
 
 #EOF
