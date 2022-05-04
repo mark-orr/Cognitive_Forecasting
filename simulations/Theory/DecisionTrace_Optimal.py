@@ -161,18 +161,125 @@ plt.show()
 
 
 
+'''UNDER CONSTRUCITON'''
+'''MAKE PANELS FOR ABOVE + CONSTANT PRIOR'''
+new_data = pd.Series(np.array([50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 51., 51., 51., 52., 52., 53., 53., 54., 54.]),dtype=int)
+
+df_S_w2['prediction_int'] = new_data
+df_S_w2['prediction_horiz_int'] = df_S_w2.prediction_int - df_S_w2.t_int
+
+'''
+IV.  GENERATE BEST PRIORS FOR W2
+'''    
+catch_all_t_over_t_over_p = []
+catch_all_optimal_pred_over_t_over_p = []
+catch_tmp_optimal_over_p = []
+catch_all_human_pred_over_t_over_p = []
+catch_all_error_over_t_over_p = []
+catch_all_date_over_t_over_p = []
+catch_all_p_dur_over_t_over_p = []
+
+for j in posteriors: #LOOP OVER PRIORS
+    print('J is:',j)
+    print('NEW PRIOR')
+    print('NEW PRIOR')
+    catch_all_t_over_t = ([])
+    catch_all_optimal_pred_over_t = ([])
+    catch_tmp_optimal_over_t = ([])
+    catch_all_human_pred_over_t = ([])
+    catch_all_error_over_t = ([])
+    catch_all_date_over_t = ([])
+    catch_all_p_dur_over_t = ([])
+
+    for i in range(0,len(df_S_w2)):#CAPTURE HUMAN DATA T AND PRED
+        t = df_S_w2.t_int.iloc[i] #P
+        
+        p_dur = df_S_w2.prediction_horiz_int.iloc[i]
+        catch_all_p_dur_over_t = np.append(catch_all_p_dur_over_t,p_dur)
+        
+        print('t',t)
+        catch_all_t_over_t = np.append(catch_all_t_over_t,t)
+        #optimal_pred = catch_all_prior_over_all_t[0][t-1]#index zero is t=1
+        print('LEN of J',len(j))
+        if (t>0) & (t<=len(j)):#t-time is j[j.index+1]
+            print('T IS WITHIN PRIOR,  GOOOD')
+            optimal_pred = j[t-1]
+        else:
+            print('T IS GREATER THAN Ts in PRIOR')
+            optimal_pred = j[-1]
+        catch_all_optimal_pred_over_t = np.append(catch_all_optimal_pred_over_t,optimal_pred)
+        print('optimal pred',optimal_pred)
+        catch_tmp_optimal_over_t = np.append(catch_tmp_optimal_over_t,b_fit.find_optimal(t,j))
+        
+        human_pred = df_S_w2.prediction_int.iloc[i]
+        catch_all_human_pred_over_t = np.append(catch_all_human_pred_over_t,human_pred)
+        print('human pred', human_pred)
+        error = human_pred - optimal_pred
+        print('error',error)
+        catch_all_error_over_t = np.append(catch_all_error_over_t,error)
+        catch_all_date_over_t = np.append(catch_all_date_over_t,df_S_w2.decision_date.iloc[i])
+        print('decision_date',df_S_w2.decision_date.iloc[i])
+    
+    catch_all_t_over_t_over_p.append(catch_all_t_over_t)
+    catch_all_optimal_pred_over_t_over_p.append(catch_all_optimal_pred_over_t)
+    catch_tmp_optimal_over_p.append(catch_tmp_optimal_over_t)
+    catch_all_human_pred_over_t_over_p.append(catch_all_human_pred_over_t)
+    catch_all_error_over_t_over_p.append(catch_all_error_over_t)
+    catch_all_date_over_t_over_p.append(catch_all_date_over_t)
+    catch_all_p_dur_over_t_over_p.append(catch_all_p_dur_over_t)
+#TEST FOR FINDAL OPTIMAL FUNCTION SHOULD BE ZERO SUM
+(np.array(catch_all_optimal_pred_over_t_over_p)-np.array(catch_tmp_optimal_over_p)).sum()
+
+'''PICK BEST PRIOR'''
+df_error = pd.DataFrame(catch_all_error_over_t_over_p).T
+df_error.index = df_S_w2.decision_date.reset_index(drop=True)
+df_error.columns = prior_means
+plot_this = df_error.abs().idxmin(axis=1)
+
+#USEFUL VIS
+S_ts = pd.Series(catch_all_t_over_t,index=df_S_w2.decision_date.reset_index(drop=True),name='t')
+S_hp = pd.Series(catch_all_human_pred_over_t,index=df_S_w2.decision_date.reset_index(drop=True),name='hum')
+S_pd = pd.Series(catch_all_p_dur_over_t,index=df_S_w2.decision_date.reset_index(drop=True),name='p_dur')
+S_er = df_error.abs().min(axis=1)
+plot_this.name='prior'
+S_er.name='err'
+
+S_all_2 = pd.concat([S_ts, S_hp, S_pd, plot_this, S_er], axis=1)
+#S_all.to_pickle(f'S_all_{outfile_group}.csv')
+
+S_all_2.plot()
+
+
+'''NOTE, NOW HAVE BEST PRIORS ESTIMATED FOR BOTH, 
+S_all (constant t_total) and S_all_2 (const prior)'''
 
 
 
+fix, axes = plt.subplots(3,1,figsize=(5,7),sharex=True,sharey=False)
+leg_x = 1
+leg_y = 1
+gp_list = ['t=41,prior=50','t=47,prior=44','t=49,prior=32']
+
+for i in range(0,3):
+    axes[i].plot(catch_dist_priors[i],color='black',label='prior',linewidth=2)
+    axes[i].plot(catch_posteriors[i],color='black',label='posterior',dashes=(0,2,2,2))
+    axes[i].axvline(x=bayes.median_of_dist(catch_posteriors[i]),c='black',dashes=(0,2,2,2),linewidth=2,alpha=0.3)
+    axes[i].set_ylim(0,0.15)
+    axes[i].text(15,.13,gp_list[i],fontsize=10)
+    axes[i].legend(bbox_to_anchor=(leg_x,leg_y), loc=1, frameon=False, fontsize=10)
+
+#LABELS
+axes[2].set_xlabel('t_total', labelpad=10,size=10)
+axes[0].set_ylabel('Density', labelpad=10,size=10)
+axes[1].set_ylabel('Density', labelpad=10,size=10)
+axes[2].set_ylabel('Density', labelpad=10,size=10)
+
+plt.subplots_adjust(wspace=.1,hspace=0.1)
+plt.savefig(f'Theory_PriorShift_1.png', dpi=300, transparent=False, bbox_inches='tight')
 
 
 
-
-
-
-
-
-
+'''CONSTRUCTION OVER'''
 
 
 
