@@ -252,6 +252,15 @@ S_all_2.plot()
 
 '''NOTE, NOW HAVE BEST PRIORS ESTIMATED FOR BOTH, 
 S_all (constant t_total) and S_all_2 (const prior)'''
+'''NOTE, we can see when t_total = t_i, that is when the gamme is over
+For our priors (numerical dists), at mean of 50, this happens at t=70 with t_total=70,
+could also put it in terms of horizon, which starts to slow its rate....
+This gives a differennt feel to the argument...because on does know t_i and their estimate, 
+as they get close, either prior drops or horison starts to increase.  What do we see in these data?
+
+THIS CODE IS WHAT WE USED IN ./priorsByt_table.py to get t=70.
+for i in range(0,75): print('t: ',i+1,'post: ',posteriors[30][i])
+'''
 
 
 
