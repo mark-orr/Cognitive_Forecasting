@@ -241,10 +241,13 @@ S_ts = pd.Series(catch_all_t_over_t,index=df_S_w2.decision_date.reset_index(drop
 S_hp = pd.Series(catch_all_human_pred_over_t,index=df_S_w2.decision_date.reset_index(drop=True),name='hum')
 S_pd = pd.Series(catch_all_p_dur_over_t,index=df_S_w2.decision_date.reset_index(drop=True),name='p_dur')
 S_er = df_error.abs().min(axis=1)
-plot_this.name='prior'
+#plot_this.name='prior'
+#replacing plot_this with constant
+constant_prior = np.repeat(50,len(index_for_all))
+S_constant_prior = pd.Series(constant_prior,index=df_S_w2.decision_date.reset_index(drop=True),name='prior')
 S_er.name='err'
 
-S_all_2 = pd.concat([S_ts, S_hp, S_pd, plot_this, S_er], axis=1)
+S_all_2 = pd.concat([S_ts, S_hp, S_pd, S_constant_prior, S_er], axis=1)
 #S_all.to_pickle(f'S_all_{outfile_group}.csv')
 
 S_all_2.plot()
@@ -262,33 +265,38 @@ THIS CODE IS WHAT WE USED IN ./priorsByt_table.py to get t=70.
 for i in range(0,75): print('t: ',i+1,'post: ',posteriors[30][i])
 '''
 
-
-
-fix, axes = plt.subplots(3,1,figsize=(5,7),sharex=True,sharey=False)
+fix, axes = plt.subplots(2,1,figsize=(5,7),sharex=True,sharey=True)
 leg_x = 1
 leg_y = 1
-gp_list = ['t=41,prior=50','t=47,prior=44','t=49,prior=32']
+gp_list = ['Constant Decision','Constant Prior']
 
-for i in range(0,3):
-    axes[i].plot(catch_dist_priors[i],color='black',label='prior',linewidth=2)
-    axes[i].plot(catch_posteriors[i],color='black',label='posterior',dashes=(0,2,2,2))
-    axes[i].axvline(x=bayes.median_of_dist(catch_posteriors[i]),c='black',dashes=(0,2,2,2),linewidth=2,alpha=0.3)
-    axes[i].set_ylim(0,0.15)
-    axes[i].text(15,.13,gp_list[i],fontsize=10)
-    axes[i].legend(bbox_to_anchor=(leg_x,leg_y), loc=1, frameon=False, fontsize=10)
+
+axes[0].scatter(S_all.index, S_all.p_dur,color='black',label='human horizon',marker='+',s=150,alpha=0.25)
+axes[0].plot(S_all.prior,color='black',label='prior',dashes=(0,2,2,2))
+axes[0].plot(S_all.hum,color='black',label='human t_total')
+axes[0].plot(S_all.p_dur,color='black',label='human horizon',dashes=(0,0,2,2))
+axes[0].set_ylim(0,58)
+axes[0].text(datetime.strptime('2022-01-01','%Y-%m-%d'),53,gp_list[0],fontsize=10)
+axes[0].legend(bbox_to_anchor=(.4, .4), loc=1, frameon=False, fontsize=8)
+axes[0].tick_params(axis='x', labelsize=6)
+
+axes[1].scatter(S_all_2.index, S_all_2.p_dur,color='black',label='human horizon',marker='+',s=150,alpha=0.25)
+axes[1].plot(S_all_2.prior,color='black',label='prior',dashes=(0,2,2,2))
+axes[1].plot(S_all_2.hum,color='black',label='human t_total')
+axes[1].plot(S_all_2.p_dur,color='black',label='human horizon',dashes=(0,0,2,2))
+axes[1].set_ylim(0,58)
+axes[1].text(datetime.strptime('2022-01-01','%Y-%m-%d'),53,gp_list[1],fontsize=10)
+axes[1].legend(bbox_to_anchor=(.4, .4), loc=1, frameon=False, fontsize=8)
+axes[1].tick_params(axis='x', labelsize=6)
 
 #LABELS
-axes[2].set_xlabel('t_total', labelpad=10,size=10)
-axes[0].set_ylabel('Density', labelpad=10,size=10)
-axes[1].set_ylabel('Density', labelpad=10,size=10)
-axes[2].set_ylabel('Density', labelpad=10,size=10)
+axes[1].set_xlabel('Date', labelpad=10,size=10)
+axes[0].set_ylabel('Days', labelpad=10,size=10)
+axes[1].set_ylabel('Days', labelpad=10,size=10)
 
 plt.subplots_adjust(wspace=.1,hspace=0.1)
-plt.savefig(f'Theory_PriorShift_1.png', dpi=300, transparent=False, bbox_inches='tight')
+plt.savefig(f'Theory_PriorShift_1_2panel.png', dpi=300, transparent=False, bbox_inches='tight')
 
-
-
-'''CONSTRUCTION OVER'''
 
 
 
