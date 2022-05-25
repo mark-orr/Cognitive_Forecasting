@@ -288,7 +288,9 @@ ISSUE: JUSTIFYINIG POLYNOMIAL OF HIGHER DEG
 2. If yes, use it.
 3. If no, then can justify using higher bc it fits epi, but then 
 must show not spurious--> test random field (using var of hum) and fit same set 
-of higher degree poly and match to epi.  If not get same fit, then we are ok.
+of higher degree poly and match to epi.  If not get same fit, then we are ok. 
+Will use Monte Carlo with 1000 runs to give probability that we can randomly get
+a harmonic oscilllator.
 X. May use family  of poly for match to epi
 X. May use more advanced regression methods with penalization or regularization.
 X. May check sensitivity of poly to values
@@ -298,8 +300,8 @@ CONVINCING WAY TO ADJUDICATE THE USE OF HIGH DEG POLYNOMIALL
 '''
 
 #deg_list = [10,11,12,13,14,15,16,17]
-deg_list = [10,11,12,13]
-#deg_list = [14,15,16,17,18]
+#deg_list = [10,11,12,13]
+deg_list = [14,15,16]
 for i in deg_list:
     x_poly = np.arange(len(hum_use))+1
     hum_poly = np.polyfit(x_poly, hum_use, deg=i,full=True)#deg 15 worked
@@ -308,7 +310,8 @@ for i in deg_list:
     print('RESIDUALS SUM: ',hum_poly[1])
     
 plt.scatter(np.arange(len(hum_use)),np.array(hum_use))
-                         
+plt.plot(np.array(hum_use))
+plt.plot(np.array(grouped.hum.mean().rolling(4).mean()),color='red',label='prior',dashes=(0,2,2,2))
 
 
 for i in deg_list:
