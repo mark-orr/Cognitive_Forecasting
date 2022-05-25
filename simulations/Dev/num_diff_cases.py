@@ -83,7 +83,7 @@ FOR DIFFERENTIIATION
 hum_use = grouped.hum.mean()
 
 x_poly = np.arange(len(hum_use))+1
-hum_poly = np.polyfit(x_poly, hum_use, deg=15)
+hum_poly = np.polyfit(x_poly, hum_use, deg=15)#deg 15 worked
 plt.plot(hum_poly)
 hum_poly_values = np.polyval(hum_poly, x_poly)
 plt.plot(hum_poly_values)
@@ -210,7 +210,7 @@ ax.plot(x,y)
 '''THIS IS THE GOOD ONE, BUT NOT QUITE PUB QUALITY'''
 x_min = min(df_b.S_x)-50
 x_max = max(df_b.S_x)+50
-y_min = min(df_b.S_y)-1
+y_min = min(df_b.S_y)+4#SPECIAL
 y_max = max(df_b.S_y)+1
              
 
@@ -263,4 +263,34 @@ norm = np.sqrt(u**2+v**2)
 fig, ax = plt.subplots(); ax.plot(x,y, marker="o"); ax.quiver(pos_x, pos_y, u/norm, v/norm, angles="xy", zorder=5, pivot="mid"); ax.set_xlim([x_min,x_max]); ax.set_ylim([y_min,y_max]);plt.show()
 
 
+'''ALL TOGETHER'''
+#ARROWS
+x = df_b.S_x.iloc[2:].values
+y = df_b.S_y.iloc[2:].values
+
+u = np.diff(x)
+v = np.diff(y)
+pos_x = x[:-1] + u/2
+pos_y = y[:-1] + v/2
+norm = np.sqrt(u**2+v**2) 
+
+fig, ax = plt.subplots(); ax.plot(x,y, marker="o"); ax.quiver(pos_x, pos_y, u/norm, v/norm, angles="xy", zorder=5, pivot="mid"); ax.set_xlim([x_min,x_max]); ax.set_ylim([y_min,y_max]); plt.show()
+
+
+
+
+
+'''DEV'''
+deg_list = [10,11,12,13,14,15,16]
+for i in deg_list:
+    x_poly = np.arange(len(hum_use))+1
+    hum_poly = np.polyfit(x_poly, hum_use, deg=i)#deg 15 worked
+    hum_poly_values = np.polyval(hum_poly, x_poly)
+    plt.plot(hum_poly_values)
+
+for i in deg_list:
+    x_poly = np.arange(len(vdh_use))+1
+    vdh_poly = np.polyfit(x_poly, vdh_use, deg=15)
+    vdh_poly_values = np.polyval(vdh_poly, x_poly)
+    plt.plot(vdh_poly_values)
 #EOF
