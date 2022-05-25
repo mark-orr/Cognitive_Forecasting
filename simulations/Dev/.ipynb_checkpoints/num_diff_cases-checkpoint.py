@@ -281,12 +281,35 @@ fig, ax = plt.subplots(); ax.plot(x,y, marker="o"); ax.quiver(pos_x, pos_y, u/no
 
 
 '''DEV'''
-deg_list = [10,11,12,13,14,15,16]
+'''
+ISSUE: JUSTIFYINIG POLYNOMIAL OF HIGHER DEG
+0. deg of poly does not change epi transformation
+1. Test if lower deg poly on human will still give same relation to epii
+2. If yes, use it.
+3. If no, then can justify using higher bc it fits epi, but then 
+must show not spurious--> test random field (using var of hum) and fit same set 
+of higher degree poly and match to epi.  If not get same fit, then we are ok.
+X. May use family  of poly for match to epi
+X. May use more advanced regression methods with penalization or regularization.
+X. May check sensitivity of poly to values
+CONVINCING WAY TO ADJUDICATE THE USE OF HIGH DEG POLYNOMIALL
+
+
+'''
+
+#deg_list = [10,11,12,13,14,15,16,17]
+deg_list = [10,11,12,13]
+#deg_list = [14,15,16,17,18]
 for i in deg_list:
     x_poly = np.arange(len(hum_use))+1
-    hum_poly = np.polyfit(x_poly, hum_use, deg=i)#deg 15 worked
-    hum_poly_values = np.polyval(hum_poly, x_poly)
+    hum_poly = np.polyfit(x_poly, hum_use, deg=i,full=True)#deg 15 worked
+    hum_poly_values = np.polyval(hum_poly[0], x_poly)
     plt.plot(hum_poly_values)
+    print('RESIDUALS SUM: ',hum_poly[1])
+    
+plt.scatter(np.arange(len(hum_use)),np.array(hum_use))
+                         
+
 
 for i in deg_list:
     x_poly = np.arange(len(vdh_use))+1
@@ -294,3 +317,10 @@ for i in deg_list:
     vdh_poly_values = np.polyval(vdh_poly, x_poly)
     plt.plot(vdh_poly_values)
 #EOF
+
+hum_poly = np.polyfit(x_poly, hum_use, deg=15,full=True)
+hum_poly[1]
+
+plt.plot(hum_use)
+plt.scatter(hum_use.index[1:],hum_use[1:])
+
