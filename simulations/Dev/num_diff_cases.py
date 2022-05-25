@@ -172,7 +172,7 @@ plt.arrow(df_b.S_x[2], df_b.S_x[2], df_b.S_dx[2], df_b.S_dy[2],head_width = 1, w
 for i in range(2,len(df_b)):
     plt.arrow(df_b.S_x[i], df_b.S_y[i], df_b.S_dx[i], df_b.S_dy[i],head_width = .4, width = 0.1)
 
-for i in range(2,15):
+for i in range(1,15):
     plt.arrow(df_b.S_x[i]*0.05, df_b.S_y[i]*5, df_b.S_dx[i]*0.05, df_b.S_dy[i]*5,head_width = 1, width = 0.1)
 
 for i in range(15,30):
@@ -185,10 +185,82 @@ for i in range(40,45):
     plt.arrow(df_b.S_x[i]*0.05, df_b.S_y[i]*5, df_b.S_dx[i]*0.05, df_b.S_dy[i]*5,head_width = .5, width = 0.1)
 
 
+plt.plot(np.arange(10))
+for i in range(2,15):
+    plt.plot(np.arange(10))
+    plt.xlim([-200,200])
+    plt.ylim([-2,2])
+    plt.annotate("", xy=(df_b.S_x[i],df_b.S_y[i]), xytext=(float(df_b.S_dx[i]),float(df_b.S_dy[i])), arrowprops=dict(arrowstyle="->")  )
 
-
+    
 plt.annotate("", xy=(0.5, 0.5), xytext=(0, 0),arrowprops=dict(arrowstyle="->"))
 plt.annotate("", xy=(.7, 0.7), xytext=(0.5, 0.5),arrowprops=dict(arrowstyle="->"))
+
+plt.annotate("", xy=(S_x[2],S_y[2]), xytext=(0,0), arrowprops=dict(arrowstyle="->"))
+
+#NO ARROWS
+x = df_b.S_x
+y = df_b.S_y
+
+fig, ax = plt.subplots()
+ax.scatter(x,y)
+ax.plot(x,y)
+
+
+'''THIS IS THE GOOD ONE, BUT NOT QUITE PUB QUALITY'''
+x_min = min(df_b.S_x)-50
+x_max = max(df_b.S_x)+50
+y_min = min(df_b.S_y)-1
+y_max = max(df_b.S_y)+1
+             
+
+#ARROWS
+x = df_b.S_x.iloc[2:10].values
+y = df_b.S_y.iloc[2:10].values
+
+u = np.diff(x)
+v = np.diff(y)
+pos_x = x[:-1] + u/2
+pos_y = y[:-1] + v/2
+norm = np.sqrt(u**2+v**2) 
+
+fig, ax = plt.subplots(); ax.plot(x,y, marker="o"); ax.quiver(pos_x, pos_y, u/norm, v/norm, angles="xy", zorder=5, pivot="mid"); ax.set_xlim([x_min,x_max]); ax.set_ylim([y_min,y_max]); plt.show()
+
+#ARROWS
+x = df_b.S_x.iloc[9:20].values
+y = df_b.S_y.iloc[9:20].values
+
+u = np.diff(x)
+v = np.diff(y)
+pos_x = x[:-1] + u/2
+pos_y = y[:-1] + v/2
+norm = np.sqrt(u**2+v**2) 
+
+fig, ax = plt.subplots(); ax.plot(x,y, marker="o"); ax.quiver(pos_x, pos_y, u/norm, v/norm, angles="xy", zorder=5, pivot="mid"); ax.set_xlim([x_min,x_max]); ax.set_ylim([y_min,y_max]); plt.show()
+
+#ARROWS
+x = df_b.S_x.iloc[19:32].values
+y = df_b.S_y.iloc[19:32].values
+
+u = np.diff(x)
+v = np.diff(y)
+pos_x = x[:-1] + u/2
+pos_y = y[:-1] + v/2
+norm = np.sqrt(u**2+v**2) 
+
+fig, ax = plt.subplots(); ax.plot(x,y, marker="o"); ax.quiver(pos_x, pos_y, u/norm, v/norm, angles="xy", zorder=5, pivot="mid"); ax.set_xlim([x_min,x_max]); ax.set_ylim([y_min,y_max]); plt.show()
+
+#ARROWS
+x = df_b.S_x.iloc[31:45].values
+y = df_b.S_y.iloc[31:45].values
+
+u = np.diff(x)
+v = np.diff(y)
+pos_x = x[:-1] + u/2
+pos_y = y[:-1] + v/2
+norm = np.sqrt(u**2+v**2) 
+
+fig, ax = plt.subplots(); ax.plot(x,y, marker="o"); ax.quiver(pos_x, pos_y, u/norm, v/norm, angles="xy", zorder=5, pivot="mid"); ax.set_xlim([x_min,x_max]); ax.set_ylim([y_min,y_max]);plt.show()
 
 
 #EOF
