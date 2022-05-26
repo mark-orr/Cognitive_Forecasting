@@ -52,7 +52,7 @@ tmp2 = tmp1[::-1]
 tmp2 = np.append(tmp2,0)
 tmp2 = np.append(tmp2,-1)
 gt_S = pd.Series(tmp2)
-gt_S.index = grouped.prior.mean().rolling(4).mean().index
+gt_S.index = grouped.prior.mean().rolling(4).mean().index #NEED TO RUN BELOW FIRST
 
 '''ALL GPs on ONE PLOT'''
 plt.style.use('default')
@@ -86,6 +86,7 @@ ax.plot(gt_S,color='black',label='ground truth horizon',dashes=(3,3,10,5))
 ax.scatter(gt_S.index,gt_S,color='black',label='ground truth horizon',marker='o',s=150,alpha=0.45)
 #ax.plot(df_test_mean_forward.delta,color='black',label='human t_total delta',dashes=(6,6,6,6),alpha=0.3)
 
+ax.axvline(x=datetime.strptime('2021-12-03','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=1,alpha=0.3)
 ax.axvline(x=datetime.strptime('2021-12-24','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=1,alpha=0.3)
 ax.axvline(x=datetime.strptime('2022-01-14','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=1,alpha=0.3)
 #ax.axhline(y=42,c='black',dashes=(2,2,2,2),linewidth=1,alpha=0.2)
@@ -209,9 +210,10 @@ for k in range(0,fig_ax_dim_y):
         axes[k,j].scatter(gt_S.index,gt_S,color='black',label='ground truth horizon',marker='o',s=10,alpha=0.45)
         axes[k,j].legend(bbox_to_anchor=(leg_x,leg_y), loc=1, frameon=False, fontsize=5)
         axes[k,j].set_ylim(0, 86)
+        axes[k,j].axvline(x=datetime.strptime('2021-12-03','%Y-%m-%d'),c='black',dashes=(6,6,6,6),linewidth=1)
         axes[k,j].axvline(x=datetime.strptime('2021-12-24','%Y-%m-%d'),c='black',dashes=(6,6,6,6),linewidth=1)
         axes[k,j].axvline(x=datetime.strptime('2022-01-14','%Y-%m-%d'),c='black',dashes=(6,6,6,6),linewidth=1)
-        axes[k,j].text(datetime.strptime('2021-12-01','%Y-%m-%d'),75,'P'+str(gp_counter+1),fontsize=10)
+        axes[k,j].text(datetime.strptime('2021-12-10','%Y-%m-%d'),75,'P'+str(gp_counter+1),fontsize=10)
         gp_counter += 1
 #LABELS
 axes[3,0].set_xlabel('Date', labelpad=10,size=10)
