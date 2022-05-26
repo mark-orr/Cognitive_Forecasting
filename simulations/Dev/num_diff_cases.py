@@ -224,7 +224,8 @@ pos_x = x[:-1] + u/2
 pos_y = y[:-1] + v/2
 norm = np.sqrt(u**2+v**2) 
 
-fig, ax = plt.subplots(); ax.plot(x,y, marker="o"); ax.quiver(pos_x, pos_y, u/norm, v/norm, angles="xy", zorder=5, pivot="mid"); ax.set_xlim([x_min,x_max]); ax.set_ylim([y_min,y_max]); plt.show()
+fig, ax = plt.subplots(); ax.plot(x,y, marker="o"); ax.quiver(pos_x, pos_y, u/norm, v/norm, angles="xy", zorder=5, pivot="mid"); ax.set_xlim([x_min,x_max]); ax.set_ylim([y_min,y_max])
+plt.savefig('Time_Steps_2-10.png',dpi=200)
 
 #ARROWS
 x = df_b.S_x.iloc[9:20].values
@@ -236,7 +237,8 @@ pos_x = x[:-1] + u/2
 pos_y = y[:-1] + v/2
 norm = np.sqrt(u**2+v**2) 
 
-fig, ax = plt.subplots(); ax.plot(x,y, marker="o"); ax.quiver(pos_x, pos_y, u/norm, v/norm, angles="xy", zorder=5, pivot="mid"); ax.set_xlim([x_min,x_max]); ax.set_ylim([y_min,y_max]); plt.show()
+fig, ax = plt.subplots(); ax.plot(x,y, marker="o"); ax.quiver(pos_x, pos_y, u/norm, v/norm, angles="xy", zorder=5, pivot="mid"); ax.set_xlim([x_min,x_max]); ax.set_ylim([y_min,y_max])
+plt.savefig('Time_Steps_9-20.png',dpi=200)
 
 #ARROWS
 x = df_b.S_x.iloc[19:32].values
@@ -248,7 +250,8 @@ pos_x = x[:-1] + u/2
 pos_y = y[:-1] + v/2
 norm = np.sqrt(u**2+v**2) 
 
-fig, ax = plt.subplots(); ax.plot(x,y, marker="o"); ax.quiver(pos_x, pos_y, u/norm, v/norm, angles="xy", zorder=5, pivot="mid"); ax.set_xlim([x_min,x_max]); ax.set_ylim([y_min,y_max]); plt.show()
+fig, ax = plt.subplots(); ax.plot(x,y, marker="o"); ax.quiver(pos_x, pos_y, u/norm, v/norm, angles="xy", zorder=5, pivot="mid"); ax.set_xlim([x_min,x_max]); ax.set_ylim([y_min,y_max])
+plt.savefig('Time_Steps_19-32.png',dpi=200)
 
 #ARROWS
 x = df_b.S_x.iloc[31:45].values
@@ -260,7 +263,8 @@ pos_x = x[:-1] + u/2
 pos_y = y[:-1] + v/2
 norm = np.sqrt(u**2+v**2) 
 
-fig, ax = plt.subplots(); ax.plot(x,y, marker="o"); ax.quiver(pos_x, pos_y, u/norm, v/norm, angles="xy", zorder=5, pivot="mid"); ax.set_xlim([x_min,x_max]); ax.set_ylim([y_min,y_max]);plt.show()
+fig, ax = plt.subplots(); ax.plot(x,y, marker="o"); ax.quiver(pos_x, pos_y, u/norm, v/norm, angles="xy", zorder=5, pivot="mid"); ax.set_xlim([x_min,x_max]); ax.set_ylim([y_min,y_max])
+plt.savefig('Time_Steps_31-45.png',dpi=200)
 
 
 '''ALL TOGETHER'''
@@ -274,7 +278,8 @@ pos_x = x[:-1] + u/2
 pos_y = y[:-1] + v/2
 norm = np.sqrt(u**2+v**2) 
 
-fig, ax = plt.subplots(); ax.plot(x,y, marker="o"); ax.quiver(pos_x, pos_y, u/norm, v/norm, angles="xy", zorder=5, pivot="mid"); ax.set_xlim([x_min,x_max]); ax.set_ylim([y_min,y_max]); plt.show()
+fig, ax = plt.subplots(); ax.plot(x,y, marker="o"); ax.quiver(pos_x, pos_y, u/norm, v/norm, angles="xy", zorder=5, pivot="mid"); ax.set_xlim([x_min,x_max]); ax.set_ylim([y_min,y_max])
+plt.savefig('Time_Steps_All.png',dpi=200)
 
 
 

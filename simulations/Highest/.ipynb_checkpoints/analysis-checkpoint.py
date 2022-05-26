@@ -36,7 +36,7 @@ for i in group_list:
     S_all = pd.read_pickle(f'S_all_{infile_name}_{infile_group}.csv')
     
     catch_groups.append(S_all)
-    
+
 
     
 '''FANCIER METHOD'''
@@ -46,6 +46,13 @@ plt.rcParams['axes.linewidth'] = 2
 font_names = [f.name for f in fm.fontManager.ttflist]
 print(font_names)
 
+'''TESTING ADDITION OF GT'''
+tmp1 = np.arange(1,45)
+tmp2 = tmp1[::-1]
+tmp2 = np.append(tmp2,0)
+tmp2 = np.append(tmp2,-1)
+gt_S = pd.Series(tmp2)
+gt_S.index = grouped.prior.mean().rolling(4).mean().index
 
 '''ALL GPs on ONE PLOT'''
 plt.style.use('default')
@@ -53,7 +60,7 @@ plt.style.use('default')
 fig = plt.figure(figsize=(7, 5))
 
 ax = fig.add_axes([0, 0, 2, 2])
-ax.set_title(f'Human Judgments and Estimated Priors',size=20)
+#ax.set_title(f'Human Judgments and Estimated Priors',size=20)
 ax.set_xlabel('Date', labelpad=10,size=20)
 ax.set_ylabel('Days', labelpad=10,size=20)
 
@@ -72,19 +79,20 @@ i = catch_groups[0]
 '''aVE OVER DAY'''
 grouped = i.groupby(level=0)
 ax.scatter(i.index, i.p_dur,color='black',label='human horizon',marker='+',s=150,alpha=0.25)
-ax.plot(grouped.prior.mean().rolling(4).mean(),color='black',label='prior',dashes=(0,2,2,2))
-ax.plot(grouped.hum.mean().rolling(4).mean(),color='black',label='human t_total')
+ax.plot(grouped.prior.mean().rolling(4).mean(),color='black',label='rational prior',dashes=(0,2,2,2))
+ax.plot(grouped.hum.mean().rolling(4).mean(),color='black',label='human t_predicted')
 ax.plot(grouped.p_dur.mean().rolling(4).mean(),color='black',label='human horizon',dashes=(0,0,2,2))
+ax.plot(gt_S,color='black',label='ground truth horizon',dashes=(3,3,10,5))
+ax.scatter(gt_S.index,gt_S,color='black',label='ground truth horizon',marker='o',s=150,alpha=0.45)
 #ax.plot(df_test_mean_forward.delta,color='black',label='human t_total delta',dashes=(6,6,6,6),alpha=0.3)
 
-ax.axvline(x=datetime.strptime('2021-12-24','%Y-%m-%d'),c='black',dashes=(6,6,6,6),linewidth=1)
-ax.axvline(x=datetime.strptime('2022-01-14','%Y-%m-%d'),c='black',dashes=(6,6,6,6),linewidth=1)
-ax.axhline(y=42,c='black',dashes=(2,2,2,2),linewidth=1,alpha=0.2)
-ax.axhline(y=0,c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.3)
-ax.legend(bbox_to_anchor=(.85, .85), loc=1, frameon=False, fontsize=20)
-#plt.savefig(f'Good_{gp_no}.png', dpi=300, transparent=False, bbox_inches='tight')
+ax.axvline(x=datetime.strptime('2021-12-24','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=1,alpha=0.3)
+ax.axvline(x=datetime.strptime('2022-01-14','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=1,alpha=0.3)
+#ax.axhline(y=42,c='black',dashes=(2,2,2,2),linewidth=1,alpha=0.2)
+ax.axhline(y=0,c='black',dashes=(2,2,2,2),linewidth=1,alpha=0.3)
+ax.legend(bbox_to_anchor=(.90, .95), loc=1, frameon=False, fontsize=20)
+plt.savefig(f'Good_{gp_no}.png', dpi=300, transparent=False, bbox_inches='tight')
 plt.show()
-
 
 
 
@@ -195,14 +203,15 @@ for k in range(0,fig_ax_dim_y):
         '''aVE OVER DAY'''
         grouped = i.groupby(level=0)
         axes[k,j].scatter(i.index, i.p_dur,color='black',label='human horizon',marker='+',s=150,alpha=0.25)
-        axes[k,j].plot(grouped.prior.mean().rolling(4).mean(),color='black',label='prior',dashes=(0,2,2,2))
-        axes[k,j].plot(grouped.hum.mean().rolling(4).mean(),color='black',label='human t_total')
+        axes[k,j].plot(grouped.prior.mean().rolling(4).mean(),color='black',label='rational prior',dashes=(0,2,2,2))
+        axes[k,j].plot(grouped.hum.mean().rolling(4).mean(),color='black',label='human t_predicted')
         axes[k,j].plot(grouped.p_dur.mean().rolling(4).mean(),color='black',label='human horizon',dashes=(0,0,2,2))
+        axes[k,j].scatter(gt_S.index,gt_S,color='black',label='ground truth horizon',marker='o',s=10,alpha=0.45)
         axes[k,j].legend(bbox_to_anchor=(leg_x,leg_y), loc=1, frameon=False, fontsize=5)
         axes[k,j].set_ylim(0, 86)
         axes[k,j].axvline(x=datetime.strptime('2021-12-24','%Y-%m-%d'),c='black',dashes=(6,6,6,6),linewidth=1)
         axes[k,j].axvline(x=datetime.strptime('2022-01-14','%Y-%m-%d'),c='black',dashes=(6,6,6,6),linewidth=1)
-        axes[k,j].text(datetime.strptime('2021-12-01','%Y-%m-%d'),75,gp_no,fontsize=10)
+        axes[k,j].text(datetime.strptime('2021-12-01','%Y-%m-%d'),75,'P'+str(gp_counter+1),fontsize=10)
         gp_counter += 1
 #LABELS
 axes[3,0].set_xlabel('Date', labelpad=10,size=10)

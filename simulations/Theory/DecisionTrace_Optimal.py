@@ -264,35 +264,41 @@ as they get close, either prior drops or horison starts to increase.  What do we
 THIS CODE IS WHAT WE USED IN ./priorsByt_table.py to get t=70.
 for i in range(0,75): print('t: ',i+1,'post: ',posteriors[30][i])
 '''
+#SWAP IN DAYS ON INDEX
+S_all.index = np.arange(50)+1
+S_all_2.index = np.arange(50)+1
+
 
 fix, axes = plt.subplots(2,1,figsize=(5,7),sharex=True,sharey=True)
 leg_x = 1
 leg_y = 1
 gp_list = ['Constant Decision','Constant Prior']
 
-
 axes[0].scatter(S_all.index, S_all.p_dur,color='black',label='human horizon',marker='+',s=150,alpha=0.25)
-axes[0].plot(S_all.prior,color='black',label='prior',dashes=(0,2,2,2))
-axes[0].plot(S_all.hum,color='black',label='human t_total')
+axes[0].plot(S_all.prior,color='black',label='rational prior',dashes=(0,2,2,2))
+axes[0].plot(S_all.hum,color='black',label='human t_predicted')
 axes[0].plot(S_all.p_dur,color='black',label='human horizon',dashes=(0,0,2,2))
 axes[0].set_ylim(0,58)
-axes[0].text(datetime.strptime('2022-01-01','%Y-%m-%d'),53,gp_list[0],fontsize=10)
+#axes[0].text(datetime.strptime('2022-01-01','%Y-%m-%d'),53,gp_list[0],fontsize=10)
 axes[0].legend(bbox_to_anchor=(.4, .4), loc=1, frameon=False, fontsize=8)
 axes[0].tick_params(axis='x', labelsize=6)
+axes[0].tick_params(axis='x', labelsize=10)
+axes[0].tick_params(axis='y', labelsize=10)
 
 axes[1].scatter(S_all_2.index, S_all_2.p_dur,color='black',label='human horizon',marker='+',s=150,alpha=0.25)
-axes[1].plot(S_all_2.prior,color='black',label='prior',dashes=(0,2,2,2))
-axes[1].plot(S_all_2.hum,color='black',label='human t_total')
+axes[1].plot(S_all_2.prior,color='black',label='rational prior',dashes=(0,2,2,2))
+axes[1].plot(S_all_2.hum,color='black',label='human t_predicted')
 axes[1].plot(S_all_2.p_dur,color='black',label='human horizon',dashes=(0,0,2,2))
 axes[1].set_ylim(0,58)
-axes[1].text(datetime.strptime('2022-01-01','%Y-%m-%d'),53,gp_list[1],fontsize=10)
+#axes[1].text(datetime.strptime('2022-01-01','%Y-%m-%d'),53,gp_list[1],fontsize=10)
 axes[1].legend(bbox_to_anchor=(.4, .4), loc=1, frameon=False, fontsize=8)
-axes[1].tick_params(axis='x', labelsize=6)
+axes[1].tick_params(axis='x', labelsize=10)
+axes[1].tick_params(axis='y', labelsize=10)
 
 #LABELS
-axes[1].set_xlabel('Date', labelpad=10,size=10)
-axes[0].set_ylabel('Days', labelpad=10,size=10)
-axes[1].set_ylabel('Days', labelpad=10,size=10)
+axes[1].set_xlabel('t_past (Minutes)', labelpad=10,size=10)
+axes[0].set_ylabel('Minutes', labelpad=10,size=10)
+axes[1].set_ylabel('Minutes', labelpad=10,size=10)
 
 plt.subplots_adjust(wspace=.1,hspace=0.1)
 plt.savefig(f'Theory_PriorShift_1_2panel.png', dpi=300, transparent=False, bbox_inches='tight')
@@ -425,25 +431,23 @@ plt.show()
 fix, axes = plt.subplots(3,1,figsize=(5,7),sharex=True,sharey=False)
 leg_x = 1
 leg_y = 1
-gp_list = ['t=41,prior=50','t=47,prior=44','t=49,prior=32']
+gp_list = ['t_past=41,prior=50','t_past=47,prior=44','t_past=49,prior=32']
 
 for i in range(0,3):
     axes[i].plot(catch_dist_priors[i],color='black',label='prior',linewidth=2)
     axes[i].plot(catch_posteriors[i],color='black',label='posterior',dashes=(0,2,2,2))
-    axes[i].axvline(x=bayes.median_of_dist(catch_posteriors[i]),c='black',dashes=(0,2,2,2),linewidth=2,alpha=0.3)
+    axes[i].axvline(x=bayes.median_of_dist(catch_posteriors[i]),c='black',dashes=(1,1,1,1),linewidth=1.5,alpha=0.3)
     axes[i].set_ylim(0,0.15)
     axes[i].text(15,.13,gp_list[i],fontsize=10)
     axes[i].legend(bbox_to_anchor=(leg_x,leg_y), loc=1, frameon=False, fontsize=10)
 
 #LABELS
 axes[2].set_xlabel('t_total', labelpad=10,size=10)
-axes[0].set_ylabel('Density', labelpad=10,size=10)
-axes[1].set_ylabel('Density', labelpad=10,size=10)
-axes[2].set_ylabel('Density', labelpad=10,size=10)
+axes[0].set_ylabel('Probability', labelpad=10,size=10)
+axes[1].set_ylabel('Probability', labelpad=10,size=10)
+axes[2].set_ylabel('Probability', labelpad=10,size=10)
 
 plt.subplots_adjust(wspace=.1,hspace=0.1)
 plt.savefig(f'Theory_PriorShift_1.png', dpi=300, transparent=False, bbox_inches='tight')
 
-
-
-
+#EOF
