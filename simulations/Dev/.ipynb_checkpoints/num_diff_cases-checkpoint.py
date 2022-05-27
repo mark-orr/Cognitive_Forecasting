@@ -147,6 +147,29 @@ plt.scatter(df_b[0],df_b[1])
 #CORRELATION DOESN"T WORK BC DYNAMIC IS LOST
 stats.pearsonr(v_x1, h_x2)
 
+#ROLLING CORRELATION ON PERCENT CHANGE
+v_x1_pc = v_x1_S.pct_change()
+h_x2_pc = h_x2_S.pct_change()
+v_h_corr = v_x1_pc.rolling(4).corr(h_x2_pc)
+plt.plot(v_h_corr)
+
+h_u_pc = hum_use.pct_change()
+v_u_pc = vdh_use.pct_change()
+for i in range(3,11):
+    v_u_h_u_corr = v_u_pc.rolling(i).corr(h_u_pc)
+    plt.plot(v_u_h_u_corr,label=i)
+    plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=1)
+    plt.legend()
+    
+plt.plot(np.array(h_u_pc),label='hum'); plt.plot(np.array(v_u_pc),label='epi'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2); plt.legend()
+plt.scatter(np.arange(len(h_u_pc)),np.array(h_u_pc)); plt.scatter(np.arange(len(v_u_pc)),np.array(v_u_pc)); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2); plt.legend()
+'''TRY COMET TAIL'''
+y = np.array(h_u_pc)
+x = np.array(v_u_pc)
+alpha_correction = 1/len(x)
+for i in range(0,len(x)): plt.scatter(x[i],y[i],alpha=alpha_correction*i,color='black',marker='+'); plt.plot(x,y,linewidth=0.2,alpha=0.5)
+plt.savefig('tmp.png',dpi=300)
+
 
 
 
@@ -195,7 +218,10 @@ y = df_b.S_y
 fig, ax = plt.subplots()
 ax.scatter(x,y)
 ax.plot(x,y)
-
+alpha_correction = 1/len(x)
+'''TRY COMET TAIL'''
+for i in range(0,len(x)): plt.scatter(x[i],y[i],alpha=alpha_correction*i,color='black',marker='+'); plt.plot(x,y,linewidth=0.2,alpha=0.5)
+plt.savefig('tmp_phase_space.png',dpi=300)
 
 '''THIS IS THE GOOD ONE, BUT NOT QUITE PUB QUALITY'''
 x_min = min(df_b.S_x)-50
