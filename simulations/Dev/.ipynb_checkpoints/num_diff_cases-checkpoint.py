@@ -153,6 +153,8 @@ h_x2_pc = h_x2_S.pct_change()
 v_h_corr = v_x1_pc.rolling(4).corr(h_x2_pc)
 plt.plot(v_h_corr)
 
+
+'''GOOD PERCENT CHANGE THINGIE'''
 h_u_pc = hum_use.pct_change()
 v_u_pc = vdh_use.pct_change()
 for i in range(3,11):
@@ -172,6 +174,107 @@ plt.savefig('tmp.png',dpi=300)
 
 
 
+
+
+
+
+
+
+'''LAG-N CROSS CORR'''
+def crosscorr(datax, datay, lag=0, wrap=False):
+    """ Lag-N cross correlation. 
+    Shifted data filled with NaNs 
+    
+    Parameters
+    ----------
+    lag : int, default 0
+    datax, datay : pandas.Series objects of equal length
+
+    Returns
+    ----------
+    crosscorr : float
+    """
+    if wrap:
+        shiftedy = datay.shift(lag)
+        shiftedy.iloc[:lag] = datay.iloc[-lag:].values
+        return datax.corr(shiftedy)
+    else: 
+        return datax.corr(datay.shift(lag))
+
+'''FOR RAW TIME SERIES'''
+#d1 = pd.Series(np.array(hum_use))
+#d2 = pd.Series(np.array(vdh_use))
+'''PERCENT CHANGE TIME SERIES'''
+d1 = pd.Series(np.array(hum_use.pct_change()))
+d2 = pd.Series(np.array(vdh_use.pct_change()))
+
+
+
+rs = [crosscorr(d1,d2, lag) for lag in range(-10,10)]
+offset = np.floor(len(rs)/2)-np.argmax(rs)
+f,ax=plt.subplots(figsize=(14,3))
+ax.plot(rs)
+ax.axvline(np.ceil(len(rs)/2),color='k',linestyle='--',label='Center')
+ax.axvline(np.argmax(rs),color='r',linestyle='--',label='Peak synchrony')
+ax.set(title=f'Offset = {offset} frames\nS1 leads <> S2 leads',ylim=[-1,1],xlim=[0,41], xlabel='Offset',ylabel='Pearson r')
+ax.set_xticks([0, 10, 20])
+ax.set_xticklabels([-10, 0, 10]);
+plt.legend()
+
+
+'''PHASE SYCHRONY'''
+
+from scipy.signal import hilbert, butter, filtfilt
+from scipy.fftpack import fft,fftfreq,rfft,irfft,ifft
+import seaborn as sns
+
+def butter_bandpass(lowcut, highcut, fs, order=5):
+    nyq = 0.5 * fs
+    low = lowcut / nyq
+    high = highcut / nyq
+    b, a = butter(order, [low, high], btype='band')
+    return b, a
+
+
+def butter_bandpass_filter(data, lowcut, highcut, fs, order=5):
+    b, a = butter_bandpass(lowcut, highcut, fs, order=order)
+    y = filtfilt(b, a, data)
+    return y
+
+lowcut  = .1
+highcut = .9
+fs = 5
+order = 1
+
+#d1 = pd.Series(np.array(hum_use.pct_change())).interpolate().values
+#d2 = pd.Series(np.array(vdh_use.pct_change())).interpolate().values
+d1 = hum_use.interpolate().values
+d2 = vdh_use.interpolate().values
+y1 = butter_bandpass_filter(d1,lowcut=lowcut,highcut=highcut,fs=fs,order=order)
+y2 = butter_bandpass_filter(d2,lowcut=lowcut,highcut=highcut,fs=fs,order=order)
+plt.plot(y1)
+plt.plot(y2)
+
+al1 = np.angle(hilbert(y1),deg=False)
+al2 = np.angle(hilbert(y2),deg=False)
+phase_synchrony = 1-np.sin(np.abs(al1-al2)/2)
+N = len(al1)
+
+
+# Plot results
+f,ax = plt.subplots(3,1,figsize=(14,7),sharex=True)
+ax[0].plot(y1,color='r',label='y1')
+ax[0].plot(y2,color='b',label='y2')
+ax[0].legend(bbox_to_anchor=(0., 1.02, 1., .102),ncol=2)
+ax[0].set(xlim=[0,N], title='Filtered Timeseries Data')
+ax[1].plot(al1,color='r')
+ax[1].plot(al2,color='b')
+ax[1].set(ylabel='Angle',title='Angle at each Timepoint',xlim=[0,N])
+phase_synchrony = 1-np.sin(np.abs(al1-al2)/2)
+ax[2].plot(phase_synchrony)
+ax[2].set(ylim=[0,1.1],xlim=[0,N],title='Instantaneous Phase Synchrony',xlabel='Time',ylabel='Phase Synchrony')
+plt.tight_layout()
+plt.show()
 
 
 '''
