@@ -25,22 +25,23 @@ vdh = vdh.groupby(['report_date'])['total_cases'].sum().diff().rolling(window=7)
 vdh_use = vdh['11-30-2021':'01-14-2022'].copy()
 vdh_use.name = 'use'
 
+#PROCESS RAW DATA FOR DIFFERENTIATION
 x_poly = np.arange(len(vdh_use))+1
 vdh_poly = np.polyfit(x_poly, vdh_use, deg=15)
-plt.plot(vdh_poly)
 vdh_poly_values = np.polyval(vdh_poly, x_poly)
-plt.plot(vdh_poly_values)
 
+#FIRST DERIVATIVE
 v_x1 = np.diff(vdh_poly_values)
 v_x1_S = pd.Series(v_x1,index=vdh_use.index[1:])
 
+#SECOND DERIVATIVE
 v_x2 = np.diff(v_x1)
-v_x2 = np.insert(v_x2,0,0,axis=0)
-plt.plot(v_x1); plt.plot(v_x2);  plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+v_x2 = np.insert(v_x2,0,0,axis=0)#NOW SAME LEN AS v_x1 and indexes matched in time.
+v_x2_S = pd.Series(v_x2,index=vdh_use.index[1:])
 
-v_x2_S = pd.Series(v_x2,index=vdh_use.index[2:])
-plt.plot(v_x2_S); plt.plot(vdh_use[2:]); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
-
+#SANITY PLOTS
+plt.plot(v_x1_S); plt.plot(v_x2_S); plt.plot(vdh_use[2:]*0.1); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+plt.plot(v_x1_S); plt.plot(vdh_use[2:]*0.1); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
 plt.plot(v_x2_S);  plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
 
 
@@ -82,33 +83,47 @@ FOR DIFFERENTIIATION
 #TRY NON SMOOTHED DATA
 hum_use = grouped.hum.mean()
 
+#PROCESS RAW DATA FOR DIFFERENTIATION
 x_poly = np.arange(len(hum_use))+1
-hum_poly = np.polyfit(x_poly, hum_use, deg=15)#deg 15 worked
-plt.plot(hum_poly)
+hum_poly = np.polyfit(x_poly, hum_use, deg=15)
 hum_poly_values = np.polyval(hum_poly, x_poly)
-plt.plot(hum_poly_values)
-plt.plot(hum_use)
 
+#FIRST DERIVATIVE
 h_x1 = np.diff(hum_poly_values)
 h_x1_S = pd.Series(h_x1,index=hum_use.index[1:])
 
+#SECOND DERIVATIVE
 h_x2 = np.diff(h_x1)
-h_x2 = np.insert(h_x2,0,0,axis=0)
-plt.plot(h_x1); plt.plot(h_x2);  plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+h_x2 = np.insert(h_x2,0,0,axis=0)#NOW SAME LEN AS v_x1 and indexes matched in time.
+h_x2_S = pd.Series(h_x2,index=hum_use.index[1:])
 
-h_x2_S = pd.Series(h_x2,index=hum_use.index[2:])
-plt.plot(h_x2_S); plt.plot(hum_use[2:]); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+#FOR RAPID TESTING AGAINST EPI DATA
+v_const = 0.05; h_const = 20; plt.plot(v_x1*v_const,label='Epi Vel.'); plt.plot(h_x2*h_const, label='Hum Acc.'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
 
+#SANITY PLOTS
+plt.plot(h_x1_S); plt.plot(h_x2_S); plt.plot(hum_use[2:]*1); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+plt.plot(h_x1_S); plt.plot(hum_use[2:]*0.1); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+plt.plot(h_x1); plt.plot(h_x2); plt.plot(hum_poly_values); plt.plot(np.array(hum_use[1:]))
 plt.plot(h_x2_S);  plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
-plt.savefig('h_x2_S.png', dpi=300, transparent=False, bbox_inches='tight')
 
-plt.plot(v_x2_S);  plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
-plt.savefig('v_x2_S.png', dpi=300, transparent=False, bbox_inches='tight')
+'''HUMAN ROLLING SMOOTH IS NO GOOD'''
+#A TEST OF HUMAN SMOOTHING
+tmp_x1 = np.diff(np.array(grouped.hum.mean().rolling(4).mean()))
+tmp_x2 = np.diff(tmp_x1)
+tmp_x2 = np.insert(tmp_x2,0,0,axis=0)
+tmp_x2_S = pd.Series(tmp_x2,index=hum_use.index[1:])
+#FOR RAPID TESTING AGAINST EPI DATA
+v_const = 0.05; h_const = 20; plt.plot(v_x1*v_const,label='Epi Vel.'); plt.plot(tmp_x2*h_const, label='Hum Acc.'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+plt.plot(tmp_x1); plt.plot(np.array(grouped.hum.mean().rolling(4).mean()[1:]))
+plt.plot(tmp_x1)
 
 
 
+'''
+PLOTTING EPI AND 
+HUMAN TOGETHER
+'''
 
-'''PLOT HUMAN AND EPI TOGETHER'''
 norm_const = 0.2
 
 v_const = 0.01; h_const = 5; plt.plot(v_x1*v_const); plt.plot(h_x1*h_const); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
@@ -121,17 +136,24 @@ plt.legend()
 plt.savefig('Epi_Acc_w_Hum_Vel.png',dpi=200)
 
 #EPI VEL, HUMAN ACC
-v_const = 0.05; h_const = 5; plt.plot(v_x1*v_const,label='Epi Vel.'); plt.plot(h_x2*h_const, label='Hum Acc.'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+v_const = 0.05; h_const = 50; plt.plot(v_x1*v_const,label='Epi Vel.'); plt.plot(h_x2*h_const, label='Hum Acc.'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
 plt.legend()
 plt.savefig('Epi_Vel_w_Hum_Acc.png',dpi=200)
 
-#SCATTERS
+#SCATTERS AND THINGS
 df_b = pd.DataFrame([v_x1_S,h_x2_S]).T
 plt.scatter(df_b[0],df_b[1])
 
-df_b_2 = pd.DataFrame([v_x2_S,h_x1_S]).T
-plt.scatter(df_b_2[0]*v_const,df_b_2[1]*h_const)
+#CORRELATION DOESN"T WORK BC DYNAMIC IS LOST
+stats.pearsonr(v_x1, h_x2)
 
+
+
+
+
+'''
+PHASE SPACE ANALYSIS
+'''
 #USE df_b for phase space.
 df_b.columns = ['epi_vel','hum_acc']
 
@@ -165,38 +187,6 @@ S_dy = catch_arr.copy()
 S_dy = np.insert(S_dy,0,0,axis=0)
 df_b['S_dy'] = S_dy
 
-
-
-plt.arrow(df_b.S_x[2], df_b.S_x[2], df_b.S_dx[2], df_b.S_dy[2],head_width = 1, width = 0.001)
-
-for i in range(2,len(df_b)):
-    plt.arrow(df_b.S_x[i], df_b.S_y[i], df_b.S_dx[i], df_b.S_dy[i],head_width = .4, width = 0.1)
-
-for i in range(1,15):
-    plt.arrow(df_b.S_x[i]*0.05, df_b.S_y[i]*5, df_b.S_dx[i]*0.05, df_b.S_dy[i]*5,head_width = 1, width = 0.1)
-
-for i in range(15,30):
-    plt.arrow(df_b.S_x[i]*0.05, df_b.S_y[i]*5, df_b.S_dx[i]*0.05, df_b.S_dy[i]*5,head_width = .5, width = 0.1)
-
-for i in range(30,45):
-    plt.arrow(df_b.S_x[i]*0.05, df_b.S_y[i]*5, df_b.S_dx[i]*0.05, df_b.S_dy[i]*5,head_width = .5, width = 0.1)
-
-for i in range(40,45):
-    plt.arrow(df_b.S_x[i]*0.05, df_b.S_y[i]*5, df_b.S_dx[i]*0.05, df_b.S_dy[i]*5,head_width = .5, width = 0.1)
-
-
-plt.plot(np.arange(10))
-for i in range(2,15):
-    plt.plot(np.arange(10))
-    plt.xlim([-200,200])
-    plt.ylim([-2,2])
-    plt.annotate("", xy=(df_b.S_x[i],df_b.S_y[i]), xytext=(float(df_b.S_dx[i]),float(df_b.S_dy[i])), arrowprops=dict(arrowstyle="->")  )
-
-    
-plt.annotate("", xy=(0.5, 0.5), xytext=(0, 0),arrowprops=dict(arrowstyle="->"))
-plt.annotate("", xy=(.7, 0.7), xytext=(0.5, 0.5),arrowprops=dict(arrowstyle="->"))
-
-plt.annotate("", xy=(S_x[2],S_y[2]), xytext=(0,0), arrowprops=dict(arrowstyle="->"))
 
 #NO ARROWS
 x = df_b.S_x
@@ -289,7 +279,7 @@ plt.savefig('Time_Steps_All.png',dpi=200)
 '''
 ISSUE: JUSTIFYINIG POLYNOMIAL OF HIGHER DEG
 0. deg of poly does not change epi transformation
-1. Test if lower deg poly on human will still give same relation to epii
+1. Test if lower deg poly on human will still give same relation to epii IT DOESNT
 2. If yes, use it.
 3. If no, then can justify using higher bc it fits epi, but then 
 must show not spurious--> test random field (using var of hum) and fit same set 
@@ -306,7 +296,7 @@ CONVINCING WAY TO ADJUDICATE THE USE OF HIGH DEG POLYNOMIALL
 
 #deg_list = [10,11,12,13,14,15,16,17]
 #deg_list = [10,11,12,13]
-deg_list = [14,15,16]
+deg_list = [10,14,15,16]
 for i in deg_list:
     x_poly = np.arange(len(hum_use))+1
     hum_poly = np.polyfit(x_poly, hum_use, deg=i,full=True)#deg 15 worked
@@ -324,7 +314,7 @@ for i in deg_list:
     vdh_poly = np.polyfit(x_poly, vdh_use, deg=15)
     vdh_poly_values = np.polyval(vdh_poly, x_poly)
     plt.plot(vdh_poly_values)
-#EOF
+
 
 hum_poly = np.polyfit(x_poly, hum_use, deg=15,full=True)
 hum_poly[1]
@@ -332,3 +322,42 @@ hum_poly[1]
 plt.plot(hum_use)
 plt.scatter(hum_use.index[1:],hum_use[1:])
 
+
+
+
+
+
+
+'''OLD AND SCRAP CODE'''
+
+'''OLD AND SCRAP CODE'''
+
+'''OLD AND SCRAP CODE'''
+#OLD CODE
+x_poly = np.arange(len(hum_use))+1
+hum_poly = np.polyfit(x_poly, hum_use, deg=15)#deg 15 worked
+plt.plot(hum_poly)
+hum_poly_values = np.polyval(hum_poly, x_poly)
+plt.plot(hum_poly_values)
+plt.plot(hum_use)
+
+h_x1 = np.diff(hum_poly_values)
+h_x1_S = pd.Series(h_x1,index=hum_use.index[1:])
+
+h_x2 = np.diff(h_x1)
+h_x2 = np.insert(h_x2,0,0,axis=0)
+plt.plot(h_x1); plt.plot(h_x2);  plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+
+h_x2_S = pd.Series(h_x2,index=hum_use.index[2:])
+plt.plot(h_x2_S); plt.plot(hum_use[2:]); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+
+plt.plot(h_x2_S);  plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+plt.savefig('h_x2_S.png', dpi=300, transparent=False, bbox_inches='tight')
+
+plt.plot(v_x2_S);  plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+plt.savefig('v_x2_S.png', dpi=300, transparent=False, bbox_inches='tight')
+
+
+#EOF
+#EFO
+#EOF
