@@ -96,7 +96,35 @@ plt.savefig(f'Good_{gp_no}.png', dpi=300, transparent=False, bbox_inches='tight'
 plt.show()
 
 
+'''
+SOME STATISTICS ON THE PLOT
+FOR THE MANUSCRIPT
+'''
+#SET UP DATA
+i = catch_groups[0]
+i['hum_minus_prior'] = i.hum - i.prior
+grouped = i.groupby(level=0)
+#MEAN OF PRIOR
+grouped.prior.mean().mean()
+grouped.prior.mean().std()
+#MEAN OF human t_predicted
+grouped.hum.mean().mean()
+grouped.hum.mean().std()
 
+#NEAR END POINT
+i.p_dur.loc['2022-01-10']
+i.loc['2022-01-10']
+i.loc[['2022-01-09','2022-01-10']]
+
+#THIS IS A GOOD ONE, POTENTIALLY
+plt.scatter(i.index,i.hum_minus_prior,color='black',label='t_predicted - prior',marker='+',s=50,alpha=0.25)
+plt.plot(grouped.hum_minus_prior.mean().rolling(4).mean(),color='black')
+plt.plot(i.hum_minus_prior,color='black',label='rational prior',dashes=(0,2,2,2))
+plt.scatter(i.hum,i.prior,color='black',label='prior-t_predicted',marker='o',s=75,alpha=0.25)
+plt.scatter(i.p_dur,i.hum-i.prior,color='black',label='horizon by t_predicted - prior',marker='+',s=50,alpha=0.25)
+
+#JUST NEED ONE MORE
+Maybe the theoretical plot of constant prior.
 
 '''
 NEXT MAKE DELTA PLOT
