@@ -139,22 +139,23 @@ axes[2].plot(grouped.hum_minus_prior.mean().rolling(4).mean(),color='black')
 axes[1].scatter(i.p_dur,i.hum-i.prior,color='black',label='horizon by t_predicted - prior',marker='^',s=50,alpha=0.25)
 axes[0].scatter(i.hum,i.prior,color='black',label='prior-t_predicted',marker='^',s=75,alpha=0.25)
 
+axes[1].axvline(x=5,c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.5)
 
 #LABELS
-axes[2].set_xlabel('Date', labelpad=10,size=10)
+axes[2].set_xlabel('Date', labelpad=10,size=15)
 axes[2].tick_params(axis='x', labelsize=7)
-axes[2].set_ylabel('human t_pred - rational prior', labelpad=10,size=10)
-axes[2].tick_params(axis='y', labelsize=10)
+axes[2].set_ylabel('human t_pred - rational prior', labelpad=10,size=15)
+axes[2].tick_params(axis='y', labelsize=15)
 
-axes[1].set_xlabel('human horizon', labelpad=10,size=10)
-axes[1].tick_params(axis='x', labelsize=10)
-axes[1].set_ylabel('human t_pred - rational prior', labelpad=10,size=10)
-axes[1].tick_params(axis='y', labelsize=10)
+axes[1].set_xlabel('human horizon', labelpad=10,size=15)
+axes[1].tick_params(axis='x', labelsize=15)
+axes[1].set_ylabel('human t_pred - rational prior', labelpad=10,size=15)
+axes[1].tick_params(axis='y', labelsize=15)
 
-axes[0].set_xlabel('human t_pred', labelpad=10,size=10)
-axes[0].tick_params(axis='x', labelsize=10)
-axes[0].set_ylabel('rational prior', labelpad=10,size=10)
-axes[0].tick_params(axis='y', labelsize=10)
+axes[0].set_xlabel('human t_pred', labelpad=10,size=15)
+axes[0].tick_params(axis='x', labelsize=15)
+axes[0].set_ylabel('rational prior', labelpad=10,size=15)
+axes[0].tick_params(axis='y', labelsize=15)
 
 plt.subplots_adjust(wspace=.3,hspace=0.2)
 
