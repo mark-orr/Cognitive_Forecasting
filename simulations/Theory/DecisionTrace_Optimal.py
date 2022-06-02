@@ -15,6 +15,18 @@ import b_fit
 
 reload(bayes)
 
+
+'''
+NOTES:
+1. FOR MANUSCRIPT, ONE OF THE LAST CODE BLOCKS (LABEL: PRIOR DROP COMPARISON) HERE COMPUTES THE THEORETICAL 
+CONSTANT DECISION WITH THE PARAMETERS OF THE DATA.  IT WILL OUTPUT A CSV FOR INGESTION
+BY THE ANALYSIS.PY FILE IN /SIMULATIONS/HIGHEST.  MAY NOT USE IT IN FINAL V OF MANU, 
+BUT ITS HERE TO TRY.
+2. Another LATER CODE BLOCK (LABEL: ANNEALING) FINDS OPTIMAL SCHEDULE OF
+T_PREDICTED SO THAT DIFF BETWEEN PRIOR LAMBDA
+'''
+
+
 priors_in = '/Users/biocomplexity/Projects/SocioCognitiveModeling/Metaculus_CogModeling/simulations/Priors'
 
 '''LOAD PRIORS'''
@@ -449,5 +461,297 @@ axes[2].set_ylabel('Probability', labelpad=10,size=10)
 
 plt.subplots_adjust(wspace=.1,hspace=0.1)
 plt.savefig(f'Theory_PriorShift_1.png', dpi=300, transparent=False, bbox_inches='tight')
+
+
+
+
+
+
+
+
+
+
+
+'''
+LABEL: PRIOR DROP COMPARISON
+LAST CODE BLOCK, SEE NOTE IN HEADER OF THIS FILE
+'''
+'''MAKE FAKE DATA'''
+judgment_offset = 0
+index_for_all = pd.date_range('2021-11-30','2022-01-14')
+S_0 = pd.Series(pd.date_range('2021-11-30','2022-01-14'),name='decision_date')
+S_1 = pd.Series(range(1,1+len(index_for_all)),name='t_int')
+S_2 = pd.Series(np.repeat(len(index_for_all)-judgment_offset,len(index_for_all)),name='prediction_int')
+S_3 = pd.Series((len(index_for_all)-judgment_offset)-S_1,name='prediction_horiz_int')
+
+df_use_all = pd.concat([S_0,S_1,S_2,S_3],axis=1)
+len(index_for_all)
+
+
+
+'''COMPUTE BEST PRIORS'''
+'''ALL Ss TOGETHER'''
+outfile_group = 'fake_data'
+df_S_w2 = df_use_all.copy()
+'''
+IV.  GENERATE BEST PRIORS FOR W2
+'''    
+catch_all_t_over_t_over_p = []
+catch_all_optimal_pred_over_t_over_p = []
+catch_tmp_optimal_over_p = []
+catch_all_human_pred_over_t_over_p = []
+catch_all_error_over_t_over_p = []
+catch_all_date_over_t_over_p = []
+catch_all_p_dur_over_t_over_p = []
+
+for j in posteriors: #LOOP OVER PRIORS
+    print('J is:',j)
+    print('NEW PRIOR')
+    print('NEW PRIOR')
+    catch_all_t_over_t = ([])
+    catch_all_optimal_pred_over_t = ([])
+    catch_tmp_optimal_over_t = ([])
+    catch_all_human_pred_over_t = ([])
+    catch_all_error_over_t = ([])
+    catch_all_date_over_t = ([])
+    catch_all_p_dur_over_t = ([])
+
+    for i in range(0,len(df_S_w2)):#CAPTURE HUMAN DATA T AND PRED
+        t = df_S_w2.t_int.iloc[i] #P
+        
+        p_dur = df_S_w2.prediction_horiz_int.iloc[i]
+        catch_all_p_dur_over_t = np.append(catch_all_p_dur_over_t,p_dur)
+        
+        print('t',t)
+        catch_all_t_over_t = np.append(catch_all_t_over_t,t)
+        #optimal_pred = catch_all_prior_over_all_t[0][t-1]#index zero is t=1
+        print('LEN of J',len(j))
+        if (t>0) & (t<=len(j)):#t-time is j[j.index+1]
+            print('T IS WITHIN PRIOR,  GOOOD')
+            optimal_pred = j[t-1]
+        else:
+            print('T IS GREATER THAN Ts in PRIOR')
+            optimal_pred = j[-1]
+        catch_all_optimal_pred_over_t = np.append(catch_all_optimal_pred_over_t,optimal_pred)
+        print('optimal pred',optimal_pred)
+        catch_tmp_optimal_over_t = np.append(catch_tmp_optimal_over_t,b_fit.find_optimal(t,j))
+        
+        human_pred = df_S_w2.prediction_int.iloc[i]
+        catch_all_human_pred_over_t = np.append(catch_all_human_pred_over_t,human_pred)
+        print('human pred', human_pred)
+        error = human_pred - optimal_pred
+        print('error',error)
+        catch_all_error_over_t = np.append(catch_all_error_over_t,error)
+        catch_all_date_over_t = np.append(catch_all_date_over_t,df_S_w2.decision_date.iloc[i])
+        print('decision_date',df_S_w2.decision_date.iloc[i])
+    
+    catch_all_t_over_t_over_p.append(catch_all_t_over_t)
+    catch_all_optimal_pred_over_t_over_p.append(catch_all_optimal_pred_over_t)
+    catch_tmp_optimal_over_p.append(catch_tmp_optimal_over_t)
+    catch_all_human_pred_over_t_over_p.append(catch_all_human_pred_over_t)
+    catch_all_error_over_t_over_p.append(catch_all_error_over_t)
+    catch_all_date_over_t_over_p.append(catch_all_date_over_t)
+    catch_all_p_dur_over_t_over_p.append(catch_all_p_dur_over_t)
+#TEST FOR FINDAL OPTIMAL FUNCTION SHOULD BE ZERO SUM
+(np.array(catch_all_optimal_pred_over_t_over_p)-np.array(catch_tmp_optimal_over_p)).sum()
+
+'''PICK BEST PRIOR'''
+df_error = pd.DataFrame(catch_all_error_over_t_over_p).T
+df_error.index = df_S_w2.decision_date.reset_index(drop=True)
+df_error.columns = prior_means
+plot_this = df_error.abs().idxmin(axis=1)
+
+#USEFUL VIS
+S_ts = pd.Series(catch_all_t_over_t,index=df_S_w2.decision_date.reset_index(drop=True),name='t')
+S_hp = pd.Series(catch_all_human_pred_over_t,index=df_S_w2.decision_date.reset_index(drop=True),name='hum')
+S_pd = pd.Series(catch_all_p_dur_over_t,index=df_S_w2.decision_date.reset_index(drop=True),name='p_dur')
+S_er = df_error.abs().min(axis=1)
+plot_this.name='prior'
+S_er.name='err'
+
+S_all = pd.concat([S_ts, S_hp, S_pd, plot_this, S_er], axis=1)
+#S_all.to_pickle(f'S_all_{outfile_group}.csv')
+
+ForExportToAnalysis = pd.Series(S_all.prior)
+ForExportToAnalysis.name = 'const_dec_prior'
+ForExportToAnalysis.to_csv('ConstantDecisionPrior_Comp.csv',index=True)
+
+
+
+
+
+
+
+
+
+'''
+LABEL: ANNEALING
+
+'''
+'''UNDER CONSTRUCITON'''
+
+'''MAKE FAKE DATA'''
+judgment_offset = 0
+index_for_all = pd.date_range('2022-01-01','2022-03-15')
+S_0 = pd.Series(pd.date_range('2022-01-01','2022-03-15'),name='decision_date')
+S_1 = pd.Series(range(1,1+len(index_for_all)),name='t_int')
+S_2 = pd.Series(np.repeat(len(index_for_all)-judgment_offset,len(index_for_all)),name='prediction_int')
+S_3 = pd.Series((len(index_for_all)-judgment_offset)-S_1,name='prediction_horiz_int')
+
+df_use_all = pd.concat([S_0,S_1,S_2,S_3],axis=1)
+len(index_for_all)
+
+
+
+'''COMPUTE BEST PRIORS'''
+'''ALL Ss TOGETHER'''
+outfile_group = 'fake_data'
+df_S_w2 = df_use_all.copy()
+
+
+#ALSO INTERESTING
+new_data = pd.Series(np.array([50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 
+50., 50., 50., 51., 51., 52., 52., 53., 53., 
+54., 54., 55., 55., 56., 56., 57., 57., 58., 58.,
+59., 59., 60., 60., 61., 61., 62., 62., 63., 63.,
+64., 64., 65., 65.,]),dtype=int)
+
+new_data = pd.Series(np.array([50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 
+                               50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 
+                               50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 
+                               50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 
+                               50., 50., 
+                               51., 52., 53., 53., 
+                               54., 55., 56., 56., 
+                               57., 58., 59., 59., 
+                               60., 61., 62., 62., 
+                               63., 64., 65., 65., 
+                               66., 67., 68., 68., 
+                               69., 70., 71., 71., 
+                               72., 73., 74., 74.,]),dtype=int)
+
+#new_data = pd.Series(np.repeat(50,74))
+'''WORKING ON FUNCTIONS'''
+np.array(np.exp(tmp_arr)*(32/(np.exp(32))),dtype=int)
+new_data = pd.Series(np.array([50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 
+                               50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 
+                               50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 
+                               50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 
+                               50., 50., 
+                               51., 52., 53., 54., 
+                               55., 56., 57., 58., 
+                               59., 60., 61., 62., 
+                               63., 64., 65., 66., 
+                               67., 68., 69., 70., 
+                               71., 72., 73., 74., 
+                               75., 76., 77., 78., 
+                               79., 80., 81., 82.,]),dtype=int)
+
+new_data = pd.Series(np.array([50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 
+                               50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 
+                               50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 
+                               50., 50., 50., 50., 50., 50., 50., 50., 50., 50., 
+                               50., 50., 
+                               51., 52., 53., 54., 
+                               55., 56., 57., 57., 
+                               58., 59., 60., 61., 
+                               62., 63., 65., 65., 
+                               66., 67., 68., 69., 
+                               70., 71., 75., 75., 
+                               76., 77., 78., 79., 
+                               80., 86., 86., 86.,]),dtype=int)
+
+
+df_S_w2['prediction_int'] = new_data
+df_S_w2['prediction_horiz_int'] = df_S_w2.prediction_int - df_S_w2.t_int
+
+'''
+IV.  GENERATE BEST PRIORS FOR W2
+'''    
+catch_all_t_over_t_over_p = []
+catch_all_optimal_pred_over_t_over_p = []
+catch_tmp_optimal_over_p = []
+catch_all_human_pred_over_t_over_p = []
+catch_all_error_over_t_over_p = []
+catch_all_date_over_t_over_p = []
+catch_all_p_dur_over_t_over_p = []
+
+for j in posteriors[20:60]: #LOOP OVER PRIORS
+    print('J is:',j)
+    print('NEW PRIOR')
+    print('NEW PRIOR')
+    catch_all_t_over_t = ([])
+    catch_all_optimal_pred_over_t = ([])
+    catch_tmp_optimal_over_t = ([])
+    catch_all_human_pred_over_t = ([])
+    catch_all_error_over_t = ([])
+    catch_all_date_over_t = ([])
+    catch_all_p_dur_over_t = ([])
+
+    for i in range(0,len(df_S_w2)):#CAPTURE HUMAN DATA T AND PRED
+        t = df_S_w2.t_int.iloc[i] #P
+        
+        p_dur = df_S_w2.prediction_horiz_int.iloc[i]
+        catch_all_p_dur_over_t = np.append(catch_all_p_dur_over_t,p_dur)
+        
+        print('t',t)
+        catch_all_t_over_t = np.append(catch_all_t_over_t,t)
+        #optimal_pred = catch_all_prior_over_all_t[0][t-1]#index zero is t=1
+        print('LEN of J',len(j))
+        if (t>0) & (t<=len(j)):#t-time is j[j.index+1]
+            print('T IS WITHIN PRIOR,  GOOOD')
+            optimal_pred = j[t-1]
+        else:
+            print('T IS GREATER THAN Ts in PRIOR')
+            optimal_pred = j[-1]
+        catch_all_optimal_pred_over_t = np.append(catch_all_optimal_pred_over_t,optimal_pred)
+        print('optimal pred',optimal_pred)
+        catch_tmp_optimal_over_t = np.append(catch_tmp_optimal_over_t,b_fit.find_optimal(t,j))
+        
+        human_pred = df_S_w2.prediction_int.iloc[i]
+        catch_all_human_pred_over_t = np.append(catch_all_human_pred_over_t,human_pred)
+        print('human pred', human_pred)
+        error = human_pred - optimal_pred
+        print('error',error)
+        catch_all_error_over_t = np.append(catch_all_error_over_t,error)
+        catch_all_date_over_t = np.append(catch_all_date_over_t,df_S_w2.decision_date.iloc[i])
+        print('decision_date',df_S_w2.decision_date.iloc[i])
+    
+    catch_all_t_over_t_over_p.append(catch_all_t_over_t)
+    catch_all_optimal_pred_over_t_over_p.append(catch_all_optimal_pred_over_t)
+    catch_tmp_optimal_over_p.append(catch_tmp_optimal_over_t)
+    catch_all_human_pred_over_t_over_p.append(catch_all_human_pred_over_t)
+    catch_all_error_over_t_over_p.append(catch_all_error_over_t)
+    catch_all_date_over_t_over_p.append(catch_all_date_over_t)
+    catch_all_p_dur_over_t_over_p.append(catch_all_p_dur_over_t)
+#TEST FOR FINDAL OPTIMAL FUNCTION SHOULD BE ZERO SUM
+(np.array(catch_all_optimal_pred_over_t_over_p)-np.array(catch_tmp_optimal_over_p)).sum()
+
+'''PICK BEST PRIOR'''
+df_error = pd.DataFrame(catch_all_error_over_t_over_p).T
+df_error.index = df_S_w2.decision_date.reset_index(drop=True)
+df_error.columns = prior_means[20:60]
+plot_this = df_error.abs().idxmin(axis=1)
+
+#USEFUL VIS
+S_ts = pd.Series(catch_all_t_over_t,index=df_S_w2.decision_date.reset_index(drop=True),name='t')
+S_hp = pd.Series(catch_all_human_pred_over_t,index=df_S_w2.decision_date.reset_index(drop=True),name='hum')
+S_pd = pd.Series(catch_all_p_dur_over_t,index=df_S_w2.decision_date.reset_index(drop=True),name='p_dur')
+S_er = df_error.abs().min(axis=1)
+plot_this.name='prior'
+#replacing plot_this with constant
+#constant_prior = np.repeat(50,len(index_for_all))
+#S_constant_prior = pd.Series(constant_prior,index=df_S_w2.decision_date.reset_index(drop=True),name='prior')
+S_er.name='err'
+
+#S_all_2 = pd.concat([S_ts, S_hp, S_pd, S_constant_prior, S_er], axis=1)
+S_all_2 = pd.concat([S_ts, S_hp, S_pd, plot_this, S_er], axis=1)
+#S_all.to_pickle(f'S_all_{outfile_group}.csv')
+
+S_all_2.plot()
+
+plt.plot(S_all_2.prior.rolling(4))
+
+
 
 #EOF

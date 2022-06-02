@@ -101,8 +101,18 @@ SOME STATISTICS ON THE PLOT
 FOR THE MANUSCRIPT
 '''
 #SET UP DATA
-i = catch_groups[0]
+i = catch_groups[0].copy()
 i['hum_minus_prior'] = i.hum - i.prior
+const_dec_prior = pd.read_csv('/Users/biocomplexity/Projects/SocioCognitiveModeling/Metaculus_CogModeling/simulations/Theory/ConstantDecisionPrior_Comp.csv',index_col=[0],parse_dates=[0])
+
+const_dec_prior = pd.Series(const_dec_prior.const_dec_prior).copy()
+#add to i
+i['c_dec_prior'] = const_dec_prior.copy()
+#manipulste to equal prior prior to 1-06
+i.loc['2021-11-30':'2022-01-10'].c_dec_prior = i.loc['2021-11-30':'2022-01-10'].prior
+
+i['prior_min_c_prior'] = i.prior - i.c_dec_prior
+
 grouped = i.groupby(level=0)
 #MEAN OF PRIOR
 grouped.prior.mean().mean()
@@ -110,6 +120,11 @@ grouped.prior.mean().std()
 #MEAN OF human t_predicted
 grouped.hum.mean().mean()
 grouped.hum.mean().std()
+
+#POINT WHERE THE ROLLING AVERAGES SPLIT
+pd.concat([grouped.prior.mean().rolling(4).mean(),grouped.hum.mean().rolling(4).mean()], axis=1)
+#DATE is 1-06 as first day of splitting.
+
 
 #NEAR END POINT
 i.p_dur.loc['2022-01-10']
@@ -161,16 +176,27 @@ plt.subplots_adjust(wspace=.3,hspace=0.2)
 
 plt.savefig(f'Study1_ExplanatoryScatter_All_S.png', dpi=300, transparent=False, bbox_inches='tight')
 
+'''
+BUT THIS NOT QUITE IT
+TRY THIS
+'''
+
+#THIS IS A GOOD ONE, POTENTIALLY
+plt.scatter(i.index,i.hum_minus_prior,color='black',label='t_predicted - prior',marker='^',s=50,alpha=0.25)
+plt.plot(grouped.hum_minus_prior.mean().rolling(4).mean(),color='black')
+plt.plot(i.hum_minus_prior,color='black',label='rational prior',dashes=(0,2,2,2))
+plt.scatter(i.hum,i.prior,color='black',label='prior-t_predicted',marker='^',s=75,alpha=0.25)
+plt.scatter(i.p_dur,i.prior-i.c_dec_prior,color='black',label='horizon by t_predicted - prior',marker='+',s=50,alpha=0.25)
 
 
+plt.plot(grouped.prior.mean().rolling(4).mean(),color='black')
+plt.plot(grouped.c_dec_prior.mean().rolling(4).mean(),color='black')
 
 
+plt.scatter(i.p_,i.hum-i.t)
+plt.scatter(i.index,i.p_dur,marker='^',color='red')
 
-
-
-
-
-
+i[['p_dur','hum','prior']]
 
 
 
