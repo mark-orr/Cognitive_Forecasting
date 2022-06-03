@@ -18,6 +18,22 @@ reload(bayes)
 
 cases_data_in = '/Users/biocomplexity/Projects/SocioCognitiveModeling/Metaculus_CogModeling/simulations/InputData'
 
+'''CODE STRUCTURE:
++ data block
+
++ raw data --> poly fit --> f(x)' and f(x)''
+for both human and vdh raw and tried 
+human smoothed inplaced of poly fit.
+
++ raw data --> perc. ch. --> 
+'''
+
+
+'''
+%%%%%%%%%%
+DATA BLOCK
+'''
+
 '''EPI DATA'''
 vdh = pd.read_csv(f'{cases_data_in}/VDH-COVID-19-PublicUseDataset-Cases.csv',parse_dates=['report_date'])
 
@@ -25,28 +41,7 @@ vdh = vdh.groupby(['report_date'])['total_cases'].sum().diff().rolling(window=7)
 vdh_use = vdh['11-30-2021':'01-14-2022'].copy()
 vdh_use.name = 'use'
 
-#PROCESS RAW DATA FOR DIFFERENTIATION
-x_poly = np.arange(len(vdh_use))+1
-vdh_poly = np.polyfit(x_poly, vdh_use, deg=15)
-vdh_poly_values = np.polyval(vdh_poly, x_poly)
-
-#FIRST DERIVATIVE
-v_x1 = np.diff(vdh_poly_values)
-v_x1_S = pd.Series(v_x1,index=vdh_use.index[1:])
-
-#SECOND DERIVATIVE
-v_x2 = np.diff(v_x1)
-v_x2 = np.insert(v_x2,0,0,axis=0)#NOW SAME LEN AS v_x1 and indexes matched in time.
-v_x2_S = pd.Series(v_x2,index=vdh_use.index[1:])
-
-#SANITY PLOTS
-plt.plot(v_x1_S); plt.plot(v_x2_S); plt.plot(vdh_use[2:]*0.1); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
-plt.plot(v_x1_S); plt.plot(vdh_use[2:]*0.1); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
-plt.plot(v_x2_S);  plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
-
-
-'''ADD THE HUMAN DATA'''
-'''ADD THE HUMAN DATA'''
+'''ADD HUMAN DATA'''
 data_in = '/Users/biocomplexity/Projects/SocioCognitiveModeling/Metaculus_CogModeling/simulations/Preprocessing'
 infile_name = 'sim_out_highest'
 
@@ -74,15 +69,36 @@ i = catch_groups[0]
 '''aVE OVER DAY'''
 grouped = i.groupby(level=0)
 
-
-'''
-HUMAN DATA 
-FOR DIFFERENTIIATION
-'''
-
-#TRY NON SMOOTHED DATA
 hum_use = grouped.hum.mean()
 
+
+'''
+%%%%%%%%%%%%%%%%%%%%%
+DIFFERENTIATION BLOCK
+USING SIMPLE POLY FIT
+'''
+
+'''VDH'''
+#PROCESS RAW DATA FOR DIFFERENTIATION
+x_poly = np.arange(len(vdh_use))+1
+vdh_poly = np.polyfit(x_poly, vdh_use, deg=15)
+vdh_poly_values = np.polyval(vdh_poly, x_poly)
+
+#FIRST DERIVATIVE
+v_x1 = np.diff(vdh_poly_values)
+v_x1_S = pd.Series(v_x1,index=vdh_use.index[1:])
+
+#SECOND DERIVATIVE
+v_x2 = np.diff(v_x1)
+v_x2 = np.insert(v_x2,0,0,axis=0)#NOW SAME LEN AS v_x1 and indexes matched in time.
+v_x2_S = pd.Series(v_x2,index=vdh_use.index[1:])
+
+#SANITY PLOTS
+plt.plot(v_x1_S); plt.plot(v_x2_S); plt.plot(vdh_use[2:]*0.1); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+plt.plot(v_x1_S); plt.plot(vdh_use[2:]*0.1); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+plt.plot(v_x2_S);  plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+
+'''HUMAN'''
 #PROCESS RAW DATA FOR DIFFERENTIATION
 x_poly = np.arange(len(hum_use))+1
 hum_poly = np.polyfit(x_poly, hum_use, deg=15)
@@ -106,7 +122,8 @@ plt.plot(h_x1_S); plt.plot(hum_use[2:]*0.1); plt.axhline(y=0, c='r',dashes=(2,2,
 plt.plot(h_x1); plt.plot(h_x2); plt.plot(hum_poly_values); plt.plot(np.array(hum_use[1:]))
 plt.plot(h_x2_S);  plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
 
-'''HUMAN ROLLING SMOOTH IS NO GOOD'''
+'''HUMAN ROLLING SMOOTH INPLACE OF SIMPLE POLYNOMIAL
+'''
 #A TEST OF HUMAN SMOOTHING
 tmp_x1 = np.diff(np.array(grouped.hum.mean().rolling(4).mean()))
 tmp_x2 = np.diff(tmp_x1)
@@ -117,13 +134,9 @@ v_const = 0.05; h_const = 20; plt.plot(v_x1*v_const,label='Epi Vel.'); plt.plot(
 plt.plot(tmp_x1); plt.plot(np.array(grouped.hum.mean().rolling(4).mean()[1:]))
 plt.plot(tmp_x1)
 
-
-
 '''
-PLOTTING EPI AND 
-HUMAN TOGETHER
+PLOTTING EPI AND HUMAN TOGETHER
 '''
-
 norm_const = 0.2
 
 v_const = 0.01; h_const = 5; plt.plot(v_x1*v_const); plt.plot(h_x1*h_const); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
@@ -154,18 +167,54 @@ v_h_corr = v_x1_pc.rolling(4).corr(h_x2_pc)
 plt.plot(v_h_corr)
 
 
-'''GOOD PERCENT CHANGE THINGIE'''
+
+'''
+%%%%%%%%%%%%%%%%
+PERCENT CHANGE ANALYSIS
+'''
 h_u_pc = hum_use.pct_change()
 v_u_pc = vdh_use.pct_change()
-for i in range(3,11):
+h_u_pc2 = h_u_pc.pct_change()
+v_u_pc2 = v_u_pc.pct_change()
+
+'''ROLLING TIME BASED PERCENT CHANGE CORRELATION'''
+for i in range(4,6):
     v_u_h_u_corr = v_u_pc.rolling(i).corr(h_u_pc)
     plt.plot(v_u_h_u_corr,label=i)
     plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=1)
+    plt.axvline(x=datetime.strptime('2021-12-03','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.3)
+    plt.axvline(x=datetime.strptime('2021-12-24','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.3)
+    plt.axvline(x=datetime.strptime('2022-01-14','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.3)
     plt.legend()
     
+'''ROLLING TIME BASED PERCENT CHANGE CORRELATION WITH FURTHER SMOOTH'''
+for i in range(4,6):
+    v_u_h_u_corr = v_u_pc.rolling(i).corr(h_u_pc).rolling(4).mean()
+    plt.plot(v_u_h_u_corr,label=i)
+    plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=1)
+    plt.axvline(x=datetime.strptime('2021-12-03','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.3)
+    plt.axvline(x=datetime.strptime('2021-12-24','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.3)
+    plt.axvline(x=datetime.strptime('2022-01-14','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.3)
+    plt.legend()
+
+'''RAW PC PLOT IN TIME'''
 plt.plot(np.array(h_u_pc),label='hum'); plt.plot(np.array(v_u_pc),label='epi'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2); plt.legend()
 plt.scatter(np.arange(len(h_u_pc)),np.array(h_u_pc)); plt.scatter(np.arange(len(v_u_pc)),np.array(v_u_pc)); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2); plt.legend()
-'''TRY COMET TAIL'''
+
+'''SMOOTH THE PC FIRST'''
+plt.plot(np.array(h_u_pc.rolling(4).mean()),label='hum'); plt.plot(np.array(v_u_pc.rolling(4).mean()),label='epi'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2); plt.legend()
+
+#NOT MUCH FAITH IN THE PC2
+'''RAW PC2 PLOT IN TIME'''
+plt.plot(np.array(h_u_pc2),label='hum'); plt.plot(np.array(v_u_pc2),label='epi'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2); plt.legend()
+plt.scatter(np.arange(len(h_u_pc2)),np.array(h_u_pc2)); plt.scatter(np.arange(len(v_u_pc2)),np.array(v_u_pc2)); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2); plt.legend()
+
+'''RAW PC EPI PC2 HUM PLOT IN TIME'''
+plt.plot(np.array(h_u_pc2),label='hum'); plt.plot(np.array(v_u_pc),label='epi'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2); plt.legend()
+plt.scatter(np.arange(len(h_u_pc2)),np.array(h_u_pc2)); plt.scatter(np.arange(len(v_u_pc)),np.array(v_u_pc)); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2); plt.legend()
+
+#PHASE SPACE
+'''TRY COMET TAIL NON-LAGGED PHASE SPACE'''
 y = np.array(h_u_pc)
 x = np.array(v_u_pc)
 alpha_correction = 1/len(x)
@@ -278,6 +327,7 @@ plt.show()
 
 
 '''
+HOME SPUN
 PHASE SPACE ANALYSIS
 '''
 #USE df_b for phase space.
