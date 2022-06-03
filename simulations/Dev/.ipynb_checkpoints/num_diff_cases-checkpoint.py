@@ -81,7 +81,7 @@ USING SIMPLE POLY FIT
 '''VDH'''
 #PROCESS RAW DATA FOR DIFFERENTIATION
 x_poly = np.arange(len(vdh_use))+1
-vdh_poly = np.polyfit(x_poly, vdh_use, deg=15)
+vdh_poly = np.polyfit(x_poly, vdh_use, deg=6)
 vdh_poly_values = np.polyval(vdh_poly, x_poly)
 
 #FIRST DERIVATIVE
@@ -101,7 +101,7 @@ plt.plot(v_x2_S);  plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
 '''HUMAN'''
 #PROCESS RAW DATA FOR DIFFERENTIATION
 x_poly = np.arange(len(hum_use))+1
-hum_poly = np.polyfit(x_poly, hum_use, deg=15)
+hum_poly = np.polyfit(x_poly, hum_use, deg=4)
 hum_poly_values = np.polyval(hum_poly, x_poly)
 
 #FIRST DERIVATIVE
@@ -143,6 +143,20 @@ v_const = 0.01; h_const = 5; plt.plot(v_x1*v_const); plt.plot(h_x1*h_const); plt
 
 v_const = 0.05; h_const = 5; plt.plot(v_x2*v_const); plt.plot(h_x2*h_const); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
 
+'''*****BINGO BINGO BINGO'''
+#EPI VEL, HUMAN VEL
+v_const = 0.05; h_const = 5; plt.plot(v_x1*v_const,label='Epi Vel.'); plt.plot(h_x1*h_const, label='Hum Vel.'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+plt.legend()
+
+#EPI VEL, HUMAN Max-Hum Vel
+v_const = 0.05; h_const = 5; plt.plot(v_x1*v_const,label='Epi Acc.'); plt.plot(h_x1*h_const, label='Hum Vel.'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+plt.legend()
+
+
+#EPI ACC, HUMAN ACC
+v_const = 0.05; h_const = 5; plt.plot(v_x2*v_const,label='Epi Acc.'); plt.plot(h_x2*h_const, label='Hum Vel.'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+plt.legend()
+
 #EPI ACC, HUMAN VEL
 v_const = 0.05; h_const = 5; plt.plot(v_x2*v_const,label='Epi Acc.'); plt.plot(h_x1*h_const, label='Hum Vel.'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
 plt.legend()
@@ -172,6 +186,18 @@ plt.plot(v_h_corr)
 %%%%%%%%%%%%%%%%
 PERCENT CHANGE ANALYSIS
 '''
+
+'''FIRST PLOT RAW'''
+'''RAW PC PLOT IN TIME'''
+plt.plot(np.array(hum_use),label='hum'); plt.plot(np.array(vdh_use)*.01,label='epi'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2); plt.legend()
+plt.scatter(np.arange(len(hum_use)),np.array(hum_use)); plt.scatter(np.arange(len(vdh_use)),np.array(vdh_use)*0.01); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2); plt.legend()
+#ANOTHER VIEW
+plt.plot(hum_use,label='hum'); plt.plot(vdh_use*.005,label='epi'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2); plt.legend()
+plt.axvline(x=datetime.strptime('2021-12-03','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.3)
+plt.axvline(x=datetime.strptime('2021-12-24','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.3)
+plt.axvline(x=datetime.strptime('2022-01-14','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.3)
+
+'''A. BASED ON RAW TO PERCENT CHANGE'''
 h_u_pc = hum_use.pct_change()
 v_u_pc = vdh_use.pct_change()
 h_u_pc2 = h_u_pc.pct_change()
@@ -222,8 +248,31 @@ for i in range(0,len(x)): plt.scatter(x[i],y[i],alpha=alpha_correction*i,color='
 plt.savefig('tmp.png',dpi=300)
 
 
+'''B. BASED ON RAW --> SMOOTH --> Percent Change'''
+'''A. BASED ON RAW TO PERCENT CHANGE'''
+h_u_pc_r = hum_use.rolling(4).mean().pct_change()
+v_u_pc_r = vdh_use.rolling(4).mean().pct_change()
+
+for i in range(8,9):
+    v_u_h_u_r_corr = v_u_pc_r.rolling(i).corr(h_u_pc_r)
+    plt.plot(v_u_h_u_r_corr,label=i)
+    plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=1)
+    plt.axvline(x=datetime.strptime('2021-12-03','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.3)
+    plt.axvline(x=datetime.strptime('2021-12-24','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.3)
+    plt.axvline(x=datetime.strptime('2022-01-14','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.3)
+    plt.legend()
+
+'''RAW PC PLOT IN TIME'''
+plt.plot(np.array(h_u_pc_r),label='hum'); plt.plot(np.array(v_u_pc_r),label='epi'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2); plt.legend()
+plt.scatter(np.arange(len(h_u_pc_r)),np.array(h_u_pc_r)); plt.scatter(np.arange(len(v_u_pc_r)),np.array(v_u_pc_r)); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2); plt.legend()
 
 
+'''C. BASED ON RAW TO PERCENT CHANGE THEN INVERT '''
+h_u_pc = hum_use.pct_change()
+v_u_pc = vdh_use.pct_change()
+v_u_pc_inv = 1/v_u_pc
+h_u_pc2 = h_u_pc.pct_change()
+v_u_pc2 = v_u_pc.pct_change()
 
 
 
@@ -475,24 +524,27 @@ CONVINCING WAY TO ADJUDICATE THE USE OF HIGH DEG POLYNOMIALL
 
 #deg_list = [10,11,12,13,14,15,16,17]
 #deg_list = [10,11,12,13]
-deg_list = [10,14,15,16]
+deg_list = [3,4,5,]
 for i in deg_list:
     x_poly = np.arange(len(hum_use))+1
     hum_poly = np.polyfit(x_poly, hum_use, deg=i,full=True)#deg 15 worked
     hum_poly_values = np.polyval(hum_poly[0], x_poly)
-    plt.plot(hum_poly_values)
+    plt.plot(hum_poly_values,label=i)
     print('RESIDUALS SUM: ',hum_poly[1])
-    
+    plt.legend()
 plt.scatter(np.arange(len(hum_use)),np.array(hum_use))
+
 plt.plot(np.array(hum_use))
 plt.plot(np.array(grouped.hum.mean().rolling(4).mean()),color='red',label='prior',dashes=(0,2,2,2))
 
 
 for i in deg_list:
     x_poly = np.arange(len(vdh_use))+1
-    vdh_poly = np.polyfit(x_poly, vdh_use, deg=15)
-    vdh_poly_values = np.polyval(vdh_poly, x_poly)
-    plt.plot(vdh_poly_values)
+    vdh_poly = np.polyfit(x_poly, vdh_use, deg=i, full=True)
+    vdh_poly_values = np.polyval(vdh_poly[0], x_poly)
+    plt.plot(vdh_poly_values,label=i)
+    plt.legend()
+plt.scatter(np.arange(len(vdh_use)),np.array(vdh_use))
 
 
 hum_poly = np.polyfit(x_poly, hum_use, deg=15,full=True)
