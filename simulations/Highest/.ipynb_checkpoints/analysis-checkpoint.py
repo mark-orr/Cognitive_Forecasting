@@ -99,19 +99,21 @@ plt.show()
 '''
 SOME STATISTICS ON THE PLOT
 FOR THE MANUSCRIPT
+AND SUMMARY PLOT
 '''
 #SET UP DATA
 i = catch_groups[0].copy()
 i['hum_minus_prior'] = i.hum - i.prior
-const_dec_prior = pd.read_csv('/Users/biocomplexity/Projects/SocioCognitiveModeling/Metaculus_CogModeling/simulations/Theory/ConstantDecisionPrior_Comp.csv',index_col=[0],parse_dates=[0])
 
+'''THIS CODE BLOCK NOT USED CURRENTLY'''
+const_dec_prior = pd.read_csv('/Users/biocomplexity/Projects/SocioCognitiveModeling/Metaculus_CogModeling/simulations/Theory/ConstantDecisionPrior_Comp.csv',index_col=[0],parse_dates=[0])
 const_dec_prior = pd.Series(const_dec_prior.const_dec_prior).copy()
 #add to i
 i['c_dec_prior'] = const_dec_prior.copy()
 #manipulste to equal prior prior to 1-06
 i.loc['2021-11-30':'2022-01-10'].c_dec_prior = i.loc['2021-11-30':'2022-01-10'].prior
-
 i['prior_min_c_prior'] = i.prior - i.c_dec_prior
+
 
 grouped = i.groupby(level=0)
 #MEAN OF PRIOR
@@ -138,41 +140,67 @@ plt.plot(i.hum_minus_prior,color='black',label='rational prior',dashes=(0,2,2,2)
 plt.scatter(i.hum,i.prior,color='black',label='prior-t_predicted',marker='^',s=75,alpha=0.25)
 plt.scatter(i.p_dur,i.hum-i.prior,color='black',label='horizon by t_predicted - prior',marker='+',s=50,alpha=0.25)
 
+
+plt.plot(grouped.hum.mean().rolling(4).mean(),color='red',label='t_predicted')
+plt.plot(grouped.prior.mean().rolling(4).mean(),color='black',label='prior',dashes=(4,2,4,2),linewidth=2)
+plt.scatter(i.index,i.hum,color='red',label='t_predicted',marker='o',s=50,alpha=0.25)
+plt.scatter(i.index,i.prior,color='black',label='prior',marker='+',s=50,alpha=0.25)
+plt.legend(bbox_to_anchor=(.90, .95), loc=1, frameon=False, fontsize=10)
+
+
+axes[0].plot(grouped.hum.mean().rolling(4).mean(),color='red',label='t_predicted')
+axes[0].plot(grouped.prior.mean().rolling(4).mean(),color='black',label='prior',dashes=(4,2,4,2),linewidth=2)
+axes[0].scatter(i.index,i.hum,color='red',label='t_predicted',marker='o',s=50,alpha=0.25)
+axes[0].scatter(i.index,i.prior,color='black',label='prior',marker='+',s=50,alpha=0.25)
+axes[0].legend(bbox_to_anchor=(.90, .95), loc=1, frameon=False, fontsize=10)
+
+
 '''
 MAKE NICE
 FOR MANUSCRIPT
 '''
-fig_ax_dim_x=3
-fig_ax_dim_y=1
-fig, axes = plt.subplots(fig_ax_dim_y,fig_ax_dim_x,figsize=(20,5),sharex=False,sharey=False)
+fig_ax_dim_x=2
+fig_ax_dim_y=2
+fig, axes = plt.subplots(fig_ax_dim_y,fig_ax_dim_x,figsize=(16,8),sharex=False,sharey=False)
 leg_x = .92
 leg_y = 1
 
+axes[0,1].plot(grouped.hum.mean().rolling(4).mean(),color='red',label='t_predicted')
+axes[0,1].plot(grouped.prior.mean().rolling(4).mean(),color='black',label='prior',dashes=(4,2,4,2),linewidth=2)
+axes[0,1].scatter(i.index,i.hum,color='red',label='t_predicted',marker='o',s=50,alpha=0.25)
+axes[0,1].scatter(i.index,i.prior,color='black',label='prior',marker='+',s=50,alpha=0.25)
+axes[0,1].legend(bbox_to_anchor=(.99, .99), loc=1, frameon=False, fontsize=9)
 
-axes[2].scatter(i.index,i.hum_minus_prior,color='black',label='t_predicted - prior',marker='^',s=50,alpha=0.25)
-axes[2].plot(grouped.hum_minus_prior.mean().rolling(4).mean(),color='black')
-axes[1].scatter(i.p_dur,i.hum-i.prior,color='black',label='horizon by t_predicted - prior',marker='^',s=50,alpha=0.25)
-axes[0].scatter(i.hum,i.prior,color='black',label='prior-t_predicted',marker='^',s=75,alpha=0.25)
 
-axes[1].axvline(x=5,c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.5)
+axes[1,1].scatter(i.index,i.hum_minus_prior,color='black',label='t_predicted - prior',marker='^',s=50,alpha=0.25)
+axes[1,1].plot(grouped.hum_minus_prior.mean().rolling(4).mean(),color='black')
+axes[1,0].scatter(i.p_dur,i.hum-i.prior,color='black',label='horizon by t_predicted - prior',marker='^',s=50,alpha=0.25)
+axes[0,0].scatter(i.hum,i.prior,color='black',label='prior-t_predicted',marker='^',s=75,alpha=0.25)
+
+axes[1,0].axvline(x=5,c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.5)
 
 #LABELS
-axes[2].set_xlabel('Date', labelpad=10,size=15)
-axes[2].tick_params(axis='x', labelsize=7)
-axes[2].set_ylabel('human t_pred - rational prior', labelpad=10,size=15)
-axes[2].tick_params(axis='y', labelsize=15)
+axes[0,1].set_xlabel('Date', labelpad=5,size=15)
+axes[0,1].tick_params(axis='x', labelsize=10)
+axes[0,1].set_ylabel('Days', labelpad=10,size=15)
+axes[0,1].tick_params(axis='y', labelsize=15)
 
-axes[1].set_xlabel('human horizon', labelpad=10,size=15)
-axes[1].tick_params(axis='x', labelsize=15)
-axes[1].set_ylabel('human t_pred - rational prior', labelpad=10,size=15)
-axes[1].tick_params(axis='y', labelsize=15)
+axes[1,1].set_xlabel('Date', labelpad=5,size=15)
+axes[1,1].tick_params(axis='x', labelsize=10)
+axes[1,1].set_ylabel('human t_pred - rational prior (Days)', labelpad=10,size=15)
+axes[1,1].tick_params(axis='y', labelsize=15)
 
-axes[0].set_xlabel('human t_pred', labelpad=10,size=15)
-axes[0].tick_params(axis='x', labelsize=15)
-axes[0].set_ylabel('rational prior', labelpad=10,size=15)
-axes[0].tick_params(axis='y', labelsize=15)
+axes[1,0].set_xlabel('human horizon (Days)', labelpad=5,size=15)
+axes[1,0].tick_params(axis='x', labelsize=15)
+axes[1,0].set_ylabel('human t_pred - rational prior (Days)', labelpad=10,size=15)
+axes[1,0].tick_params(axis='y', labelsize=15)
 
-plt.subplots_adjust(wspace=.3,hspace=0.2)
+axes[0,0].set_xlabel('human t_pred (Days)', labelpad=5,size=15)
+axes[0,0].tick_params(axis='x', labelsize=15)
+axes[0,0].set_ylabel('rational prior (Days)', labelpad=10,size=15)
+axes[0,0].tick_params(axis='y', labelsize=15)
+
+plt.subplots_adjust(wspace=.2,hspace=0.3)
 
 plt.savefig(f'Study1_ExplanatoryScatter_All_S.png', dpi=300, transparent=False, bbox_inches='tight')
 
