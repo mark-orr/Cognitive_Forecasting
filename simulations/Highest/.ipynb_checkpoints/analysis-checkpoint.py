@@ -113,7 +113,7 @@ i['c_dec_prior'] = const_dec_prior.copy()
 #manipulste to equal prior prior to 1-06
 i.loc['2021-11-30':'2022-01-10'].c_dec_prior = i.loc['2021-11-30':'2022-01-10'].prior
 i['prior_min_c_prior'] = i.prior - i.c_dec_prior
-
+'''END BAD CODE BLOCK'''
 
 grouped = i.groupby(level=0)
 #MEAN OF PRIOR
@@ -157,7 +157,8 @@ axes[0].legend(bbox_to_anchor=(.90, .95), loc=1, frameon=False, fontsize=10)
 
 '''
 MAKE NICE
-FOR MANUSCRIPT
+FOR MANUSCRIPT AS SUMMARY FOR BIG AGG FIGURE
+THIS IS FOR MANUSCRIPT
 '''
 fig_ax_dim_x=2
 fig_ax_dim_y=2
@@ -204,27 +205,57 @@ plt.subplots_adjust(wspace=.2,hspace=0.3)
 
 plt.savefig(f'Study1_ExplanatoryScatter_All_S.png', dpi=300, transparent=False, bbox_inches='tight')
 
-'''
-BUT THIS NOT QUITE IT
-TRY THIS
-'''
+'''QUICK TEMP CHECK ON INDIVIDUALS FOR LOWER LEFT PLOT'''
+'''PANELS'''
+'''ALL GPs on ONE PLOT'''
+fig_ax_dim_x=2
+fig_ax_dim_y=4
+fig, axes = plt.subplots(fig_ax_dim_y,fig_ax_dim_x,figsize=(8,8),sharex=True,sharey=True)
+leg_x = .92
+leg_y = 1
+#PANEL 0,0
+gp_ordering = np.array([8,7,6,5,4,3,2,1])
+gp_counter = 0
+for k in range(0,fig_ax_dim_y):
+    for j in range(0,fig_ax_dim_x):
+        print(i,j)
+        gp_no = group_list[gp_ordering[gp_counter]]
+        i = catch_groups[gp_ordering[gp_counter]]
+        '''aVE OVER DAY'''
+        grouped = i.groupby(level=0)
+        axes[k,j].scatter(i.p_dur,i.hum-i.prior,color='black',label='horizon by t_predicted - prior',marker='^',s=50,alpha=0.25)
+        axes[k,j].text(60,10,'P'+str(gp_counter+1),fontsize=10)
+        axes[k,j].axvline(x=5,c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.5)
+        gp_counter += 1
+plt.subplots_adjust(wspace=.1,hspace=0.1)
+plt.savefig(f'Tmp1.png', dpi=300, transparent=False, bbox_inches='tight')
 
-#THIS IS A GOOD ONE, POTENTIALLY
-plt.scatter(i.index,i.hum_minus_prior,color='black',label='t_predicted - prior',marker='^',s=50,alpha=0.25)
-plt.plot(grouped.hum_minus_prior.mean().rolling(4).mean(),color='black')
-plt.plot(i.hum_minus_prior,color='black',label='rational prior',dashes=(0,2,2,2))
-plt.scatter(i.hum,i.prior,color='black',label='prior-t_predicted',marker='^',s=75,alpha=0.25)
-plt.scatter(i.p_dur,i.prior-i.c_dec_prior,color='black',label='horizon by t_predicted - prior',marker='+',s=50,alpha=0.25)
+fig_ax_dim_x=2
+fig_ax_dim_y=4
+fig, axes = plt.subplots(fig_ax_dim_y,fig_ax_dim_x,figsize=(8,8),sharex=True,sharey=True)
+leg_x = .92
+leg_y = 1
+#PANEL 0,0
+gp_ordering = np.array([8,7,6,5,4,3,2,1])
+gp_counter = 0
+for k in range(0,fig_ax_dim_y):
+    for j in range(0,fig_ax_dim_x):
+        print(i,j)
+        gp_no = group_list[gp_ordering[gp_counter]]
+        i = catch_groups[gp_ordering[gp_counter]]
+        '''aVE OVER DAY'''
+        grouped = i.groupby(level=0)
+        axes[k,j].scatter(i.index,i.hum_minus_prior,color='black',label='t_predicted - prior',marker='^',s=50,alpha=0.25)
+        axes[k,j].plot(grouped.hum_minus_prior.mean().rolling(4).mean(),color='black')
+        #axes[k,j].text(60,10,'P'+str(gp_counter+1),fontsize=10)
+        #axes[k,j].axvline(x=5,c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.5)
+        gp_counter += 1
+plt.subplots_adjust(wspace=.1,hspace=0.1)
+plt.savefig(f'Tmp2.png', dpi=300, transparent=False, bbox_inches='tight')
+'''END QUICK CHECK'''
 
+'''WHICH OF THESE TWO IS MORE INFORMATIVE?'''
 
-plt.plot(grouped.prior.mean().rolling(4).mean(),color='black')
-plt.plot(grouped.c_dec_prior.mean().rolling(4).mean(),color='black')
-
-
-plt.scatter(i.p_,i.hum-i.t)
-plt.scatter(i.index,i.p_dur,marker='^',color='red')
-
-i[['p_dur','hum','prior']]
 
 
 
