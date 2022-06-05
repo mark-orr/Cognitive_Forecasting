@@ -138,7 +138,7 @@ plt.plot(h_x1_S); plt.plot(h_x2_S); plt.plot(hum_poly_values_S*0.1); plt.plot(hu
 h_scale = 5
 v_scale = 0.01
 plt.plot(vdh_use[2:]*v_scale); plt.plot(hum_use[2:]*h_scale); plt.plot(vdh_poly_values_S*v_scale); plt.plot(hum_poly_values_S*h_scale)
-
+plt.avhline(y=30, c='r',dashes=(2,2,2,2),linewidth=2)
 h_scale = 5
 v_scale = 0.01
 plt.plot(v_x1_S*v_scale); plt.plot(h_x1_S*h_scale)
@@ -164,6 +164,52 @@ for i in range(0,len(x)): plt.scatter(x[i],y[i],alpha=alpha_correction*i,color='
 plt.savefig('tmp_phase_space.png',dpi=300)
 
 
+
+
+'''TESTING SIMPLE CHANGE POINTS'''
+import ruptures as rpt
+import random
+
+#DATA
+ts1 = []
+mu, sigma, seg = 0.0, 1.0, 1000
+for i in range(10):
+    ts = np.random.normal(mu, sigma, seg) + np.random.randint(low=-10, high=10)
+    ts1 = np.append(ts1,ts, axis=0)
+
+plt.figure(figsize=(16,4))
+plt.plot(ts1)
+
+# Detect the change points
+ts1 = np.array(vdh_use.values)
+algo1 = rpt.Pelt(model="rbf").fit(ts1)
+change_location1 = algo1.predict(pen=10)
+
+# Point the change points:
+def plot_change_points(ts,ts_change_loc):
+    plt.figure(figsize=(16,4))
+    plt.plot(ts)
+    for x in ts_change_loc:
+        plt.axvline(x,lw=2, color='red')
+
+plot_change_points(ts1,change_location1)
+
+import changefinder
+def findChangePoints(ts, r, order, smooth):
+    '''
+       r: Discounting rate
+       order: AR model order
+       smooth: smoothing window size T
+    '''
+    cf = changefinder.ChangeFinder(r=r, order=order, smooth=smooth)
+    ts_score = [cf.update(p) for p in ts]
+    plt.figure(figsize=(16,4))
+    plt.plot(ts)
+    plt.figure(figsize=(16,4))
+    plt.plot(ts_score, color='red')
+    return(ts_score)
+    
+ts_score1 = findChangePoints(ts1, r = 0.01, order = 3, smooth = 5)
 
 '''JUST FOR FUN, LOOK AT PC IN DIFF'''
 #h_u_pc_r = hum_poly_values_S.rolling(4).mean().pct_change()
