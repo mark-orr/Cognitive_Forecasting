@@ -112,7 +112,7 @@ plt.savefig(f'Tmp2.png', dpi=300, transparent=False, bbox_inches='tight')
 '''WHICH OF THESE TWO IS MORE INFORMATIVE?'''
 
 
-
+marker_list = ['x','+','o','v','^','*']
 
 '''THIS WORKS'''
 for k in range(0,len(gp_ordering)):
@@ -123,11 +123,12 @@ for k in range(0,len(gp_ordering)):
     i['hum_minus_prior'] = i.hum - i.prior
     '''aVE OVER DAY'''
     grouped = i.groupby(level=0)
-    plt.scatter(i.index,i.hum_minus_prior,color='black',label='S' + str(k+1),marker=k,s=50,alpha=0.25)
+    plt.scatter(i.index,i.hum_minus_prior,color='black',label='S' + str(k+1),marker=marker_list[k],s=50,alpha=0.20)
     #axes[k,j].plot(grouped.hum_minus_prior.mean().rolling(4).mean(),color='black')
     plt.plot(i.hum_minus_prior,color='black',dashes=(2,2,2,2),alpha=.5,linewidth=0.5)
 
 plt.legend()
+plt.savefig('test_new.png',dpi=300,transparent=False, bbox_inches='tight')
 
 
 '''THIS WORKS'''
@@ -139,11 +140,11 @@ for k in range(0,len(gp_ordering)):
     i['hum_minus_prior'] = i.hum - i.prior
     '''aVE OVER DAY'''
     grouped = i.groupby(level=0)
-    plt.scatter(i.p_dur,i.hum_minus_prior,color='black',label='S' + str(k+1),marker=k,s=50,alpha=0.25)
+    plt.scatter(i.p_dur,i.hum_minus_prior,color='black',label='S' + str(k+1),marker=marker_list[k],s=50,alpha=0.25)
     
 plt.axvline(x=5,c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.5)
 plt.legend()
-
+plt.savefig('test_new_2.png',dpi=300,transparent=False, bbox_inches='tight')
 
 '''PANELS'''
 '''ALL GPs on ONE PLOT'''
