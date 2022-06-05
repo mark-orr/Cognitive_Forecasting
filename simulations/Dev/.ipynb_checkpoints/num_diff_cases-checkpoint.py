@@ -83,6 +83,7 @@ USING SIMPLE POLY FIT
 x_poly = np.arange(len(vdh_use))+1
 vdh_poly = np.polyfit(x_poly, vdh_use, deg=6)
 vdh_poly_values = np.polyval(vdh_poly, x_poly)
+vdh_poly_values_S = pd.Series(vdh_poly_values,index=vdh_use.index)
 
 #FIRST DERIVATIVE
 v_x1 = np.diff(vdh_poly_values)
@@ -94,15 +95,20 @@ v_x2 = np.insert(v_x2,0,0,axis=0)#NOW SAME LEN AS v_x1 and indexes matched in ti
 v_x2_S = pd.Series(v_x2,index=vdh_use.index[1:])
 
 #SANITY PLOTS
-plt.plot(v_x1_S); plt.plot(v_x2_S); plt.plot(vdh_use[2:]*0.1); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
-plt.plot(v_x1_S); plt.plot(vdh_use[2:]*0.1); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
-plt.plot(v_x2_S);  plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+plt.plot(v_x1_S); plt.plot(v_x2_S); plt.plot(vdh_poly_values_S*0.1); plt.plot(vdh_use[2:]*0.1); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+plt.savefig('vdh_tmp1.png',dpi=200)
+
+#plt.plot(v_x1_S); plt.plot(vdh_use[2:]*0.1); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+#plt.plot(v_x2_S);  plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+
+
 
 '''HUMAN'''
 #PROCESS RAW DATA FOR DIFFERENTIATION
 x_poly = np.arange(len(hum_use))+1
 hum_poly = np.polyfit(x_poly, hum_use, deg=4)
 hum_poly_values = np.polyval(hum_poly, x_poly)
+hum_poly_values_S = pd.Series(hum_poly_values,index=hum_use.index)
 
 #FIRST DERIVATIVE
 h_x1 = np.diff(hum_poly_values)
@@ -113,29 +119,19 @@ h_x2 = np.diff(h_x1)
 h_x2 = np.insert(h_x2,0,0,axis=0)#NOW SAME LEN AS v_x1 and indexes matched in time.
 h_x2_S = pd.Series(h_x2,index=hum_use.index[1:])
 
-#FOR RAPID TESTING AGAINST EPI DATA
-v_const = 0.05; h_const = 20; plt.plot(v_x1*v_const,label='Epi Vel.'); plt.plot(h_x2*h_const, label='Hum Acc.'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
-
 #SANITY PLOTS
-plt.plot(h_x1_S); plt.plot(h_x2_S); plt.plot(hum_use[2:]*1); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
-plt.plot(h_x1_S); plt.plot(hum_use[2:]*0.1); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
-plt.plot(h_x1); plt.plot(h_x2); plt.plot(hum_poly_values); plt.plot(np.array(hum_use[1:]))
-plt.plot(h_x2_S);  plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+plt.plot(h_x1_S); plt.plot(h_x2_S); plt.plot(hum_poly_values_S*0.03); plt.plot(hum_use[2:]*0.03); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+plt.savefig('hum_tmp1.png',dpi=200)
 
-'''HUMAN ROLLING SMOOTH INPLACE OF SIMPLE POLYNOMIAL
-'''
-#A TEST OF HUMAN SMOOTHING
-tmp_x1 = np.diff(np.array(grouped.hum.mean().rolling(4).mean()))
-tmp_x2 = np.diff(tmp_x1)
-tmp_x2 = np.insert(tmp_x2,0,0,axis=0)
-tmp_x2_S = pd.Series(tmp_x2,index=hum_use.index[1:])
-#FOR RAPID TESTING AGAINST EPI DATA
-v_const = 0.05; h_const = 20; plt.plot(v_x1*v_const,label='Epi Vel.'); plt.plot(tmp_x2*h_const, label='Hum Acc.'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
-plt.plot(tmp_x1); plt.plot(np.array(grouped.hum.mean().rolling(4).mean()[1:]))
-plt.plot(tmp_x1)
+#plt.plot(h_x1_S); plt.plot(h_x2_S); plt.plot(hum_use[2:]*1); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+#plt.plot(h_x1_S); plt.plot(hum_use[2:]*0.1); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+#plt.plot(h_x1); plt.plot(h_x2); plt.plot(hum_poly_values); plt.plot(np.array(hum_use[1:]))
+#plt.plot(h_x2_S);  plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+
 
 '''
 PLOTTING EPI AND HUMAN TOGETHER
+AND SOME EXPLORATION ON THE D/DT
 '''
 norm_const = 0.2
 
@@ -149,7 +145,7 @@ v_const = 0.05; h_const = 5; plt.plot(v_x1*v_const,label='Epi Vel.'); plt.plot(h
 plt.legend()
 
 #EPI VEL, HUMAN Max-Hum Vel
-v_const = 0.05; h_const = 5; plt.plot(v_x1*v_const,label='Epi Acc.'); plt.plot(h_x1*h_const, label='Hum Vel.'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+v_const = 0.05; h_const = 5; plt.plot(v_x2*v_const,label='Epi Acc.'); plt.plot(h_x1*h_const, label='Hum Vel.'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
 plt.legend()
 
 
@@ -524,7 +520,7 @@ CONVINCING WAY TO ADJUDICATE THE USE OF HIGH DEG POLYNOMIALL
 
 #deg_list = [10,11,12,13,14,15,16,17]
 #deg_list = [10,11,12,13]
-deg_list = [3,4,5,]
+deg_list = [2,3,4,5,6,7]
 for i in deg_list:
     x_poly = np.arange(len(hum_use))+1
     hum_poly = np.polyfit(x_poly, hum_use, deg=i,full=True)#deg 15 worked
@@ -533,6 +529,7 @@ for i in deg_list:
     print('RESIDUALS SUM: ',hum_poly[1])
     plt.legend()
 plt.scatter(np.arange(len(hum_use)),np.array(hum_use))
+plt.savefig('poly_degree_human_tmp.png',dpi=150)
 
 plt.plot(np.array(hum_use))
 plt.plot(np.array(grouped.hum.mean().rolling(4).mean()),color='red',label='prior',dashes=(0,2,2,2))

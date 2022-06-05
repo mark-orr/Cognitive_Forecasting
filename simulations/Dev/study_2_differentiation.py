@@ -106,7 +106,7 @@ plt.savefig('vdh_tmp1.png',dpi=200)
 '''HUMAN'''
 #PROCESS RAW DATA FOR DIFFERENTIATION
 x_poly = np.arange(len(hum_use))+1
-hum_poly = np.polyfit(x_poly, hum_use, deg=4)
+hum_poly = np.polyfit(x_poly, hum_use, deg=7)
 hum_poly_values = np.polyval(hum_poly, x_poly)
 hum_poly_values_S = pd.Series(hum_poly_values,index=hum_use.index)
 
@@ -121,7 +121,7 @@ h_x2_S = pd.Series(h_x2,index=hum_use.index[1:])
 
 #SANITY PLOTS
 plt.plot(h_x1_S); plt.plot(h_x2_S); plt.plot(hum_poly_values_S*0.03); plt.plot(hum_use[2:]*0.03); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
-plt.savefig('hum_tmp1.png',dpi=200)
+plt.savefig('hum_tmp1_2.png',dpi=200)
 
 #plt.plot(h_x1_S); plt.plot(h_x2_S); plt.plot(hum_use[2:]*1); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
 #plt.plot(h_x1_S); plt.plot(hum_use[2:]*0.1); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
