@@ -131,44 +131,38 @@ plt.savefig('hum_tmp1_2.png',dpi=200)
 
 '''
 PLOTTING EPI AND HUMAN TOGETHER
-AND SOME EXPLORATION ON THE D/DT
 '''
-norm_const = 0.2
+plt.plot(v_x1_S); plt.plot(v_x2_S); plt.plot(vdh_poly_values_S*0.1); plt.plot(vdh_use[2:]*0.1); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+plt.plot(h_x1_S); plt.plot(h_x2_S); plt.plot(hum_poly_values_S*0.1); plt.plot(hum_use[2:]*0.1); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
 
-v_const = 0.01; h_const = 5; plt.plot(v_x1*v_const); plt.plot(h_x1*h_const); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+h_scale = 5
+v_scale = 0.01
+plt.plot(vdh_use[2:]*v_scale); plt.plot(hum_use[2:]*h_scale); plt.plot(vdh_poly_values_S*v_scale); plt.plot(hum_poly_values_S*h_scale)
 
-v_const = 0.05; h_const = 5; plt.plot(v_x2*v_const); plt.plot(h_x2*h_const); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+h_scale = 5
+v_scale = 0.01
+plt.plot(v_x1_S*v_scale); plt.plot(h_x1_S*h_scale)
+plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
 
-'''*****BINGO BINGO BINGO'''
-#EPI VEL, HUMAN VEL
-v_const = 0.05; h_const = 5; plt.plot(v_x1*v_const,label='Epi Vel.'); plt.plot(h_x1*h_const, label='Hum Vel.'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
-plt.legend()
+h_scale = 5
+v_scale = 0.01
+plt.plot(v_x2_S*v_scale); plt.plot(h_x2_S*h_scale)
+plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
 
-#EPI VEL, HUMAN Max-Hum Vel
-v_const = 0.05; h_const = 5; plt.plot(v_x2*v_const,label='Epi Acc.'); plt.plot(h_x1*h_const, label='Hum Vel.'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
-plt.legend()
+'''USEFUL PHASE PLOTS'''
 
+#NO ARROWS
+x = vdh_poly_values
+y = hum_poly_values 
 
-#EPI ACC, HUMAN ACC
-v_const = 0.05; h_const = 5; plt.plot(v_x2*v_const,label='Epi Acc.'); plt.plot(h_x2*h_const, label='Hum Vel.'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
-plt.legend()
+fig, ax = plt.subplots()
+ax.scatter(x,y)
+ax.plot(x,y)
+alpha_correction = 1/len(x)
+'''TRY COMET TAIL'''
+for i in range(0,len(x)): plt.scatter(x[i],y[i],alpha=alpha_correction*i,color='black',marker='+'); plt.plot(x,y,linewidth=0.2,alpha=0.5)
+plt.savefig('tmp_phase_space.png',dpi=300)
 
-#EPI ACC, HUMAN VEL
-v_const = 0.05; h_const = 5; plt.plot(v_x2*v_const,label='Epi Acc.'); plt.plot(h_x1*h_const, label='Hum Vel.'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
-plt.legend()
-plt.savefig('Epi_Acc_w_Hum_Vel.png',dpi=200)
-
-#EPI VEL, HUMAN ACC
-v_const = 0.05; h_const = 50; plt.plot(v_x1*v_const,label='Epi Vel.'); plt.plot(h_x2*h_const, label='Hum Acc.'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
-plt.legend()
-plt.savefig('Epi_Vel_w_Hum_Acc.png',dpi=200)
-
-#SCATTERS AND THINGS
-df_b = pd.DataFrame([v_x1_S,h_x2_S]).T
-plt.scatter(df_b[0],df_b[1])
-
-#CORRELATION DOESN"T WORK BC DYNAMIC IS LOST
-stats.pearsonr(v_x1, h_x2)
 
 
 '''JUST FOR FUN, LOOK AT PC IN DIFF'''
@@ -227,10 +221,8 @@ def crosscorr(datax, datay, lag=0, wrap=False):
 #d1 = pd.Series(np.array(hum_use))
 #d2 = pd.Series(np.array(vdh_use))
 '''PERCENT CHANGE TIME SERIES'''
-d1 = pd.Series(np.array(hum_use.pct_change()))
-d2 = pd.Series(np.array(vdh_use.pct_change()))
-
-
+d1 = v_x2_S
+d2 = h_x2_S
 
 rs = [crosscorr(d1,d2, lag) for lag in range(-10,10)]
 offset = np.floor(len(rs)/2)-np.argmax(rs)
@@ -270,8 +262,10 @@ order = 1
 
 #d1 = pd.Series(np.array(hum_use.pct_change())).interpolate().values
 #d2 = pd.Series(np.array(vdh_use.pct_change())).interpolate().values
-d1 = hum_use.interpolate().values
-d2 = vdh_use.interpolate().values
+#d1 = hum_use.interpolate().values
+#d2 = vdh_use.interpolate().values
+d1 = v_x1
+d2 = h_x1
 y1 = butter_bandpass_filter(d1,lowcut=lowcut,highcut=highcut,fs=fs,order=order)
 y2 = butter_bandpass_filter(d2,lowcut=lowcut,highcut=highcut,fs=fs,order=order)
 plt.plot(y1)
@@ -337,17 +331,7 @@ S_dy = np.insert(S_dy,0,0,axis=0)
 df_b['S_dy'] = S_dy
 
 
-#NO ARROWS
-x = df_b.S_x
-y = df_b.S_y
 
-fig, ax = plt.subplots()
-ax.scatter(x,y)
-ax.plot(x,y)
-alpha_correction = 1/len(x)
-'''TRY COMET TAIL'''
-for i in range(0,len(x)): plt.scatter(x[i],y[i],alpha=alpha_correction*i,color='black',marker='+'); plt.plot(x,y,linewidth=0.2,alpha=0.5)
-plt.savefig('tmp_phase_space.png',dpi=300)
 
 '''THIS IS THE GOOD ONE, BUT NOT QUITE PUB QUALITY'''
 x_min = min(df_b.S_x)-50
@@ -513,6 +497,47 @@ plt.savefig('h_x2_S.png', dpi=300, transparent=False, bbox_inches='tight')
 plt.plot(v_x2_S);  plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
 plt.savefig('v_x2_S.png', dpi=300, transparent=False, bbox_inches='tight')
 
+
+
+'''
+EXPLORATION
+'''
+norm_const = 0.2
+
+v_const = 0.01; h_const = 5; plt.plot(v_x1*v_const); plt.plot(h_x1*h_const); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+
+v_const = 0.05; h_const = 5; plt.plot(v_x2*v_const); plt.plot(h_x2*h_const); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+
+'''*****BINGO BINGO BINGO'''
+#EPI VEL, HUMAN VEL
+v_const = 0.05; h_const = 5; plt.plot(v_x1*v_const,label='Epi Vel.'); plt.plot(h_x1*h_const, label='Hum Vel.'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+plt.legend()
+
+#EPI VEL, HUMAN Max-Hum Vel
+v_const = 0.05; h_const = 5; plt.plot(v_x2*v_const,label='Epi Acc.'); plt.plot(h_x1*h_const, label='Hum Vel.'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+plt.legend()
+
+
+#EPI ACC, HUMAN ACC
+v_const = 0.05; h_const = 5; plt.plot(v_x2*v_const,label='Epi Acc.'); plt.plot(h_x2*h_const, label='Hum Vel.'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+plt.legend()
+
+#EPI ACC, HUMAN VEL
+v_const = 0.05; h_const = 5; plt.plot(v_x2*v_const,label='Epi Acc.'); plt.plot(h_x1*h_const, label='Hum Vel.'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+plt.legend()
+plt.savefig('Epi_Acc_w_Hum_Vel.png',dpi=200)
+
+#EPI VEL, HUMAN ACC
+v_const = 0.05; h_const = 50; plt.plot(v_x1*v_const,label='Epi Vel.'); plt.plot(h_x2*h_const, label='Hum Acc.'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+plt.legend()
+plt.savefig('Epi_Vel_w_Hum_Acc.png',dpi=200)
+
+#SCATTERS AND THINGS
+df_b = pd.DataFrame([v_x1_S,h_x2_S]).T
+plt.scatter(df_b[0],df_b[1])
+
+#CORRELATION DOESN"T WORK BC DYNAMIC IS LOST
+stats.pearsonr(v_x1, h_x2)
 
 #EOF
 #EFO
