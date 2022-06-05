@@ -16,6 +16,21 @@ import b_fit
 
 reload(bayes)
 
+import changefinder
+def findChangePoints(ts, r, order, smooth):
+    '''
+       r: Discounting rate
+       order: AR model order
+       smooth: smoothing window size T
+    '''
+    cf = changefinder.ChangeFinder(r=r, order=order, smooth=smooth)
+    ts_score = [cf.update(p) for p in ts]
+    plt.figure(figsize=(16,4))
+    plt.plot(ts)
+    plt.figure(figsize=(16,4))
+    plt.plot(ts_score, color='red')
+    return(ts_score)
+
 cases_data_in = '/Users/biocomplexity/Projects/SocioCognitiveModeling/Metaculus_CogModeling/simulations/InputData'
 
 '''CODE STRUCTURE:
@@ -96,7 +111,7 @@ v_x2_S = pd.Series(v_x2,index=vdh_use.index[1:])
 
 #SANITY PLOTS
 plt.plot(v_x1_S); plt.plot(v_x2_S); plt.plot(vdh_poly_values_S*0.1); plt.plot(vdh_use[2:]*0.1); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
-plt.savefig('vdh_tmp1.png',dpi=200)
+#plt.savefig('vdh_tmp1.png',dpi=200)
 
 #plt.plot(v_x1_S); plt.plot(vdh_use[2:]*0.1); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
 #plt.plot(v_x2_S);  plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
@@ -121,7 +136,7 @@ h_x2_S = pd.Series(h_x2,index=hum_use.index[1:])
 
 #SANITY PLOTS
 plt.plot(h_x1_S); plt.plot(h_x2_S); plt.plot(hum_poly_values_S*0.1); plt.plot(hum_use[2:]*0.1); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
-plt.savefig('hum_tmp1_2.png',dpi=200)
+#plt.savefig('hum_tmp1_2.png',dpi=200)
 
 #plt.plot(h_x1_S); plt.plot(h_x2_S); plt.plot(hum_use[2:]*1); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
 #plt.plot(h_x1_S); plt.plot(hum_use[2:]*0.1); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
@@ -135,10 +150,76 @@ PLOTTING EPI AND HUMAN TOGETHER
 plt.plot(v_x1_S); plt.plot(v_x2_S); plt.plot(vdh_poly_values_S*0.1); plt.plot(vdh_use[2:]*0.1); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
 plt.plot(h_x1_S); plt.plot(h_x2_S); plt.plot(hum_poly_values_S*0.1); plt.plot(hum_use[2:]*0.1); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
 
+'''
+USABEL PLOT FOR MANUSCRIPT
+EPI AND HUMAN RAW DATA TOGETHER
+'''
+'''NEED CHANGE POINTS FOR PLOT'''
+v_ts1 = np.array(vdh_use.values)
+v_ts_score1 = findChangePoints(v_ts1, r = 0.01, order = 3, smooth = 5)
+v_ts_change_loc1 = pd.Series(v_ts_score1).nlargest(6)
+v_ts_change_loc1 = v_ts_change_loc1.index
+v_ts_change_loc1
+#TAKE FIRST IN A BLOCK, 11, 20, 38
+
+h_ts1 = np.array(hum_use.values)
+h_ts_score1 = findChangePoints(h_ts1, r = 0.01, order = 3, smooth = 5)
+h_ts_change_loc1 = pd.Series(h_ts_score1).nlargest(6)
+h_ts_change_loc1 = h_ts_change_loc1.index
+h_ts_change_loc1
+
+'''NOW MAKE GRAPH'''
+t = vdh_use.index
+data1 = vdh_use
+data2 = hum_use
+data3 = vdh_poly_values_S
+data4 = hum_poly_values_S
+#PLOT
+fig, ax1 = plt.subplots()
+color = 'black'
+ax1.set_xlabel('Date')
+ax1.set_ylabel('Cases', color=color)
+ax1.plot(t, data1, color=color)
+ax1.plot(t, data3, color=color)
+ax1.scatter(t,data1, color=color,marker='+',label='Cases',s=100)
+ax1.tick_params(axis='y', labelcolor=color)
+ax1.axvline(x=t[11],c='black',dashes=(2,2,2,2),alpha=.4)
+ax1.axvline(x=t[20],c='black',dashes=(2,2,2,2),alpha=.4)
+ax1.axvline(x=t[38],c='black',dashes=(2,2,2,2),alpha=.4)
+
+ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+color = 'black'
+ax2.set_ylabel('Days', color=color)  # we already handled the x-label with ax1
+ax2.plot(t, data2, color=color)
+ax2.plot(t, data4, color=color,dashes=(2,2,2,2))
+ax2.scatter(t,data2, color=color,marker='s',label='human t_pred (Days)')
+ax2.tick_params(axis='y', labelcolor=color)
+#ax2.axvline(x=t[11],c='black',alpha=.4)
+#ax2.axvline(x=t[26],c='black',dashes=(4,2,4,2),alpha=.4)
+#ax2.axvline(x=t[35],c='black',dashes=(4,2,4,2),alpha=.4)
+ax1.tick_params(axis='x', labelsize=7)
+
+fig.legend(bbox_to_anchor=(.85, .3), frameon=False, fontsize=10)
+fig.tight_layout()  # otherwise the right y-label is slightly clipped
+plt.show()
+
+
+
+
+
+
+
+
+
+
 h_scale = 5
 v_scale = 0.01
-plt.plot(vdh_use[2:]*v_scale); plt.plot(hum_use[2:]*h_scale); plt.plot(vdh_poly_values_S*v_scale); plt.plot(hum_poly_values_S*h_scale)
+plt.plot(vdh_use[2:]*v_scale); 
+plt.plot(hum_use[2:]*h_scale); 
+plt.plot(vdh_poly_values_S*v_scale); 
+plt.plot(hum_poly_values_S*h_scale)
 plt.avhline(y=30, c='r',dashes=(2,2,2,2),linewidth=2)
+
 h_scale = 5
 v_scale = 0.01
 plt.plot(v_x1_S*v_scale); plt.plot(h_x1_S*h_scale)
@@ -167,22 +248,6 @@ plt.savefig('tmp_phase_space.png',dpi=300)
 
 
 '''TESTING SIMPLE CHANGE POINTS'''
-
-
-import changefinder
-def findChangePoints(ts, r, order, smooth):
-    '''
-       r: Discounting rate
-       order: AR model order
-       smooth: smoothing window size T
-    '''
-    cf = changefinder.ChangeFinder(r=r, order=order, smooth=smooth)
-    ts_score = [cf.update(p) for p in ts]
-    plt.figure(figsize=(16,4))
-    plt.plot(ts)
-    plt.figure(figsize=(16,4))
-    plt.plot(ts_score, color='red')
-    return(ts_score)
 
 v_ts1 = np.array(vdh_use.values)
 v_ts_score1 = findChangePoints(v_ts1, r = 0.01, order = 3, smooth = 5)
