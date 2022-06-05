@@ -120,7 +120,7 @@ h_x2 = np.insert(h_x2,0,0,axis=0)#NOW SAME LEN AS v_x1 and indexes matched in ti
 h_x2_S = pd.Series(h_x2,index=hum_use.index[1:])
 
 #SANITY PLOTS
-plt.plot(h_x1_S); plt.plot(h_x2_S); plt.plot(hum_poly_values_S*0.03); plt.plot(hum_use[2:]*0.03); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+plt.plot(h_x1_S); plt.plot(h_x2_S); plt.plot(hum_poly_values_S*0.1); plt.plot(hum_use[2:]*0.1); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
 plt.savefig('hum_tmp1_2.png',dpi=200)
 
 #plt.plot(h_x1_S); plt.plot(h_x2_S); plt.plot(hum_use[2:]*1); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
@@ -170,86 +170,14 @@ plt.scatter(df_b[0],df_b[1])
 #CORRELATION DOESN"T WORK BC DYNAMIC IS LOST
 stats.pearsonr(v_x1, h_x2)
 
-#ROLLING CORRELATION ON PERCENT CHANGE
-v_x1_pc = v_x1_S.pct_change()
-h_x2_pc = h_x2_S.pct_change()
-v_h_corr = v_x1_pc.rolling(4).corr(h_x2_pc)
-plt.plot(v_h_corr)
 
+'''JUST FOR FUN, LOOK AT PC IN DIFF'''
+#h_u_pc_r = hum_poly_values_S.rolling(4).mean().pct_change()
+#v_u_pc_r = vdh_poly_values_S.rolling(4).mean().pct_change()
+h_u_pc_r = hum_poly_values_S.pct_change()
+v_u_pc_r = vdh_poly_values_S.pct_change()
 
-
-'''
-%%%%%%%%%%%%%%%%
-PERCENT CHANGE ANALYSIS
-'''
-
-'''FIRST PLOT RAW'''
-'''RAW PC PLOT IN TIME'''
-plt.plot(np.array(hum_use),label='hum'); plt.plot(np.array(vdh_use)*.01,label='epi'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2); plt.legend()
-plt.scatter(np.arange(len(hum_use)),np.array(hum_use)); plt.scatter(np.arange(len(vdh_use)),np.array(vdh_use)*0.01); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2); plt.legend()
-#ANOTHER VIEW
-plt.plot(hum_use,label='hum'); plt.plot(vdh_use*.005,label='epi'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2); plt.legend()
-plt.axvline(x=datetime.strptime('2021-12-03','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.3)
-plt.axvline(x=datetime.strptime('2021-12-24','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.3)
-plt.axvline(x=datetime.strptime('2022-01-14','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.3)
-
-'''A. BASED ON RAW TO PERCENT CHANGE'''
-h_u_pc = hum_use.pct_change()
-v_u_pc = vdh_use.pct_change()
-h_u_pc2 = h_u_pc.pct_change()
-v_u_pc2 = v_u_pc.pct_change()
-
-'''ROLLING TIME BASED PERCENT CHANGE CORRELATION'''
-for i in range(4,6):
-    v_u_h_u_corr = v_u_pc.rolling(i).corr(h_u_pc)
-    plt.plot(v_u_h_u_corr,label=i)
-    plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=1)
-    plt.axvline(x=datetime.strptime('2021-12-03','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.3)
-    plt.axvline(x=datetime.strptime('2021-12-24','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.3)
-    plt.axvline(x=datetime.strptime('2022-01-14','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.3)
-    plt.legend()
-    
-'''ROLLING TIME BASED PERCENT CHANGE CORRELATION WITH FURTHER SMOOTH'''
-for i in range(4,6):
-    v_u_h_u_corr = v_u_pc.rolling(i).corr(h_u_pc).rolling(4).mean()
-    plt.plot(v_u_h_u_corr,label=i)
-    plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=1)
-    plt.axvline(x=datetime.strptime('2021-12-03','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.3)
-    plt.axvline(x=datetime.strptime('2021-12-24','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.3)
-    plt.axvline(x=datetime.strptime('2022-01-14','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.3)
-    plt.legend()
-
-'''RAW PC PLOT IN TIME'''
-plt.plot(np.array(h_u_pc),label='hum'); plt.plot(np.array(v_u_pc),label='epi'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2); plt.legend()
-plt.scatter(np.arange(len(h_u_pc)),np.array(h_u_pc)); plt.scatter(np.arange(len(v_u_pc)),np.array(v_u_pc)); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2); plt.legend()
-
-'''SMOOTH THE PC FIRST'''
-plt.plot(np.array(h_u_pc.rolling(4).mean()),label='hum'); plt.plot(np.array(v_u_pc.rolling(4).mean()),label='epi'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2); plt.legend()
-
-#NOT MUCH FAITH IN THE PC2
-'''RAW PC2 PLOT IN TIME'''
-plt.plot(np.array(h_u_pc2),label='hum'); plt.plot(np.array(v_u_pc2),label='epi'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2); plt.legend()
-plt.scatter(np.arange(len(h_u_pc2)),np.array(h_u_pc2)); plt.scatter(np.arange(len(v_u_pc2)),np.array(v_u_pc2)); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2); plt.legend()
-
-'''RAW PC EPI PC2 HUM PLOT IN TIME'''
-plt.plot(np.array(h_u_pc2),label='hum'); plt.plot(np.array(v_u_pc),label='epi'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2); plt.legend()
-plt.scatter(np.arange(len(h_u_pc2)),np.array(h_u_pc2)); plt.scatter(np.arange(len(v_u_pc)),np.array(v_u_pc)); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2); plt.legend()
-
-#PHASE SPACE
-'''TRY COMET TAIL NON-LAGGED PHASE SPACE'''
-y = np.array(h_u_pc)
-x = np.array(v_u_pc)
-alpha_correction = 1/len(x)
-for i in range(0,len(x)): plt.scatter(x[i],y[i],alpha=alpha_correction*i,color='black',marker='+'); plt.plot(x,y,linewidth=0.2,alpha=0.5)
-plt.savefig('tmp.png',dpi=300)
-
-
-'''B. BASED ON RAW --> SMOOTH --> Percent Change'''
-'''A. BASED ON RAW TO PERCENT CHANGE'''
-h_u_pc_r = hum_use.rolling(4).mean().pct_change()
-v_u_pc_r = vdh_use.rolling(4).mean().pct_change()
-
-for i in range(8,9):
+for i in range(4,9):
     v_u_h_u_r_corr = v_u_pc_r.rolling(i).corr(h_u_pc_r)
     plt.plot(v_u_h_u_r_corr,label=i)
     plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=1)
@@ -258,21 +186,21 @@ for i in range(8,9):
     plt.axvline(x=datetime.strptime('2022-01-14','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.3)
     plt.legend()
 
-'''RAW PC PLOT IN TIME'''
-plt.plot(np.array(h_u_pc_r),label='hum'); plt.plot(np.array(v_u_pc_r),label='epi'); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2); plt.legend()
-plt.scatter(np.arange(len(h_u_pc_r)),np.array(h_u_pc_r)); plt.scatter(np.arange(len(v_u_pc_r)),np.array(v_u_pc_r)); plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2); plt.legend()
 
+'''JUST FOR FUN, LOOK AT PC IN DIFF'''
+h_u_pc_r = h_x1_S.pct_change()
+v_u_pc_r = v_x1_S.pct_change()
 
-'''C. BASED ON RAW TO PERCENT CHANGE THEN INVERT '''
-h_u_pc = hum_use.pct_change()
-v_u_pc = vdh_use.pct_change()
-v_u_pc_inv = 1/v_u_pc
-h_u_pc2 = h_u_pc.pct_change()
-v_u_pc2 = v_u_pc.pct_change()
-
-
-
-
+for i in range(4,9):
+    v_u_h_u_r_corr = v_u_pc_r.rolling(i).corr(h_u_pc_r)
+    plt.plot(v_u_h_u_r_corr,label=i)
+    plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=1)
+    plt.axvline(x=datetime.strptime('2021-12-03','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.3)
+    plt.axvline(x=datetime.strptime('2021-12-24','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.3)
+    plt.axvline(x=datetime.strptime('2022-01-14','%Y-%m-%d'),c='black',dashes=(2,2,2,2),linewidth=2,alpha=0.3)
+    plt.legend()
+    
+    
 
 '''LAG-N CROSS CORR'''
 def crosscorr(datax, datay, lag=0, wrap=False):
