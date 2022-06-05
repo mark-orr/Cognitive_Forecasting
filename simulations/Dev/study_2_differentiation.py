@@ -219,9 +219,9 @@ ax1.set_xlabel('Date')
 ax1.set_ylabel('Cases', color=color)
 ax1.plot(t[1:], data1, color=color,label='Cases')
 ax1.tick_params(axis='y', labelcolor=color)
-#ax1.axvline(x=t[11],c='black',dashes=(2,2,2,2),alpha=.4)
-#ax1.axvline(x=t[20],c='black',dashes=(2,2,2,2),alpha=.4)
-#ax1.axvline(x=t[38],c='black',dashes=(2,2,2,2),alpha=.4)
+ax1.axvline(x=t[11],c='black',dashes=(2,2,2,2),alpha=.4)
+ax1.axvline(x=t[20],c='black',dashes=(2,2,2,2),alpha=.4)
+ax1.axvline(x=t[38],c='black',dashes=(2,2,2,2),alpha=.4)
 ax1.axhline(y=0,color=color,alpha=.4)
 ax1.set_ylim(-262, 890)
 
@@ -254,9 +254,9 @@ ax1.set_xlabel('Date')
 ax1.set_ylabel('Cases', color=color)
 ax1.plot(t[1:], data1, color=color,label='Cases')
 ax1.tick_params(axis='y', labelcolor=color)
-#ax1.axvline(x=t[11],c='black',dashes=(2,2,2,2),alpha=.4)
-#ax1.axvline(x=t[20],c='black',dashes=(2,2,2,2),alpha=.4)
-#ax1.axvline(x=t[38],c='black',dashes=(2,2,2,2),alpha=.4)
+ax1.axvline(x=t[11],c='black',dashes=(2,2,2,2),alpha=.4)
+ax1.axvline(x=t[20],c='black',dashes=(2,2,2,2),alpha=.4)
+ax1.axvline(x=t[38],c='black',dashes=(2,2,2,2),alpha=.4)
 ax1.axhline(y=0,color=color,alpha=.4)
 
 ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
@@ -277,30 +277,113 @@ fig.tight_layout()  # otherwise the right y-label is slightly clipped
 plt.show()
 
 
-
-fig = plt.figure()
-ax1 = fig.add_subplot(121)
-ax2 = fig.add_subplot(122)
-
-ax1.set_xlabel('Date')
-ax1.set_ylabel('Cases', color=color)
-ax1.plot(t[1:], data1, color=color,label='Cases')
-ax1.tick_params(axis='y', labelcolor=color)
-#ax1.axvline(x=t[11],c='black',dashes=(2,2,2,2),alpha=.4)
-#ax1.axvline(x=t[20],c='black',dashes=(2,2,2,2),alpha=.4)
-#ax1.axvline(x=t[38],c='black',dashes=(2,2,2,2),alpha=.4)
-ax1.axhline(y=0,color=color,alpha=.4)
-
-ax3 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+'''
+USABEL 3 AXES GRAPH
+'''
+fig = plt.figure(figsize=(25,6))
+ax1 = fig.add_subplot(131)
+ax2 = fig.add_subplot(132)
+ax3 = fig.add_subplot(133)
 color = 'black'
-ax3.set_ylabel('Days', color=color)  # we already handled the x-label with ax1
-ax3.plot(t[1:], data2, color=color,dashes=(2,2,2,2),label='human t_pred (Days)')
-ax3.tick_params(axis='y', labelcolor=color)
-ax3.axhline(y=0,color=color,alpha=.4,dashes=(2,2,2,2))
+xy_lab_size = 15
+
+#RAW DATA
+t = vdh_use.index
+data1 = vdh_use
+data2 = hum_use
+data3 = vdh_poly_values_S
+data4 = hum_poly_values_S
+
+ax1.set_xlabel('Date',size=xy_lab_size,labelpad=0)
+ax1.set_ylabel('Cases', color=color,size=xy_lab_size,labelpad=0)
+ax1.plot(t, data1, color=color)
+ax1.plot(t, data3, color=color)
+ax1.scatter(t,data1, color=color,marker='+',label='Cases',s=100)
+ax1.tick_params(axis='y', labelcolor=color,labelsize=10)
+ax1.axvline(x=t[11],c='black',dashes=(2,2,2,2),alpha=.4)
+ax1.axvline(x=t[20],c='black',dashes=(2,2,2,2),alpha=.4)
+ax1.axvline(x=t[38],c='black',dashes=(2,2,2,2),alpha=.4)
+ax1.tick_params(axis='x', labelsize=10)
+
+ax4 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+color = 'black'
+ax4.set_ylabel('Days', color=color,size=xy_lab_size,labelpad=0)  # we already handled the x-label with ax1
+ax4.plot(t, data2, color=color)
+ax4.plot(t, data4, color=color,dashes=(2,2,2,2))
+ax4.scatter(t,data2, color=color,marker='s',label='human t_pred (Days)')
+ax4.tick_params(axis='y', labelcolor=color,labelsize=10)
 #ax2.axvline(x=t[11],c='black',alpha=.4)
 #ax2.axvline(x=t[26],c='black',dashes=(4,2,4,2),alpha=.4)
 #ax2.axvline(x=t[35],c='black',dashes=(4,2,4,2),alpha=.4)
-ax3.set_ylim(-0.7,1.33)
+ax1.legend(loc=(.65, .15), frameon=False, fontsize=10)
+ax4.legend(loc=(.65, .10), frameon=False, fontsize=10)
+
+
+#FIR DER
+t = vdh_use.index
+data1 = v_x1_S
+data2 = h_x1_S
+
+ax2.set_xlabel('Date',size=xy_lab_size,labelpad=0)
+ax2.set_ylabel('Cases', color=color,size=xy_lab_size,labelpad=0)
+ax2.plot(t[1:], data1, color=color,label='Cases')
+ax2.tick_params(axis='y', labelcolor=color,labelsize=10)
+#ax2.axvline(x=t[11],c='black',dashes=(2,2,2,2),alpha=.4)
+#ax2.axvline(x=t[20],c='black',dashes=(2,2,2,2),alpha=.4)
+#ax2.axvline(x=t[38],c='black',dashes=(2,2,2,2),alpha=.4)
+ax2.axhline(y=0,color=color,alpha=.4)
+ax2.set_ylim(-263, 890)
+ax2.tick_params(axis='x', labelsize=10)
+
+ax5 = ax2.twinx()  # instantiate a second axes that shares the same x-axis
+color = 'black'
+ax5.set_ylabel('Days', color=color,size=xy_lab_size,labelpad=0)  # we already handled the x-label with ax1
+ax5.plot(t[1:], data2, color=color,dashes=(2,2,2,2),label='human t_pred (Days)')
+ax5.tick_params(axis='y', labelcolor=color,labelsize=10)
+ax5.axhline(y=0,color=color,alpha=.4,dashes=(2,2,2,2))
+#ax.axvline(x=t[11],c='black',alpha=.4)
+#ax2.axvline(x=t[26],c='black',dashes=(4,2,4,2),alpha=.4)
+#ax2.axvline(x=t[35],c='black',dashes=(4,2,4,2),alpha=.4)
+
+
+ax2.legend(loc=(.20, .90), frameon=False, fontsize=10)
+ax5.legend(loc=(.20, .85), frameon=False, fontsize=10)
+
+
+#SEC DER
+t = vdh_use.index
+data1 = v_x2_S
+data2 = h_x2_S
+
+ax3.set_xlabel('Date',size=xy_lab_size,labelpad=0)
+ax3.set_ylabel('Cases', color=color,size=xy_lab_size,labelpad=0)
+ax3.plot(t[1:], data1, color=color,label='Cases')
+ax3.tick_params(axis='y', labelcolor=color,labelsize=10)
+#ax3.axvline(x=t[11],c='black',dashes=(2,2,2,2),alpha=.4)
+#ax3.axvline(x=t[20],c='black',dashes=(2,2,2,2),alpha=.4)
+#ax3.axvline(x=t[38],c='black',dashes=(2,2,2,2),alpha=.4)
+ax3.axhline(y=0,color=color,alpha=.4)
+ax3.tick_params(axis='x', labelsize=10)
+
+ax6 = ax3.twinx()  # instantiate a second axes that shares the same x-axis
+color = 'black'
+ax6.set_ylabel('Days', color=color,size=xy_lab_size,labelpad=0)  # we already handled the x-label with ax1
+ax6.plot(t[1:], data2, color=color,dashes=(2,2,2,2),label='human t_pred (Days)')
+ax6.tick_params(axis='y', labelcolor=color,labelsize=10)
+ax6.axhline(y=0,color=color,alpha=.4,dashes=(2,2,2,2))
+#ax2.axvline(x=t[11],c='black',alpha=.4)
+#ax2.axvline(x=t[26],c='black',dashes=(4,2,4,2),alpha=.4)
+#ax2.axvline(x=t[35],c='black',dashes=(4,2,4,2),alpha=.4)
+ax6.set_ylim(-0.7,1.33)
+
+ax3.legend(loc=(.20, .90), frameon=False, fontsize=10)
+ax6.legend(loc=(.20, .85), frameon=False, fontsize=10)
+
+plt.subplots_adjust(wspace=.2,hspace=0.8)
+
+fig.tight_layout()  # otherwise the right y-label is slightly clipped
+fig.set_size_inches(25, 6)
+plt.savefig('Study_2_Figure.png',dpi=300)
 
 
 
@@ -309,23 +392,9 @@ ax3.set_ylim(-0.7,1.33)
 
 
 
-h_scale = 5
-v_scale = 0.01
-plt.plot(vdh_use[2:]*v_scale); 
-plt.plot(hum_use[2:]*h_scale); 
-plt.plot(vdh_poly_values_S*v_scale); 
-plt.plot(hum_poly_values_S*h_scale)
-plt.avhline(y=30, c='r',dashes=(2,2,2,2),linewidth=2)
 
-h_scale = 5
-v_scale = 0.01
-plt.plot(v_x1_S*v_scale); plt.plot(h_x1_S*h_scale)
-plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
 
-h_scale = 5
-v_scale = 0.01
-plt.plot(v_x2_S*v_scale); plt.plot(h_x2_S*h_scale)
-plt.axhline(y=0, c='r',dashes=(2,2,2,2),linewidth=2)
+
 
 '''USEFUL PHASE PLOTS'''
 
