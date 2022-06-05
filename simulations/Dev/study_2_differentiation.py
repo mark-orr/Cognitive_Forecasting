@@ -205,6 +205,77 @@ plt.show()
 
 
 
+'''FIRST DIFFERENTIAL'''
+'''NOW MAKE GRAPH'''
+t = vdh_use.index
+data1 = v_x1_S
+data2 = h_x1_S
+
+#PLOT
+fig, ax1 = plt.subplots()
+color = 'black'
+
+ax1.set_xlabel('Date')
+ax1.set_ylabel('Cases', color=color)
+ax1.plot(t[1:], data1, color=color,label='Cases')
+ax1.tick_params(axis='y', labelcolor=color)
+#ax1.axvline(x=t[11],c='black',dashes=(2,2,2,2),alpha=.4)
+#ax1.axvline(x=t[20],c='black',dashes=(2,2,2,2),alpha=.4)
+#ax1.axvline(x=t[38],c='black',dashes=(2,2,2,2),alpha=.4)
+ax1.axhline(y=0,color=color,alpha=.4)
+ax1.set_ylim(-262, 890)
+
+ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+color = 'black'
+ax2.set_ylabel('Days', color=color)  # we already handled the x-label with ax1
+ax2.plot(t[1:], data2, color=color,dashes=(2,2,2,2),label='human t_pred (Days)')
+ax2.tick_params(axis='y', labelcolor=color)
+ax2.axhline(y=0,color=color,alpha=.4,dashes=(2,2,2,2))
+#ax.axvline(x=t[11],c='black',alpha=.4)
+#ax2.axvline(x=t[26],c='black',dashes=(4,2,4,2),alpha=.4)
+#ax2.axvline(x=t[35],c='black',dashes=(4,2,4,2),alpha=.4)
+ax2.tick_params(axis='x', labelsize=7)
+
+fig.legend(bbox_to_anchor=(.55, .95), frameon=False, fontsize=10)
+fig.tight_layout()  # otherwise the right y-label is slightly clipped
+plt.show()
+
+
+'''SECOND DIFFERENTIAL'''
+'''NOW MAKE GRAPH'''
+t = vdh_use.index
+data1 = v_x2_S
+data2 = h_x2_S
+
+#PLOT
+fig, ax1 = plt.subplots()
+color = 'black'
+ax1.set_xlabel('Date')
+ax1.set_ylabel('Cases', color=color)
+ax1.plot(t[1:], data1, color=color,label='Cases')
+ax1.tick_params(axis='y', labelcolor=color)
+#ax1.axvline(x=t[11],c='black',dashes=(2,2,2,2),alpha=.4)
+#ax1.axvline(x=t[20],c='black',dashes=(2,2,2,2),alpha=.4)
+#ax1.axvline(x=t[38],c='black',dashes=(2,2,2,2),alpha=.4)
+ax1.axhline(y=0,color=color,alpha=.4)
+
+
+ax2 = ax1.twinx()  # instantiate a second axes that shares the same x-axis
+color = 'black'
+ax2.set_ylabel('Days', color=color)  # we already handled the x-label with ax1
+ax2.plot(t[1:], data2, color=color,dashes=(2,2,2,2),label='human t_pred (Days)')
+ax2.tick_params(axis='y', labelcolor=color)
+ax2.axhline(y=0,color=color,alpha=.4,dashes=(2,2,2,2))
+#ax2.axvline(x=t[11],c='black',alpha=.4)
+#ax2.axvline(x=t[26],c='black',dashes=(4,2,4,2),alpha=.4)
+#ax2.axvline(x=t[35],c='black',dashes=(4,2,4,2),alpha=.4)
+ax2.set_ylim(-0.7,1.33)
+
+ax1.tick_params(axis='x', labelsize=7)
+
+fig.legend(bbox_to_anchor=(.55, .95), frameon=False, fontsize=10)
+fig.tight_layout()  # otherwise the right y-label is slightly clipped
+plt.show()
 
 
 
