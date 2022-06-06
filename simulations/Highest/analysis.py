@@ -94,7 +94,7 @@ ax.scatter(gt_S.index,gt_S,color='black',label='ground truth horizon',marker='p'
 #ax.axhline(y=42,c='black',dashes=(2,2,2,2),linewidth=1,alpha=0.2)
 ax.axhline(y=0,c='black',dashes=(2,2,2,2),linewidth=1,alpha=0.3)
 ax.legend(bbox_to_anchor=(.90, .95), loc=1, frameon=False, fontsize=20)
-plt.savefig(f'Good_{gp_no}.png', dpi=300, transparent=False, bbox_inches='tight')
+#plt.savefig(f'Good_{gp_no}.png', dpi=300, transparent=False, bbox_inches='tight')
 plt.show()
 
 
@@ -161,7 +161,7 @@ axes[0,0].tick_params(axis='y', labelsize=15)
 
 plt.subplots_adjust(wspace=.2,hspace=0.3)
 
-plt.savefig(f'Study1_ExplanatoryScatter_All_S.png', dpi=300, transparent=False, bbox_inches='tight')
+#plt.savefig(f'Study1_ExplanatoryScatter_All_S.png', dpi=300, transparent=False, bbox_inches='tight')
 '''END ALL S PLOTTING'''
 
 
@@ -206,7 +206,7 @@ axes[0,0].set_ylabel('Days', labelpad=10,size=10)
 axes[1,0].set_ylabel('Days', labelpad=10,size=10)
 axes[2,0].set_ylabel('Days', labelpad=10,size=10)
 plt.subplots_adjust(wspace=.1,hspace=0.1)
-plt.savefig(f'Single_Subjects.png', dpi=300, transparent=False, bbox_inches='tight')
+#plt.savefig(f'Single_Subjects.png', dpi=300, transparent=False, bbox_inches='tight')
 
 
 '''SUMMARY OF PANELS OF INDIVIDUALS'''
@@ -223,8 +223,14 @@ for k in range(0,len(gp_ordering)):
     grouped = i.groupby(level=0)
     plt.scatter(i.index,i.hum_minus_prior,color='black',label='P' + str(k+1),marker=marker_list[k],s=50,alpha=0.15)
     #axes[k,j].plot(grouped.hum_minus_prior.mean().rolling(4).mean(),color='black')
-    plt.plot(i.hum_minus_prior,color='black',dashes=(2,2,2,2),alpha=.5,linewidth=0.5)
+    if (gp_counter+1 == 1):
+        plt.plot(i.hum_minus_prior,color='black',dashes=(1,1,1,1),alpha=.7,linewidth=0.8)
+    if (gp_counter+1 == 5):
+        plt.plot(i.hum_minus_prior,color='red',dashes=(2,2,2,2),alpha=.7,linewidth=0.8)
+    if (gp_counter+1 == 6):
+        plt.plot(i.hum_minus_prior,color='green',dashes=(3,3,3,3),alpha=.7,linewidth=0.8)
 
+plt.axvline(x=datetime.strptime('2022-01-09','%Y-%m-%d'),c='black',linewidth=1.6,alpha=0.3)
 plt.legend(frameon=False, fontsize=11)
 plt.xlabel('Date', labelpad=5,size=15)
 plt.tick_params(axis='x', labelsize=8)
@@ -250,7 +256,7 @@ plt.xlabel('human horizon (Days)', labelpad=5,size=15)
 plt.tick_params(axis='x', labelsize=15)
 plt.ylabel('human t_pred - rational prior (Days)', labelpad=10,size=15)
 plt.tick_params(axis='y', labelsize=15)
-plt.savefig('Single_Ss_Horiz_Summary.png',dpi=300,transparent=False, bbox_inches='tight')
+#plt.savefig('Single_Ss_Horiz_Summary.png',dpi=300,transparent=False, bbox_inches='tight')
 
 
 
