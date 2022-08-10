@@ -31,6 +31,7 @@ catch_groups = []
 for i in group_list:
     '''ANALYZE All Ss'''
     infile_group = i
+    print(infile_group)
 
     '''GRAB DATA'''
     S_all = pd.read_pickle(f'S_all_{infile_name}_{infile_group}.csv')
