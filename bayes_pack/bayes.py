@@ -54,6 +54,7 @@ def median_of_dist_p(dist,p):
     p = prob value to grab above, 0.5 is median
     '''
     return dist.loc[dist.cumsum()>p].index[0]
+    # return np.median(dist)
 #EG
 #median_of_dist(dist_prior_event_probs)
 

@@ -10,14 +10,15 @@ import matplotlib as mpl
 
 from imp import reload
 import sys
-sys.path.insert(1,'/Users/biocomplexity/Projects/SocioCognitiveModeling/Metaculus_CogModeling/bayes_pack_testing')
+sys.path.insert(1,'/Users/mo6xj/Projects/Cognitive_Forecasting/bayes_pack_testing')
 import bayes
 import b_fit
 
 reload(bayes)
 
-data_in = '/Users/biocomplexity/Projects/SocioCognitiveModeling/Metaculus_CogModeling/simulations/Preprocessing'
-cases_data_in = '/Users/biocomplexity/Projects/SocioCognitiveModeling/Metaculus_CogModeling/simulations/InputData'
+data_in = '/Users/mo6xj/Projects/Cognitive_Forecasting/simulations/Preprocessing'
+cases_data_in = '/Users/mo6xj/Projects/Cognitive_Forecasting/simulations/InputData'
+local_in = '/Users/mo6xj/Projects/Cognitive_Forecasting/simulations/Highest/'
 infile_name = 'sim_out_highest'
 
 df_s_freqs = pd.read_csv(f'{data_in}/Final_Cleaned_High_R1_R3_S_freqs.csv')
@@ -33,7 +34,7 @@ for i in group_list:
     infile_group = i
 
     '''GRAB DATA'''
-    S_all = pd.read_pickle(f'S_all_{infile_name}_{infile_group}.csv')
+    S_all = pd.read_pickle(f'{local_in}S_all_{infile_name}_{infile_group}.csv')
     
     catch_groups.append(S_all)
 
@@ -94,7 +95,7 @@ ax.scatter(gt_S.index,gt_S,color='black',label='ground truth horizon',marker='p'
 #ax.axhline(y=42,c='black',dashes=(2,2,2,2),linewidth=1,alpha=0.2)
 ax.axhline(y=0,c='black',dashes=(2,2,2,2),linewidth=1,alpha=0.3)
 ax.legend(bbox_to_anchor=(.90, .95), loc=1, frameon=False, fontsize=20)
-#plt.savefig(f'Good_{gp_no}.png', dpi=300, transparent=False, bbox_inches='tight')
+plt.savefig(f'Good_{gp_no}_test.png', dpi=300, transparent=False, bbox_inches='tight')
 plt.show()
 
 
